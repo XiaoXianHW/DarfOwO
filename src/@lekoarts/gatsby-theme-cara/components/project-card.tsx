@@ -43,7 +43,6 @@ const ProjectCard = ({ link, title, children, bg, tags }: ProjectCardProps) => (
     >
       {title}
     </div>
-    {/* 新增标签部分 */}
     {tags && (
       <div
         sx={{
