@@ -1,12 +1,382 @@
-@font-face {
-    font-family: 'HarmonyOSSansSC-Regular';
-    src: url('https://static.axtn.net/font/HarmonyOS/HarmonySans-Regular.ttf') format('truetype');
+/* stylelint-disable at-rule-no-unknown */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #F8FAFC;
+    color: #111827;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  .dark body {
+    background-color: #0F0F10;
+    color: #FFFFFF;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
-body {
-    font-family: 'HarmonyOSSansSC-Regular', sans-serif;
+@layer utilities {
+  /* 自定义滚动条 */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-900;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-primary-300 dark:bg-primary-700 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary-400 dark:bg-primary-600;
+  }
 }
 
-html, body {
-    cursor: url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='rgba(179%2C179%2C179%2C0.5)'/><circle cx='50' cy='50' r='35' fill='%23666666'/></svg>") 16 16, auto;
+/* 页面过渡动画 */
+.page-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* 选中文字样式 */
+::selection {
+  @apply bg-primary-600 dark:bg-accent-400 text-white dark:text-black;
+}
+
+/* 慢速旋转动画 */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+/* Markdown 内容样式 */
+.markdown-content {
+  @apply text-gray-900 dark:text-gray-100;
+}
+
+/* 代码高亮 - 浅色主题 */
+.hljs {
+  @apply !bg-white text-gray-900;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+.hljs-comment,
+.hljs-quote {
+  @apply text-gray-500;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+  @apply text-purple-600 font-semibold;
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag .hljs-attr {
+  @apply text-blue-600;
+}
+
+.hljs-string,
+.hljs-doctag {
+  @apply text-green-600;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+  @apply text-orange-600 font-semibold;
+}
+
+.hljs-type,
+.hljs-class .hljs-title {
+  @apply text-teal-600 font-semibold;
+}
+
+.hljs-tag,
+.hljs-name,
+.hljs-attribute {
+  @apply text-blue-700 font-normal;
+}
+
+.hljs-regexp,
+.hljs-link {
+  @apply text-cyan-600;
+}
+
+.hljs-symbol,
+.hljs-bullet {
+  @apply text-pink-600;
+}
+
+.hljs-built_in,
+.hljs-builtin-name {
+  @apply text-indigo-600;
+}
+
+.hljs-meta {
+  @apply text-gray-600;
+}
+
+.hljs-deletion {
+  @apply bg-red-100 text-red-700;
+}
+
+.hljs-addition {
+  @apply bg-green-100 text-green-700;
+}
+
+.hljs-emphasis {
+  @apply italic;
+}
+
+.hljs-strong {
+  @apply font-bold;
+}
+
+/* 代码高亮 - 深色主题 */
+.dark .hljs {
+  @apply !bg-[#0d1117] text-gray-100;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+.dark .hljs-comment,
+.dark .hljs-quote {
+  @apply text-gray-500;
+}
+
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-subst {
+  @apply text-purple-400 font-semibold;
+}
+
+.dark .hljs-number,
+.dark .hljs-literal,
+.dark .hljs-variable,
+.dark .hljs-template-variable,
+.dark .hljs-tag .hljs-attr {
+  @apply text-blue-400;
+}
+
+.dark .hljs-string,
+.dark .hljs-doctag {
+  @apply text-green-400;
+}
+
+.dark .hljs-title,
+.dark .hljs-section,
+.dark .hljs-selector-id {
+  @apply text-orange-400 font-semibold;
+}
+
+.dark .hljs-type,
+.dark .hljs-class .hljs-title {
+  @apply text-teal-400 font-semibold;
+}
+
+.dark .hljs-tag,
+.dark .hljs-name,
+.dark .hljs-attribute {
+  @apply text-blue-300 font-normal;
+}
+
+.dark .hljs-regexp,
+.dark .hljs-link {
+  @apply text-cyan-400;
+}
+
+.dark .hljs-symbol,
+.dark .hljs-bullet {
+  @apply text-pink-400;
+}
+
+.dark .hljs-built_in,
+.dark .hljs-builtin-name {
+  @apply text-indigo-400;
+}
+
+.dark .hljs-meta {
+  @apply text-gray-400;
+}
+
+.dark .hljs-deletion {
+  @apply bg-red-900/30 text-red-300;
+}
+
+.dark .hljs-addition {
+  @apply bg-green-900/30 text-green-300;
+}
+
+.dark .hljs-emphasis {
+  @apply italic;
+}
+
+.dark .hljs-strong {
+  @apply font-bold;
+}
+
+/* 任务列表样式 */
+.markdown-content input[type="checkbox"] {
+  @apply mr-2 w-4 h-4 rounded cursor-pointer;
+}
+
+.markdown-content li:has(input[type="checkbox"]) {
+  @apply list-none;
+}
+
+/* 表格响应式 */
+.markdown-content table {
+  @apply w-full;
+}
+
+/* Markdown 中的强调文本 */
+.markdown-content strong {
+  @apply font-bold text-gray-900 dark:text-gray-100;
+}
+
+.markdown-content em {
+  @apply italic;
+}
+
+
+
+/* 友链页面样式 */
+.friends-card {
+  @apply relative h-full p-6 rounded-2xl bg-white dark:bg-black border border-gray-200 dark:border-gray-800 transition-all duration-300 overflow-hidden;
+}
+
+.friends-card::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-purple-50/50 dark:from-blue-900/10 dark:via-transparent dark:to-purple-900/10 opacity-0 transition-opacity duration-300;
+}
+
+.friends-card:hover::before {
+  @apply opacity-100;
+}
+
+.friends-card:hover {
+  @apply border-gray-300 dark:border-gray-700 shadow-lg shadow-gray-200/50 dark:shadow-black/50;
+  transform: translateY(-2px);
+}
+
+.friends-avatar {
+  @apply w-14 h-14 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 flex-shrink-0 bg-gray-50 dark:bg-gray-950 transition-all duration-300;
+}
+
+.friends-card:hover .friends-avatar {
+  @apply border-gray-300 dark:border-gray-700 shadow-md;
+}
+
+.friends-avatar img {
+  @apply w-full h-full object-cover transition-transform duration-300;
+}
+
+.friends-card:hover .friends-avatar img {
+  transform: scale(110%);
+}
+
+.friends-name {
+  @apply text-lg md:text-xl font-bold mb-1 truncate transition-colors duration-300;
+}
+
+.friends-card:hover .friends-name {
+  @apply text-gray-600 dark:text-gray-400;
+}
+
+.friends-description {
+  @apply text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed;
+}
+
+.friends-link-icon {
+  @apply flex-shrink-0 opacity-0 transform translate-x-[-8px] transition-all duration-300;
+}
+
+.friends-card:hover .friends-link-icon {
+  @apply opacity-100 translate-x-0;
+}
+
+.friends-empty-state {
+  @apply inline-block p-8 rounded-2xl bg-white dark:bg-black border border-gray-200 dark:border-gray-800;
+}
+
+/* 友链页面动画 */
+.friends-card-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.friends-card-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 500ms, transform 500ms;
+}
+
+/* 标题装饰条动画 */
+.title-decoration {
+  @apply w-1 h-12 md:h-16 bg-primary-600 dark:bg-accent-400 rounded-full transition-all duration-300;
+}
+
+/* 动态UI组件样式 */
+.ui-card {
+  background-color: #FEFEFE;
+}
+
+.dark .ui-card {
+  background-color: #1A1A1C;
+}
+
+.ui-tag {
+  background-color: #F1F5F9;
+}
+
+.dark .ui-tag {
+  background-color: #1E1E20;
+}
+
+.ui-tag-secondary {
+  background-color: #E2E8F0;
+}
+
+.dark .ui-tag-secondary {
+  background-color: #2D2D2F;
+}
+
+.friends-page:hover .title-decoration {
+  transform: scaleY(1.1);
 }
