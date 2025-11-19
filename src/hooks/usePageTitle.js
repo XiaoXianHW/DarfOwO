@@ -13,7 +13,6 @@ export const usePageTitle = (pageTitle) => {
       document.title = siteName
     }
     
-    // 清理函数：当组件卸载时重置为默认标题
     return () => {
       document.title = siteName
     }

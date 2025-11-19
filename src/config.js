@@ -339,9 +339,8 @@ export const APP_CONFIG = {
 
   // 背景图片配置
   backgroundImages: [
-    'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=2070&q=80',
+    'https://uapis.cn/static/uploads/016e9b97b4c6f25b5258cebda1c23a74.jpg',
     'https://images.unsplash.com/photo-1517621804845-22d565cecd1f?auto=format&fit=crop&w=2070&q=80',
     'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?auto=format&fit=crop&w=2070&q=80'
   ]
 }
-

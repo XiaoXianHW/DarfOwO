@@ -4,6 +4,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { ConfigProvider } from './contexts/ConfigContext'
 import { BackgroundProvider } from './contexts/BackgroundContext'
 import { LayoutProvider } from './contexts/LayoutContext'
+import { ArticleSettingsProvider } from './contexts/ArticleSettingsContext'
 import Layout from './components/layout/Layout'
 import AppRoutes from './routes/AppRoutes'
 
@@ -14,11 +15,13 @@ function App() {
         <ThemeProvider>
           <BackgroundProvider>
             <LayoutProvider>
-              <BrowserRouter>
-                <Layout>
-                  <AppRoutes />
-                </Layout>
-              </BrowserRouter>
+              <ArticleSettingsProvider>
+                <BrowserRouter>
+                  <Layout>
+                    <AppRoutes />
+                  </Layout>
+                </BrowserRouter>
+              </ArticleSettingsProvider>
             </LayoutProvider>
           </BackgroundProvider>
         </ThemeProvider>

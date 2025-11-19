@@ -4,6 +4,7 @@ import { HiArrowRight, HiCalendar, HiLightningBolt, HiCheckCircle, HiChevronLeft
 import { useConfig } from '../../contexts/ConfigContext'
 import { useLayout } from '../../contexts/LayoutContext'
 import { usePageTitle } from '../../hooks/usePageTitle'
+import { useTheme } from '../../contexts/ThemeContext'
 import { getProjects } from '../../utils/dataStore'
 import { useInView } from '../../hooks/useInView'
 
@@ -140,6 +141,7 @@ const MediaCarousel = ({ media = [], title }) => {
 const ProjectsPage = () => {
   const config = useConfig()
   const { getMaxWidth } = useLayout()
+  const { actualTheme } = useTheme()
   const [projects, setProjects] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [ref, isInView] = useInView({ threshold: 0.1 })
@@ -169,57 +171,57 @@ const ProjectsPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-16"
+          className="mb-16 flex items-center justify-between gap-8"
         >
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-4">
+          <div>
+            <div className="flex items-center gap-4 mb-6">
               <div className="w-1 h-12 md:h-16 bg-primary-600 dark:bg-accent-400 rounded-full" />
               <h1 className="text-5xl md:text-7xl font-bold">作品</h1>
             </div>
-            {/* AxT社区项目 */}
-            {axtProject && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="hidden md:block text-right"
-              >
-                <a
-                  href={axtProject.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block group"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="text-right">
-                      <div className="text-lg md:text-xl font-bold group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors duration-300 mb-1">
-                        {axtProject.title}
-                      </div>
-                      <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-                        {axtProject.subtitle}
-                      </p>
-                    </div>
-                    {axtProject.logo && (
-                      <img
-                        src={axtProject.logo}
-                        alt={axtProject.title}
-                        className="w-10 h-10 md:w-10 md:h-10 flex-shrink-0"
-                      />
-                    )}
-                  </div>
-                </a>
-              </motion.div>
-            )}
+            {/* 副标题 */}
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-base md:text-lg text-gray-600 dark:text-gray-400 ml-5"
+            >
+              这里是我的一些作品和项目
+            </motion.p>
           </div>
-          {/* 副标题 */}
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-base md:text-lg text-gray-600 dark:text-gray-400 ml-5"
-          >
-            这里是我的一些作品和项目
-          </motion.p>
+          {/* AxT社区项目 */}
+          {axtProject && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="hidden md:block flex-shrink-0"
+            >
+              <a
+                href={axtProject.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <div className="text-lg md:text-xl font-bold group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors duration-300 mb-1">
+                      {axtProject.title}
+                    </div>
+                    <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+                      {axtProject.subtitle}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center w-16 h-16 flex-shrink-0">
+                    <img
+                      src={actualTheme === 'dark' ? 'https://static.axtn.net/logo/AxT_invert.png' : 'https://static.axtn.net/logo/AxT.png'}
+                      alt={axtProject.title}
+                      className="w-full h-full object-contain transition-opacity duration-300"
+                    />
+                  </div>
+                </div>
+              </a>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* 分类筛选 */}

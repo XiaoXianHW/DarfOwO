@@ -18,13 +18,15 @@ const BackgroundEffect = () => {
         <>
           {/* 图片背景 */}
           <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 blur-sm"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 blur-md"
             style={{
               backgroundImage: `url("${backgroundImage}")`
             }}
           />
-          {/* 遮罩层 - 半透明黑色 */}
-          <div className="absolute inset-0 bg-black/30 dark:bg-black/50" />
+          {/* 渐变遮罩层 - 增强可读性 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/70 to-white/80 dark:from-black/70 dark:via-black/60 dark:to-black/70" />
+          {/* 额外的整体遮罩 */}
+          <div className="absolute inset-0 bg-white/40 dark:bg-black/40" />
         </>
       )}
       
