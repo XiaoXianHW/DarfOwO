@@ -5,7 +5,7 @@ export const APP_CONFIG = {
     subtitle: 'Darf / 弧渊',
     author: 'XiaoXian',
     description: '欢迎来到我的个人主页👋',
-    keywords: ['个人博客', '前端开发', '技术分享', 'AxT社区']
+    keywords: ['个人博客', '前端开发', '技术分享', 'AxT社区', 'Darf主页', 'XiaoXianHW', 'ArcTower']
   },
 
   // 主题配置
@@ -27,16 +27,16 @@ export const APP_CONFIG = {
   // UI组件颜色配置
   uiColors: {
     card: {
-      light: '#FEFEFE', // 比背景色稍微浅一些
-      dark: '#1A1A1C'   // 比背景色稍微浅一些
+      light: '#FEFEFE',
+      dark: '#1A1A1C'
     },
     tag: {
-      light: '#F1F5F9', // 比背景色稍微深一些
-      dark: '#1E1E20'   // 比背景色稍微深一些
+      light: '#F1F5F9',
+      dark: '#1E1E20'
     },
     tagSecondary: {
-      light: '#E2E8F0', // 游玩过的标签，更深一些
-      dark: '#2D2D2F'   // 游玩过的标签，更深一些
+      light: '#E2E8F0',
+      dark: '#2D2D2F'
     }
   },
 
@@ -126,7 +126,7 @@ export const APP_CONFIG = {
     },
     {
       name: 'Telegram',
-      value: '@Accky',
+      value: '@ArcOwO',
       link: 'https://t.me/ArcOwO',
       icon: 'FaTelegram'
     },
@@ -339,8 +339,6 @@ export const APP_CONFIG = {
 
   // 背景图片配置
   backgroundImages: [
-    'https://uapis.cn/static/uploads/016e9b97b4c6f25b5258cebda1c23a74.jpg',
-    'https://images.unsplash.com/photo-1517621804845-22d565cecd1f?auto=format&fit=crop&w=2070&q=80',
-    'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?auto=format&fit=crop&w=2070&q=80'
+    'https://uapis.cn/static/uploads/016e9b97b4c6f25b5258cebda1c23a74.jpg'
   ]
 }

@@ -1,12 +1,58 @@
 import { useBackground } from '../../contexts/BackgroundContext'
 import { useConfig } from '../../contexts/ConfigContext'
+import { useState, useEffect } from 'react'
 
 const BackgroundEffect = () => {
   const { backgroundType } = useBackground()
   const config = useConfig()
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [cachedImage, setCachedImage] = useState(null)
   
-  // 随机选择背景图片
-  const backgroundImage = config.backgroundImages?.[0] || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=2070&q=80'
+  const backgroundImage = config.backgroundImages?.[0]
+
+  useEffect(() => {
+    const cacheKey = `bg_img_${backgroundImage}`
+    const cachedData = localStorage.getItem(cacheKey)
+    const cacheTime = localStorage.getItem(`${cacheKey}_time`)
+    const now = Date.now()
+    const cacheExpiry = 7 * 24 * 60 * 60 * 1000 // 7天缓存
+
+    if (cachedData && cacheTime && (now - parseInt(cacheTime)) < cacheExpiry) {
+      setCachedImage(cachedData)
+      setImageLoaded(true)
+      return
+    }
+
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+        
+        localStorage.setItem(cacheKey, dataUrl)
+        localStorage.setItem(`${cacheKey}_time`, now.toString())
+        setCachedImage(dataUrl)
+      } catch (e) {
+        console.warn('图片缓存失败，使用原始URL:', e)
+        setCachedImage(backgroundImage)
+      }
+      setImageLoaded(true)
+    }
+    
+    img.onerror = () => {
+      console.warn('图片加载失败，使用原始URL')
+      setCachedImage(backgroundImage)
+      setImageLoaded(true)
+    }
+    
+    img.src = backgroundImage
+  }, [backgroundImage])
 
   if (backgroundType === 'none') {
     return null
@@ -18,9 +64,11 @@ const BackgroundEffect = () => {
         <>
           {/* 图片背景 */}
           <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 blur-md"
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 blur-md transition-opacity duration-500 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
             style={{
-              backgroundImage: `url("${backgroundImage}")`
+              backgroundImage: cachedImage ? `url("${cachedImage}")` : 'none'
             }}
           />
           {/* 渐变遮罩层 - 增强可读性 */}

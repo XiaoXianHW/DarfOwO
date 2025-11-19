@@ -5,12 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="个人主页与博客 - Cyber 科技风格" />
     <meta name="theme-color" content="#030712" />
-    <title>DarfOwORD</title>
+    <link rel="icon" type="image/jpeg" href="https://static.axtn.net/img/Darf.jpg" />
+    <title>DarfOwO</title>
     
-    <!-- 字体 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- 字体预加载 -->
+    <link rel="preconnect" href="https://static.axtn.net" />
+    <link rel="preload" href="https://static.axtn.net/font/MiSans/MiSans-Normal.woff2" as="font" type="font/woff2" crossorigin />
+    <style>
+      @font-face {
+        font-family: 'MiSans';
+        src: url('https://static.axtn.net/font/MiSans/MiSans-Normal.woff2') format('woff2');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

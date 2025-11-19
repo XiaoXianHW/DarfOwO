@@ -7,7 +7,8 @@
   body {
     background-color: #F8FAFC;
     color: #111827;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'MiSans', system-ui, -apple-system, sans-serif;
+    cursor: none;
   }
   
   .dark body {
@@ -90,7 +91,7 @@
 /* 代码高亮 - 浅色主题 */
 .hljs {
   @apply !bg-white text-gray-900;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-family: 'MiSans', 'Courier New', monospace;
 }
 
 .hljs-comment,
@@ -172,7 +173,7 @@
 /* 代码高亮 - 深色主题 */
 .dark .hljs {
   @apply !bg-[#0d1117] text-gray-100;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-family: 'MiSans', 'Courier New', monospace;
 }
 
 .dark .hljs-comment,
@@ -379,4 +380,51 @@
 
 .friends-page:hover .title-decoration {
   transform: scaleY(1.1);
+}
+
+/* 自定义圆形反色鼠标指针 */
+#custom-cursor {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  background-color: white;
+  transition: transform 0.15s ease-out, width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+  transform: translate(-50%, -50%);
+}
+
+#custom-cursor::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 10%;
+  border: 2px solid white;
+  mix-blend-mode: difference;
+  opacity: 0;
+  transition: width 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+              height 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+              opacity 0.3s ease;
+}
+
+#custom-cursor.hover {
+  width: 12px;
+  height: 12px;
+}
+
+#custom-cursor.hover::before {
+  width: 250%;
+  height: 250%;
+  opacity: 1;
+}
+
+/* 移除所有元素的原生指针 */
+* {
+  cursor: none !important;
 }

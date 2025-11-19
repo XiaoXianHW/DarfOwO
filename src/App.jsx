@@ -7,6 +7,7 @@ import { LayoutProvider } from './contexts/LayoutContext'
 import { ArticleSettingsProvider } from './contexts/ArticleSettingsContext'
 import Layout from './components/layout/Layout'
 import AppRoutes from './routes/AppRoutes'
+import CustomCursor from './components/common/CustomCursor'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <LayoutProvider>
               <ArticleSettingsProvider>
                 <BrowserRouter>
+                  <CustomCursor />
                   <Layout>
                     <AppRoutes />
                   </Layout>
