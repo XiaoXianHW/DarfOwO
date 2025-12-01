@@ -32,7 +32,7 @@ const ProjectsPage = () => {
     : projects.filter(p => p.category === selectedCategory)
 
   const currentProject = filteredProjects[currentIndex] || null
-  const axtProject = projects.find(p => p.id === '1' || p.title.includes('AxT社区'))
+  const axtProject = config.projects?.featured
 
   // 切换分类时重置索引
   useEffect(() => {
@@ -307,17 +307,27 @@ const ProjectsPage = () => {
                     transition={{ delay: 0.2 }}
                     className="absolute left-6 lg:left-8 bottom-6 lg:bottom-8 space-y-3 max-w-2xl"
                   >
-                    {/* 技术栈 */}
-                    {currentProject.technologies && currentProject.technologies.length > 0 && (
-                      <div className="text-white/90 text-xs font-medium drop-shadow">
-                        {currentProject.technologies.slice(0, 6).map((tech, idx, arr) => (
-                          <span key={tech}>
-                            {tech}
-                            {idx < arr.length - 1 && <span className="text-white/50 mx-1.5">·</span>}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    {/* 技术栈和时间 */}
+                    <div className="flex items-center gap-3 text-white/90 text-xs font-medium drop-shadow">
+                      {currentProject.technologies && currentProject.technologies.length > 0 && (
+                        <div>
+                          {currentProject.technologies.slice(0, 6).map((tech, idx, arr) => (
+                            <span key={tech}>
+                              {tech}
+                              {idx < arr.length - 1 && <span className="text-white/50 mx-1.5">·</span>}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {currentProject.startedAt && (
+                        <>
+                          {currentProject.technologies && currentProject.technologies.length > 0 && (
+                            <span className="text-white/50">/</span>
+                          )}
+                          <span className="text-white/80">始于 {currentProject.startedAt}</span>
+                        </>
+                      )}
+                    </div>
                     
                     {/* 介绍 */}
                     <p className="text-base lg:text-lg text-white/90 line-clamp-2 drop-shadow">

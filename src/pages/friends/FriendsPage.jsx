@@ -46,7 +46,7 @@ const FriendsPage = () => {
           {friends.length > 0 ? (
             friends.map((friend, index) => (
               <motion.a
-                key={friend.id}
+                key={friend.link}
                 href={friend.link}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -59,7 +59,7 @@ const FriendsPage = () => {
                   <div className="relative z-10 flex items-center gap-4">
                     {/* 头像 */}
                     {friend.avatar ? (
-                      <div className="w-14 h-14 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 flex-shrink-0 bg-gray-50 dark:bg-gray-950">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                         <img
                           src={friend.avatar}
                           alt={friend.name}
