@@ -54,26 +54,51 @@ export const getArticleById = async (id) => {
   const manifest = await loadManifest()
   const articleMeta = manifest.find(article => article.id === id)
   
-  if (!articleMeta) {
-    return null
-  }
+  // 如果在 manifest 中找到文章元数据
+  if (articleMeta) {
+    // 使用 path 字段加载文章内容（支持子目录）
+    const articleData = await loadArticleContent(articleMeta.path)
+    
+    if (!articleData) {
+      return null
+    }
 
-  // 使用 path 字段加载文章内容（支持子目录）
-  const articleData = await loadArticleContent(articleMeta.path)
+    return {
+      id: articleMeta.id,
+      title: articleData.frontmatter.title || articleMeta.title,
+      excerpt: articleData.frontmatter.excerpt || articleMeta.excerpt,
+      content: articleData.content,
+      category: articleMeta.category,
+      tags: articleData.frontmatter.tags || articleMeta.tags,
+      date: articleData.frontmatter.date || articleMeta.date,
+      author: articleData.frontmatter.author || articleMeta.author,
+      password: articleData.frontmatter.password || null
+    }
+  }
+  
+  // 如果 manifest 中没有找到（可能是隐藏文章），尝试直接加载
+  // id 格式如 "技术/文章名" 或 "文章名"，需要加 .md 后缀
+  const articlePath = `${id}.md`
+  const articleData = await loadArticleContent(articlePath)
   
   if (!articleData) {
     return null
   }
-
+  
+  // 从文件路径提取分类（取第一级目录名，如果有的话）
+  const pathParts = id.split('/')
+  const category = pathParts.length > 1 ? pathParts[0] : '未分类'
+  
   return {
-    id: articleMeta.id,
-    title: articleData.frontmatter.title || articleMeta.title,
-    excerpt: articleData.frontmatter.excerpt || articleMeta.excerpt,
+    id,
+    title: articleData.frontmatter.title || 'Untitled',
+    excerpt: articleData.frontmatter.excerpt || '',
     content: articleData.content,
-    category: articleMeta.category, // 使用目录结构的分类
-    tags: articleData.frontmatter.tags || articleMeta.tags,
-    date: articleData.frontmatter.date || articleMeta.date,
-    author: articleData.frontmatter.author || articleMeta.author
+    category,
+    tags: articleData.frontmatter.tags || [],
+    date: articleData.frontmatter.date || new Date().toISOString(),
+    author: articleData.frontmatter.author || null,
+    password: articleData.frontmatter.password || null
   }
 }
 
@@ -90,4 +115,3 @@ export const getAllCategories = async () => {
   const categories = new Set(articles.map(a => a.category))
   return ['all', ...Array.from(categories)]
 }
-

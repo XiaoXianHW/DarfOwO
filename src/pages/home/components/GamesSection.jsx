@@ -79,4 +79,3 @@ const GamesSection = ({ games, isInView, itemVariants }) => {
 }
 
 export default GamesSection
-

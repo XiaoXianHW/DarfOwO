@@ -224,4 +224,3 @@ const TechStackSection = ({ techStacks, isInView, itemVariants }) => {
 }
 
 export default TechStackSection
-

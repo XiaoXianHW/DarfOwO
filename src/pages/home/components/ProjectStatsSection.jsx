@@ -29,4 +29,3 @@ const ProjectStatsSection = ({ projectStats, isInView, itemVariants }) => {
 }
 
 export default ProjectStatsSection
-

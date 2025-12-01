@@ -155,7 +155,7 @@ const ArticlesPage = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="text-base md:text-lg text-gray-600 dark:text-gray-400 ml-5"
             >
-              我总计写过 {articleStats.count} 篇文章，总计 {formatWordCount(articleStats.totalWords)}
+              我写过 {articleStats.count} 篇文章，总计 {formatWordCount(articleStats.totalWords)}
             </motion.p>
           </div>
           {/* 置顶文章 */}

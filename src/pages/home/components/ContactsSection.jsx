@@ -43,4 +43,3 @@ const ContactsSection = ({ contacts, isInView, itemVariants }) => {
 }
 
 export default ContactsSection
-

@@ -52,4 +52,3 @@ const Blockquote = ({ children }) => {
 }
 
 export default Blockquote
-

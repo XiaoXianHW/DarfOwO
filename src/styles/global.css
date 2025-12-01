@@ -8,7 +8,13 @@
     background-color: #F8FAFC;
     color: #111827;
     font-family: 'MiSans', system-ui, -apple-system, sans-serif;
-    cursor: none;
+  }
+  
+  /* 只在桌面端隐藏光标 */
+  @media (min-width: 1280px) {
+    body {
+      cursor: none;
+    }
   }
   
   .dark body {
@@ -38,6 +44,16 @@
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     @apply bg-primary-400 dark:bg-primary-600;
+  }
+
+  /* 沉浸式模式：隐藏sidebar和调整主内容区 */
+  body.hide-sidebar nav[class*="fixed"] {
+    display: none !important;
+  }
+
+  body.hide-sidebar main {
+    margin-left: 0 !important;
+    padding-top: 0 !important;
   }
 }
 
@@ -424,7 +440,9 @@
   opacity: 1;
 }
 
-/* 移除所有元素的原生指针 */
-* {
-  cursor: none !important;
+/* 移除所有元素的原生指针（仅桌面端） */
+@media (min-width: 1280px) {
+  * {
+    cursor: none !important;
+  }
 }

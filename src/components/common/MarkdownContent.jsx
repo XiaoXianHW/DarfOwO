@@ -13,6 +13,30 @@ const MarkdownContent = ({ content }) => {
     return text.replace(/!\[([^\]]*)\]\[([^\]]+)\]/g, '![$1]($2)')
   }
 
+  // 生成标题的 ID
+  const generateId = (text) => {
+    if (!text) return ''
+    
+    // 处理各种类型的 children
+    let textContent = ''
+    if (typeof text === 'string') {
+      textContent = text
+    } else if (Array.isArray(text)) {
+      textContent = text.map(child => 
+        typeof child === 'string' ? child : (child?.props?.children || '')
+      ).join('')
+    } else if (typeof text === 'object' && text.props) {
+      textContent = text.props.children || ''
+    } else {
+      textContent = String(text)
+    }
+    
+    return textContent
+      .toLowerCase()
+      .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
+
   const processedContent = preprocessContent(content)
 
   return (
@@ -21,14 +45,14 @@ const MarkdownContent = ({ content }) => {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight, rehypeRaw]}
         components={{
-        h1: (props) => (
-          <h1 className="text-3xl md:text-4xl font-bold mb-6 mt-12 first:mt-0 pb-3 border-b-2 border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100" {...props} />
+        h1: ({ children, ...props }) => (
+          <h1 id={generateId(children)} className="text-3xl md:text-4xl font-bold mb-6 mt-12 first:mt-0 pb-3 border-b-2 border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100" {...props}>{children}</h1>
         ),
-        h2: (props) => (
-          <h2 className="text-2xl md:text-3xl font-bold mb-5 mt-10 pb-2 border-b border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100" {...props} />
+        h2: ({ children, ...props }) => (
+          <h2 id={generateId(children)} className="text-2xl md:text-3xl font-bold mb-5 mt-10 pb-2 border-b border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100" {...props}>{children}</h2>
         ),
-        h3: (props) => (
-          <h3 className="text-xl md:text-2xl font-semibold mb-4 mt-8 text-gray-900 dark:text-gray-100" {...props} />
+        h3: ({ children, ...props }) => (
+          <h3 id={generateId(children)} className="text-xl md:text-2xl font-semibold mb-4 mt-8 text-gray-900 dark:text-gray-100" {...props}>{children}</h3>
         ),
         h4: (props) => (
           <h4 className="text-lg md:text-xl font-semibold mb-3 mt-6 text-gray-800 dark:text-gray-200" {...props} />
@@ -147,4 +171,3 @@ const MarkdownContent = ({ content }) => {
 }
 
 export default MarkdownContent
-

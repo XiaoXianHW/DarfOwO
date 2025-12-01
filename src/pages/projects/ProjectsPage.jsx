@@ -1,142 +1,11 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { HiArrowRight, HiCalendar, HiLightningBolt, HiCheckCircle, HiChevronLeft, HiChevronRight } from 'react-icons/hi'
+import { motion, AnimatePresence } from 'framer-motion'
+import { HiChevronLeft, HiChevronRight, HiEye, HiEyeOff, HiArrowsExpand, HiX, HiChevronDown } from 'react-icons/hi'
 import { useConfig } from '../../contexts/ConfigContext'
 import { useLayout } from '../../contexts/LayoutContext'
-import { usePageTitle } from '../../hooks/usePageTitle'
 import { useTheme } from '../../contexts/ThemeContext'
+import { usePageTitle } from '../../hooks/usePageTitle'
 import { getProjects } from '../../utils/dataStore'
-import { useInView } from '../../hooks/useInView'
-
-// 多媒体展示组件
-const MediaCarousel = ({ media = [], title }) => {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isHovered, setIsHovered] = useState(false)
-  const [progress, setProgress] = useState(0)
-
-  const nextMedia = () => {
-    setCurrentIndex((prev) => (prev + 1) % media.length)
-    setProgress(0)
-  }
-
-  const prevMedia = () => {
-    setCurrentIndex((prev) => (prev - 1 + media.length) % media.length)
-    setProgress(0)
-  }
-
-  // 自动轮播逻辑
-  useEffect(() => {
-    if (!isHovered || media.length <= 1) return
-
-    const duration = 3000 // 3秒轮播
-    const interval = 50 // 更新频率
-    const increment = (interval / duration) * 100
-
-    const timer = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          nextMedia()
-          return 0
-        }
-        return prev + increment
-      })
-    }, interval)
-
-    return () => clearInterval(timer)
-  }, [isHovered, currentIndex, media.length])
-
-  // 重置进度条
-  useEffect(() => {
-    if (!isHovered) {
-      setProgress(0)
-    }
-  }, [isHovered])
-
-  if (!media || media.length === 0) return null
-
-  const currentMedia = media[currentIndex]
-
-  return (
-    <div 
-      className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-900 dark:to-black"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* 装饰性渐变 */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10 dark:to-black/20 pointer-events-none" />
-      
-      {/* 媒体内容 */}
-      {currentMedia.type === 'image' || currentMedia.type === 'gif' ? (
-        <img
-          src={currentMedia.url}
-          alt={currentMedia.caption || title}
-          className="relative w-full h-full object-cover"
-          loading="lazy"
-        />
-      ) : currentMedia.type === 'video' ? (
-        <video
-          src={currentMedia.url}
-          className="relative w-full h-full object-cover"
-          controls
-          muted
-          loop
-        />
-      ) : null}
-      
-      {/* 悬停遮罩 */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-colors duration-300" />
-      
-      {/* 导航按钮 - 仅在有多个媒体时显示 */}
-      {media.length > 1 && (
-        <>
-          <button
-            onClick={prevMedia}
-            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 text-white opacity-0 group-hover:opacity-100 hover:bg-black/40 transition-all duration-300"
-            aria-label="上一个"
-          >
-            <HiChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={nextMedia}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 text-white opacity-0 group-hover:opacity-100 hover:bg-black/40 transition-all duration-300"
-            aria-label="下一个"
-          >
-            <HiChevronRight className="w-5 h-5" />
-          </button>
-          
-          {/* 进度条指示器 */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
-            {media.map((_, index) => (
-              <div key={index} className="relative">
-                <button
-                  onClick={() => setCurrentIndex(index)}
-                  className={`block w-8 h-1 rounded-full transition-all duration-300 ${
-                    index === currentIndex ? 'bg-white' : 'bg-white/40 hover:bg-white/60'
-                  }`}
-                  aria-label={`切换到第${index + 1}个媒体`}
-                />
-                {/* 当前项的进度条 */}
-                {index === currentIndex && isHovered && (
-                  <div 
-                    className="absolute top-0 left-0 h-1 bg-white rounded-full transition-all duration-75"
-                    style={{ width: `${progress}%` }}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-      
-      {/* 媒体说明 */}
-      {currentMedia.caption && (
-        <div className="absolute top-4 left-4 px-3 py-1 rounded-lg bg-black/50 text-white text-sm max-w-xs">
-          {currentMedia.caption}
-        </div>
-      )}
-    </div>
-  )
-}
 
 const ProjectsPage = () => {
   const config = useConfig()
@@ -144,7 +13,10 @@ const ProjectsPage = () => {
   const { actualTheme } = useTheme()
   const [projects, setProjects] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [ref, isInView] = useInView({ threshold: 0.1 })
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [infoVisible, setInfoVisible] = useState(true)
+  const [immersiveMode, setImmersiveMode] = useState(false)
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
 
   // 设置页面标题
   usePageTitle('作品')
@@ -155,39 +27,72 @@ const ProjectsPage = () => {
   }, [])
 
   const categories = ['all', ...(config.projects?.categories || [])]
-  
   const filteredProjects = selectedCategory === 'all'
     ? projects
     : projects.filter(p => p.category === selectedCategory)
 
-  // 找到AxT社区项目
+  const currentProject = filteredProjects[currentIndex] || null
   const axtProject = projects.find(p => p.id === '1' || p.title.includes('AxT社区'))
 
+  // 切换分类时重置索引
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [selectedCategory])
+
+  // 沉浸式模式：隐藏滚动条和sidebar
+  useEffect(() => {
+    if (immersiveMode) {
+      document.body.style.overflow = 'hidden'
+      document.body.classList.add('hide-sidebar')
+    } else {
+      document.body.style.overflow = ''
+      document.body.classList.remove('hide-sidebar')
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.classList.remove('hide-sidebar')
+    }
+  }, [immersiveMode])
+
+  const nextProject = () => {
+    if (currentIndex < filteredProjects.length - 1) {
+      setCurrentIndex(prev => prev + 1)
+    }
+  }
+
+  const prevProject = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1)
+    }
+  }
+
   return (
-    <div className="min-h-screen px-6 lg:px-12 py-20">
-      <div className={`${getMaxWidth()} mx-auto transition-all duration-300 ease-in-out`}>
-                {/* 头部 */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-16 flex items-center justify-between gap-8"
-        >
+    <div className={`${
+      immersiveMode 
+        ? 'fixed inset-0 overflow-hidden' 
+        : 'min-h-screen px-6 lg:px-12 py-20 overflow-hidden'
+    }`}>
+      <div className={`${
+        immersiveMode ? 'w-full h-full flex flex-col' : `${getMaxWidth()} mx-auto`
+      } transition-all duration-300`}>
+        {/* 头部 - 可隐藏 */}
+        {!immersiveMode && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-4 flex items-center justify-between gap-8"
+          >
           <div>
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-4">
               <div className="w-1 h-12 md:h-16 bg-primary-600 dark:bg-accent-400 rounded-full" />
               <h1 className="text-5xl md:text-7xl font-bold">作品</h1>
             </div>
-            {/* 副标题 */}
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-base md:text-lg text-gray-600 dark:text-gray-400 ml-5"
-            >
+            <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 ml-5">
               这里是我的一些作品和项目
-            </motion.p>
+            </p>
           </div>
+          
           {/* AxT社区项目 */}
           {axtProject && (
             <motion.div
@@ -211,155 +116,386 @@ const ProjectsPage = () => {
                       {axtProject.subtitle}
                     </p>
                   </div>
-                  <div className="flex items-center justify-center w-16 h-16 flex-shrink-0">
-                    <img
+                    <div className="flex items-center justify-center w-16 h-16 flex-shrink-0">
+                      <img
                       src={actualTheme === 'dark' ? 'https://static.axtn.net/logo/AxT_invert.png' : 'https://static.axtn.net/logo/AxT.png'}
-                      alt={axtProject.title}
-                      className="w-full h-full object-contain transition-opacity duration-300"
-                    />
-                  </div>
+                        alt={axtProject.title}
+                        className="w-full h-full object-contain transition-opacity duration-300"
+                      />
+                    </div>
                 </div>
               </a>
+              </motion.div>
+            )}
             </motion.div>
-          )}
-        </motion.div>
+        )}
 
-        {/* 分类筛选 */}
-        <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap gap-2.5 mb-12"
-        >
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-                            className={`px-5 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
-                selectedCategory === cat
-                  ? 'border-gray-900 dark:border-gray-100 bg-gray-100 dark:bg-gray-900'
-                  : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+        {/* 分类筛选 - 右侧固定，类似sidebar */}
+        {!immersiveMode && (
+          <div className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-50">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex flex-col items-center gap-2 py-4 px-3"
+            >
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                    selectedCategory === cat
+                      ? 'text-primary-600 dark:text-accent-400 font-semibold'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  {cat === 'all' ? '全部' : cat}
+                </button>
+              ))}
+            </motion.div>
+          </div>
+        )}
+
+        {/* 作品展示区 */}
+        {filteredProjects.length > 0 && currentProject ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ 
+              opacity: 1, 
+              y: 0
+            }}
+            transition={{ 
+              duration: 0.6, 
+              delay: immersiveMode ? 0 : 0.3,
+              ease: [0.16, 1, 0.3, 1]
+            }}
+            className={immersiveMode ? 'flex-1 flex flex-col px-6 lg:px-12 py-6' : 'relative w-full'}
+          >
+            {/* 控制栏 - 沉浸式时在顶部 */}
+            {immersiveMode && (
+              <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                {/* 左侧：切换按钮 */}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={prevProject}
+                    disabled={currentIndex === 0}
+                    className={`p-2.5 rounded-lg transition-all duration-200 ${
+                      currentIndex === 0 
+                        ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed' 
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                    title="上一个作品"
+                  >
+                    <HiChevronLeft className="w-6 h-6" />
+                  </button>
+                  
+                  {/* 中间：分类标签 - 手机端可点击 */}
+                  <button
+                    onClick={() => setShowCategoryModal(true)}
+                    className="lg:pointer-events-none flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 lg:cursor-default lg:bg-transparent bg-gray-100 dark:bg-gray-800 lg:border-0 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 lg:hover:bg-transparent lg:hover:text-gray-900 lg:dark:hover:text-gray-100 transition-all duration-200 active:scale-95"
+                  >
+                    <span>{currentProject.category}</span>
+                    <HiChevronDown className="w-4 h-4 lg:hidden" />
+                  </button>
+                  
+                  <button
+                    onClick={nextProject}
+                    disabled={currentIndex === filteredProjects.length - 1}
+                    className={`p-2.5 rounded-lg transition-all duration-200 ${
+                      currentIndex === filteredProjects.length - 1
+                        ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                    title="下一个作品"
+                  >
+                    <HiChevronRight className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {/* 右侧：功能按钮 */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setInfoVisible(!infoVisible)}
+                    className="p-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all duration-200"
+                    title={infoVisible ? '隐藏信息' : '显示信息'}
+                  >
+                    {infoVisible ? <HiEyeOff className="w-5 h-5" /> : <HiEye className="w-5 h-5" />}
+                  </button>
+                  <button
+                    onClick={() => setImmersiveMode(!immersiveMode)}
+                    className="p-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all duration-200"
+                    title={immersiveMode ? '退出沉浸式' : '沉浸式模式'}
+                  >
+                    <HiArrowsExpand className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 作品容器 - 带缩放动画 */}
+            <motion.div
+              initial={{ scale: 0.98 }}
+              animate={{
+                scale: immersiveMode ? 1 : 0.98
+              }}
+              transition={{ 
+                duration: 0.4, 
+                ease: [0.16, 1, 0.3, 1]
+              }}
+              className={`relative rounded-2xl overflow-hidden ${
+                immersiveMode 
+                  ? 'flex-1 mb-6' 
+                  : 'h-[calc(100vh-24rem)] min-h-[500px] mb-6'
               }`}
             >
-              {cat === 'all' ? '全部' : cat}
-            </button>
-          ))}
-        </motion.div>
-
-        {/* 项目列表 */}
-        <div ref={ref} className="space-y-12">
-          {filteredProjects.length > 0 ? (
-            filteredProjects.map((project, index) => {
-              const isEven = index % 2 === 1 // 交错布局：奇数索引(第2、4...)右图左文
-              
-              return (
-                <motion.article
-                  key={project.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="group"
+              {/* 背景图片 */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentProject.id}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0"
                 >
-                  <div className={`grid lg:grid-cols-5 gap-8 p-8 rounded-xl ui-card border border-transparent hover:border-primary-500 dark:hover:border-accent-400 transition-all duration-300 ${isEven ? 'lg:direction-rtl' : ''}`}>
-                    {/* 图片容器 (占3列) */}
-                    <div className={`lg:col-span-3 relative ${isEven ? 'lg:order-2' : 'lg:order-1'}`}>
-                      <MediaCarousel media={project.media || []} title={project.title} />
-                    </div>
+                  {currentProject.media && currentProject.media[0] && (
+                    <img
+                      src={currentProject.media[0].url}
+                      alt={currentProject.title}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
 
-                    {/* 信息容器 (占2列) */}
-                    <div className={`lg:col-span-2 flex flex-col justify-between space-y-6 ${isEven ? 'lg:order-1' : 'lg:order-2'}`}>
-                      {/* 头部信息 */}
-                      <div>
-                        {/* 标题和标签 */}
-                        <div className="flex flex-wrap items-center gap-3 mb-4">
-                          {project.link ? (
-                            <a
-                              href={project.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block"
-                            >
-                              <h2 className="text-3xl md:text-4xl font-bold group-hover:text-gray-600 dark:group-hover:text-gray-400 hover:text-primary-600 dark:hover:text-accent-400 transition-colors duration-300 cursor-pointer">
-                                {project.title}
-                              </h2>
-                            </a>
-                          ) : (
-                            <h2 className="text-3xl md:text-4xl font-bold group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors duration-300">
-                              {project.title}
-                            </h2>
-                          )}
-                          <span className="px-3 py-1 rounded-lg ui-tag text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 flex-shrink-0">
-                            {project.category}
+              {/* 信息层遮罩 - 可调节透明度 */}
+              <motion.div
+                animate={{ 
+                  opacity: infoVisible ? 1 : 0.3
+                }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
+              />
+
+              {/* 信息内容层 */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentProject.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ 
+                    opacity: infoVisible ? 1 : 0.4
+                  }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="absolute inset-0 p-6 lg:p-8"
+                >
+                  {/* 左上角：标题 */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <h2 className="text-3xl lg:text-5xl font-bold text-white drop-shadow-2xl">
+                      {currentProject.title}
+                    </h2>
+                  </motion.div>
+
+                  {/* 左下角：技术栈和介绍 */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="absolute left-6 lg:left-8 bottom-6 lg:bottom-8 space-y-3 max-w-2xl"
+                  >
+                    {/* 技术栈 */}
+                    {currentProject.technologies && currentProject.technologies.length > 0 && (
+                      <div className="text-white/90 text-xs font-medium drop-shadow">
+                        {currentProject.technologies.slice(0, 6).map((tech, idx, arr) => (
+                          <span key={tech}>
+                            {tech}
+                            {idx < arr.length - 1 && <span className="text-white/50 mx-1.5">·</span>}
                           </span>
-                        </div>
-
-                                            {/* 简介 */}
-                      <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                        {project.intro}
-                      </p>
-
-                                            {/* 时间和成就 */}
-                      <div className="flex flex-wrap gap-4 mb-4">
-                        {project.startedAt && (
-                          <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
-                            <HiCalendar className="w-4 h-4" />
-                            <span>{project.startedAt}</span>
-                          </div>
-                        )}
-                        {project.achievement && (
-                          <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
-                            <HiLightningBolt className="w-4 h-4" />
-                            <span>{project.achievement}</span>
-                          </div>
-                        )}
+                        ))}
                       </div>
+                    )}
+                    
+                    {/* 介绍 */}
+                    <p className="text-base lg:text-lg text-white/90 line-clamp-2 drop-shadow">
+                      {currentProject.intro}
+                    </p>
+                  </motion.div>
 
-                                            {/* 项目特点 */}
-                      {project.features && project.features.length > 0 && (
-                        <div className="space-y-1.5">
-                          {project.features.map((feature, idx) => (
-                            <div key={idx} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
-                              <HiCheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
-                              <span>{feature}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                  {/* 右上角：访问项目按钮 */}
+                  {currentProject.link && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="absolute right-6 lg:right-8 top-6 lg:top-8"
+                    >
+                      <a
+                        href={currentProject.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-white text-sm font-medium hover:text-white/80 transition-all duration-200"
+                      >
+                        访问项目
+                        <HiChevronRight className="w-4 h-4" />
+                      </a>
+                    </motion.div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+
+            {/* 进度指示器和作品数量 */}
+            <div className={`${immersiveMode ? 'flex-shrink-0' : ''}`}>
+              <div className="h-1 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-primary-600 dark:bg-accent-400"
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${((currentIndex + 1) / filteredProjects.length) * 100}%` }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                />
+              </div>
+              <div className="mt-2 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                <span>{currentProject.title}</span>
+                <span>{currentIndex + 1} / {filteredProjects.length}</span>
+              </div>
+            </div>
+
+            {/* 控制栏 - 正常模式在进度条下方 */}
+            {!immersiveMode && (
+            <div className="mt-4 flex items-center justify-between">
+              {/* 左侧：切换按钮 */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={prevProject}
+                  disabled={currentIndex === 0}
+                  className={`p-2.5 rounded-lg transition-all duration-200 ${
+                    currentIndex === 0 
+                      ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                  title="上一个作品"
+                >
+                  <HiChevronLeft className="w-6 h-6" />
+                </button>
+                
+                {/* 中间：分类标签 - 手机端可点击 */}
+                <button
+                  onClick={() => setShowCategoryModal(true)}
+                  className="lg:pointer-events-none flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 lg:cursor-default lg:bg-transparent bg-gray-100 dark:bg-gray-800 lg:border-0 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 lg:hover:bg-transparent lg:hover:text-gray-900 lg:dark:hover:text-gray-100 transition-all duration-200 active:scale-95"
+                >
+                  <span>{currentProject.category}</span>
+                  <HiChevronDown className="w-4 h-4 lg:hidden" />
+                </button>
+                
+                <button
+                  onClick={nextProject}
+                  disabled={currentIndex === filteredProjects.length - 1}
+                  className={`p-2.5 rounded-lg transition-all duration-200 ${
+                    currentIndex === filteredProjects.length - 1
+                      ? 'text-gray-300 dark:text-gray-700 cursor-not-allowed'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                  title="下一个作品"
+                >
+                  <HiChevronRight className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* 右侧：功能按钮 */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setInfoVisible(!infoVisible)}
+                  className="p-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all duration-200"
+                  title={infoVisible ? '隐藏信息' : '显示信息'}
+                >
+                  {infoVisible ? <HiEyeOff className="w-5 h-5" /> : <HiEye className="w-5 h-5" />}
+                </button>
+                <button
+                  onClick={() => setImmersiveMode(!immersiveMode)}
+                  className="p-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all duration-200"
+                  title={immersiveMode ? '退出沉浸式' : '沉浸式模式'}
+                >
+                  <HiArrowsExpand className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            )}
+          </motion.div>
+        ) : (
+          <div className="text-center py-20">
+            <p className="text-xl text-gray-600 dark:text-gray-400">暂无项目</p>
+          </div>
+        )}
+
+        {/* 手机端分类选择弹窗 */}
+        <AnimatePresence>
+          {showCategoryModal && (
+            <>
+              {/* 背景遮罩 */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowCategoryModal(false)}
+                className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+              />
+              
+              {/* 弹窗内容 */}
+              <div className="lg:hidden fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101]">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                  className="w-[90vw] max-w-sm ui-card backdrop-blur-md border border-transparent rounded-xl shadow-2xl"
+                >
+                  {/* 头部 */}
+                  <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800/60">
+                    <div className="flex items-center gap-3">
+                      <div className="w-1 h-6 bg-primary-600 dark:bg-accent-400 rounded-full" />
+                      <h2 className="text-xl font-bold">选择分类</h2>
                     </div>
+                    <button
+                      onClick={() => setShowCategoryModal(false)}
+                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <HiX className="w-5 h-5" />
+                    </button>
+                  </div>
 
-                    {/* 底部：技术栈 */}
-                    <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
-                      {/* 技术栈 */}
-                      {project.technologies && project.technologies.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {project.technologies.map(tech => (
-                            <span
-                              key={tech}
-                              className="px-3 py-1 rounded-lg text-xs ui-tag text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                  {/* 分类选项 */}
+                  <div className="p-6">
+                    <div className="flex items-center bg-gray-100 dark:bg-gray-950/50 rounded-lg p-1 border border-transparent dark:border-gray-800">
+                      <div className="grid grid-cols-2 gap-1 w-full">
+                        {categories.map((cat) => (
+                          <button
+                            key={cat}
+                            onClick={() => {
+                              setSelectedCategory(cat)
+                              setShowCategoryModal(false)
+                              setCurrentIndex(0)
+                            }}
+                            className={`flex items-center justify-center py-3 rounded-md transition-all duration-200 ${
+                              selectedCategory === cat
+                                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                            }`}
+                          >
+                            <span className="text-sm font-medium">{cat === 'all' ? '全部' : cat}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.article>
-              )
-            })
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20"
-            >
-              <div className="inline-block p-8 rounded-xl bg-white dark:bg-black border border-gray-200 dark:border-gray-800">
-                <p className="text-xl text-gray-600 dark:text-gray-400">暂无项目</p>
+                </motion.div>
               </div>
-            </motion.div>
+            </>
           )}
-        </div>
+        </AnimatePresence>
       </div>
     </div>
   )

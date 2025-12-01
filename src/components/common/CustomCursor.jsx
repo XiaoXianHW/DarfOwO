@@ -1,9 +1,25 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 
 const CustomCursor = () => {
   const cursorRef = useRef(null)
   const positionRef = useRef({ x: 0, y: 0 })
   const requestRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // 检测是否为移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+        || ('ontouchstart' in window)
+        || (window.innerWidth < 1280)
+      setIsMobile(mobile)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const isInteractiveElement = useCallback((element) => {
     if (!element) return false
@@ -89,6 +105,9 @@ const CustomCursor = () => {
       }
     }
   }, [isInteractiveElement])
+
+  // 移动端不显示自定义光标
+  if (isMobile) return null
 
   return <div id="custom-cursor" ref={cursorRef} />
 }

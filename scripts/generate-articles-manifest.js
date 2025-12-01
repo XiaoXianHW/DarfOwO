@@ -57,12 +57,22 @@ if (!fs.existsSync(publicDir)) {
 const markdownFiles = getAllMarkdownFiles(docsDir)
 
 const articles = []
+let hiddenCount = 0
 
 markdownFiles.forEach(({ fullPath, relativePath, category, filename }) => {
   const content = fs.readFileSync(fullPath, 'utf-8')
   
   try {
     const { data: frontmatter } = matter(content)
+    
+    // 检查文章是否设置为不可见（默认为可见）
+    const visible = frontmatter.visible !== false
+    
+    if (!visible) {
+      hiddenCount++
+      console.log(`⏭️  跳过隐藏文章: ${relativePath}`)
+      return
+    }
     
     // 生成唯一ID（使用相对路径，去掉.md后缀）
     const id = relativePath.replace('.md', '').replace(/\\/g, '/')
@@ -92,7 +102,9 @@ const categories = [...new Set(articles.map(a => a.category))]
 fs.writeFileSync(manifestPath, JSON.stringify(articles, null, 2))
 
 console.log(`✅ 已生成 manifest.json`)
-console.log(`   📄 文章总数: ${articles.length}`)
+console.log(`   📄 可见文章: ${articles.length}`)
+console.log(`   🔒 隐藏文章: ${hiddenCount}`)
+console.log(`   📝 总文件数: ${markdownFiles.length}`)
 console.log(`   📁 分类数量: ${categories.length}`)
 console.log(`   📂 分类列表: ${categories.join(', ')}`)
 

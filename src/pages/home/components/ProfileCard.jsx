@@ -13,7 +13,7 @@ const ProfileCard = ({ config, itemVariants }) => {
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10">
           {/* 头像 */}
           <img
-            src={config.home?.avatar || 'https://static.axtn.net/img/Darf.jpg'}
+            src={config.home?.avatar}
             alt={aboutInfo.name || 'Avatar'}
             className="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-2 border-gray-200 dark:border-gray-800 object-cover flex-shrink-0"
           />

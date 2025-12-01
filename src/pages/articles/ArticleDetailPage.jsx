@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { HiArrowLeft, HiUser, HiDocumentText, HiShieldCheck } from 'react-icons/hi'
+import { HiArrowLeft, HiUser, HiDocumentText, HiShieldCheck, HiLockClosed } from 'react-icons/hi'
 import { useLayout } from '../../contexts/LayoutContext'
 import { useConfig } from '../../contexts/ConfigContext'
 import { usePageTitle } from '../../hooks/usePageTitle'
@@ -9,35 +9,68 @@ import { getArticleById } from '../../utils/articleLoader'
 import MarkdownContent from '../../components/common/MarkdownContent'
 import SEO from '../../components/common/SEO'
 import ScrollProgress from '../../components/common/ScrollProgress'
+import TableOfContents from '../../components/common/TableOfContents'
 import { countWords, formatWordCount } from '../../utils/textUtils'
 
 const ArticleDetailPage = () => {
   const location = useLocation()
-  const { '*': slug } = useParams()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { getMaxWidth } = useLayout()
   const config = useConfig()
   const [article, setArticle] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState(false)
+  const [isPasswordRequired, setIsPasswordRequired] = useState(false)
 
   // 设置动态页面标题
   usePageTitle(article ? article.title : '文章详情')
 
   // 从 location.pathname 提取文章 ID（支持子目录，解码 URL）
   const articleId = decodeURIComponent(location.pathname.replace('/articles/', ''))
+  
+  // 从 URL 获取密码参数
+  const passwordParam = searchParams.get('password')
 
   // 异步加载文章内容
   useEffect(() => {
     const loadArticle = async () => {
       setLoading(true)
+      setPasswordError(false)
       const data = await getArticleById(articleId)
+      
+      // 检查文章是否需要密码保护
+      if (data && data.password) {
+        setIsPasswordRequired(true)
+        // 验证密码（统一转换为字符串进行比较）
+        if (!passwordParam || String(passwordParam) !== String(data.password)) {
+          setArticle(null)
+          setLoading(false)
+          return
+        }
+      }
+      
       setArticle(data)
+      setIsPasswordRequired(false)
       setLoading(false)
     }
     loadArticle()
-  }, [articleId])
+  }, [articleId, passwordParam])
 
   // 计算字数
   const wordCount = article ? countWords(article.content) : 0
+
+  // 处理密码提交
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault()
+    if (!passwordInput.trim()) {
+      setPasswordError(true)
+      return
+    }
+    // 使用密码参数重新加载页面
+    navigate(`${location.pathname}?password=${encodeURIComponent(passwordInput)}`)
+  }
 
   if (loading) {
     return (
@@ -50,6 +83,85 @@ const ArticleDetailPage = () => {
           </div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">加载文章中...</p>
         </div>
+      </div>
+    )
+  }
+
+  // 密码保护界面
+  if (isPasswordRequired && !article) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="w-full max-w-md"
+        >
+          <div className="ui-card p-8 rounded-2xl border border-gray-200 dark:border-gray-800">
+            {/* 图标 */}
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <HiLockClosed className="w-8 h-8 text-primary-600 dark:text-accent-400" />
+              </div>
+            </div>
+
+            {/* 标题和说明 */}
+            <h2 className="text-2xl font-bold text-center mb-2">
+              文章受密码保护
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+              此文章需要密码才能访问，请输入密码继续阅读
+            </p>
+
+            {/* 密码输入表单 */}
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div>
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => {
+                    setPasswordInput(e.target.value)
+                    setPasswordError(false)
+                  }}
+                  placeholder="请输入密码"
+                  className={`w-full px-4 py-3 rounded-lg ui-tag border transition-all duration-200 focus:outline-none focus:ring-2 ${
+                    passwordError || (passwordParam && !loading)
+                      ? 'border-red-500 focus:ring-red-500/50'
+                      : 'border-gray-200 dark:border-gray-700 focus:ring-primary-500 dark:focus:ring-accent-400'
+                  }`}
+                  autoFocus
+                />
+                {(passwordError || (passwordParam && !loading)) && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-2 text-sm text-red-500"
+                  >
+                    {passwordError ? '请输入密码' : '密码错误，请重试'}
+                  </motion.p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full px-6 py-3 rounded-lg bg-primary-600 dark:bg-accent-400 text-white dark:text-gray-900 font-medium hover:bg-primary-700 dark:hover:bg-accent-500 transition-colors duration-200"
+              >
+                确认
+              </button>
+            </form>
+
+            {/* 返回链接 */}
+            <div className="mt-6 text-center">
+              <Link
+                to="/articles"
+                className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors duration-200"
+              >
+                <HiArrowLeft className="w-4 h-4" />
+                返回文章列表
+              </Link>
+            </div>
+          </div>
+        </motion.div>
       </div>
     )
   }
@@ -168,6 +280,9 @@ const ArticleDetailPage = () => {
                 </p>
               </motion.div>
             </header>
+
+            {/* 目录组件 */}
+            <TableOfContents content={article.content} />
 
             {/* 文章内容 */}
             <motion.div

@@ -31,7 +31,7 @@ const SideNav = () => {
 
   return (
     <>
-      {/* 移动端顶部导航 - 浮空效果 */}
+      {/* 移动端顶部导航 - 简洁设计 */}
       <nav className={`lg:hidden fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
           ? 'pt-3 px-4' 
@@ -39,7 +39,7 @@ const SideNav = () => {
       }`}>
         <div className={`flex justify-between items-center h-14 px-4 rounded-xl transition-all duration-300 ${
           isScrolled
-            ? 'ui-card backdrop-blur-lg border border-transparent shadow-lg'
+            ? 'backdrop-blur-xl bg-white/80 dark:bg-black/60 border border-gray-200/50 dark:border-gray-800/50'
             : 'bg-transparent'
         }`}>
           {/* 左侧菜单按钮 */}
@@ -75,7 +75,7 @@ const SideNav = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="mt-2 p-2 rounded-xl ui-card backdrop-blur-lg border border-transparent shadow-lg"
+              className="mt-2 p-3 rounded-xl backdrop-blur-xl bg-white/90 dark:bg-black/70 border border-gray-200/50 dark:border-gray-800/50"
             >
               <div className="space-y-1">
                 {navItems.map((item) => {
@@ -86,10 +86,10 @@ const SideNav = () => {
                       key={item.path}
                       to={item.path}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-300 ${
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 ${
                         isActive
-                          ? 'bg-gray-100 dark:bg-gray-900 text-black dark:text-white'
-                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/50'
+                          ? 'text-primary-600 dark:text-accent-400 font-semibold'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                       }`}
                     >
                       {Icon && <Icon className="w-5 h-5" />}
@@ -103,23 +103,23 @@ const SideNav = () => {
         </AnimatePresence>
       </nav>
 
-      {/* 桌面端侧边导航 - 浮空设计 */}
+      {/* 桌面端侧边导航 - 简洁设计 */}
       <nav className="hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 z-50">
-        <div className="flex flex-col items-center gap-2 py-5 px-3 rounded-xl ui-card backdrop-blur-md border border-transparent">
+        <div className="flex flex-col items-center gap-2 py-4 px-3">
           {/* 头像 */}
           <Link 
             to="/" 
-            className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-800 w-full flex justify-center"
+            className="mb-3 pb-3 w-full flex justify-center group"
           >
             <img 
-              src="https://static.axtn.net/img/Darf.jpg" 
-              alt="Darf"
-              className="w-10 h-10 rounded-lg object-cover"
+              src={config.home?.avatar} 
+              alt={config.site?.author || 'Avatar'}
+              className="w-10 h-10 rounded-lg object-cover transition-all duration-200 group-hover:scale-105 group-hover:shadow-lg"
             />
           </Link>
 
           {/* 导航链接 */}
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-1.5">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path
               const Icon = iconMap[item.name]
@@ -127,27 +127,31 @@ const SideNav = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`relative group p-2.5 rounded-lg transition-all duration-300 ${
+                  className={`relative group p-2.5 rounded-lg transition-all duration-200 ${
                     isActive
-                      ? 'text-black dark:text-white'
-                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                      ? 'text-primary-600 dark:text-accent-400'
+                      : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                   }`}
                   title={item.name}
                 >
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-indicator"
-                      className="absolute inset-0 ui-tag-secondary rounded-lg"
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
+                  {Icon && <Icon className="w-5 h-5" />}
                   
-                  <div className="relative z-10">
-                    {Icon && <Icon className="w-5 h-5" />}
-                  </div>
+                  {/* 左侧指示线 */}
+                  <motion.div
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 rounded-full transition-colors duration-200 ${
+                      isActive
+                        ? 'bg-primary-600 dark:bg-accent-400'
+                        : 'bg-transparent'
+                    }`}
+                    animate={{
+                      width: isActive ? '3px' : '0px',
+                      height: isActive ? '20px' : '0px'
+                    }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  />
 
                   {/* 悬浮提示 */}
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 ui-tag text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg">
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap">
                     {item.name}
                   </div>
                 </Link>
@@ -155,22 +159,21 @@ const SideNav = () => {
             })}
           </div>
 
-          {/* 分隔线 */}
-          <div className="w-8 h-px bg-gray-200 dark:bg-gray-800 my-2" />
-
           {/* 设置按钮 */}
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="relative group p-2.5 rounded-lg transition-all duration-300 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:ui-tag-secondary"
-            title="设置"
-          >
-            <HiCog className="w-5 h-5" />
-            
-            {/* 悬浮提示 */}
-            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 ui-tag text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg">
-              设置
-            </div>
-          </button>
+          <div className="mt-2 pt-2">
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="relative group p-2.5 rounded-lg transition-all duration-200 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              title="设置"
+            >
+              <HiCog className="w-5 h-5" />
+              
+              {/* 悬浮提示 */}
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap">
+                设置
+              </div>
+            </button>
+          </div>
         </div>
       </nav>
 

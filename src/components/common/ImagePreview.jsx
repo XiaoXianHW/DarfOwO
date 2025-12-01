@@ -122,4 +122,3 @@ const ImagePreview = ({ src, alt, ...props }) => {
 }
 
 export default ImagePreview
-

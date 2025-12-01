@@ -107,4 +107,3 @@ const BackgroundEffect = () => {
 }
 
 export default BackgroundEffect
-
