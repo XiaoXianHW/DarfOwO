@@ -6,6 +6,26 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+// 统计字数（中英文混合）
+function countWords(text) {
+  if (!text) return 0
+  
+  let cleanText = text
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`[^`]*`/g, '')
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    .replace(/[#*_~`>]/g, '')
+    .replace(/\n+/g, ' ')
+  
+  const chineseChars = cleanText.match(/[\u4e00-\u9fa5]/g) || []
+  const englishWords = cleanText
+    .replace(/[\u4e00-\u9fa5]/g, ' ')
+    .match(/[a-zA-Z0-9]+/g) || []
+  
+  return chineseChars.length + englishWords.length
+}
+
 // 递归获取目录中所有 .md 文件
 function getAllMdFiles(dir, baseDir = dir, category = null) {
   const files = []
@@ -145,9 +165,12 @@ class DocsWatcherService {
       for (const { fullPath, relativePath, category } of markdownFiles) {
         try {
           const content = fs.readFileSync(fullPath, 'utf-8')
-          const { data: frontmatter } = matter(content)
+          const { data: frontmatter, content: markdown } = matter(content)
           
           const id = relativePath.replace('.md', '').replace(/\\/g, '/')
+          
+          // 计算文章字数
+          const wordCount = countWords(markdown)
           
           articles.push({
             id,
@@ -157,7 +180,8 @@ class DocsWatcherService {
             tags: frontmatter.tags || [],
             date: frontmatter.date || new Date().toISOString(),
             author: frontmatter.author || undefined,
-            path: relativePath
+            path: relativePath,
+            wordCount // 添加字数统计
           })
         } catch (error) {
           this.log('⚠️', `解析失败: ${relativePath} - ${error.message}`)

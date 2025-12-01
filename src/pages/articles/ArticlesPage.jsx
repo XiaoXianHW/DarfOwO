@@ -6,8 +6,8 @@ import { useConfig } from '../../contexts/ConfigContext'
 import { useLayout } from '../../contexts/LayoutContext'
 import { usePageTitle } from '../../hooks/usePageTitle'
 import { useArticleSettings } from '../../contexts/ArticleSettingsContext'
-import { getArticles, getAllCategories, getArticleById } from '../../utils/articleLoader'
-import { countWords, formatWordCount } from '../../utils/textUtils'
+import { getArticles, getAllCategories } from '../../utils/articleLoader'
+import { formatWordCount } from '../../utils/textUtils'
 
 const ARTICLES_PER_PAGE = 5
 
@@ -38,20 +38,10 @@ const ArticlesPage = () => {
       setAllArticles(articlesData)
       setCategories(categoriesData)
       
-      // 计算统计数据 - 加载所有文章内容来计算准确字数
-      let totalWords = 0
-      for (const articleMeta of articlesData) {
-        try {
-          const fullArticle = await getArticleById(articleMeta.id)
-          if (fullArticle && fullArticle.content) {
-            totalWords += countWords(fullArticle.content)
-          }
-        } catch (error) {
-          console.warn(`Failed to load article ${articleMeta.id} for word count:`, error)
-          // 如果加载失败，使用摘要作为备选
-          totalWords += countWords(articleMeta.excerpt || '')
-        }
-      }
+      // 计算统计数据 - 直接从 manifest 中累加字数
+      const totalWords = articlesData.reduce((sum, article) => {
+        return sum + (article.wordCount || 0)
+      }, 0)
       
       setArticleStats({
         count: articlesData.length,

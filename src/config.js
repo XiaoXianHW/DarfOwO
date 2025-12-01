@@ -163,10 +163,10 @@ export const APP_CONFIG = {
     showCategories: true,
     showTags: true,
     pinnedArticle: {
-      title: '置顶文章示例',
-      subtitle: '这是一篇置顶的重要文章',
-      date: '2024-11-13',
-      link: 'https://example.com/pinned-article'
+      title: '本博客简要',
+      subtitle: '简要说明本博客实现的功能和技术栈',
+      date: '2025-12-01',
+      link: '/articles/DarfOwO-README'
     }
   },
 
@@ -174,7 +174,7 @@ export const APP_CONFIG = {
   projects: {
     // 特色项目 - 显示在标题右侧
     featured: {
-      title: 'AxT社区官网',
+      title: 'AxT社区',
       subtitle: '面向创作者与志愿者的公益社区',
       link: 'https://www.axtn.net'
     },
@@ -255,7 +255,7 @@ export const APP_CONFIG = {
 
 // 朋友链接配置
   friends: {
-    description: '一些优秀的朋友们',
+    description: '群除我佬',
     list: [
       {
         name: 'Shuakami',

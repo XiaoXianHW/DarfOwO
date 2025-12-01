@@ -10,6 +10,26 @@ const docsDir = path.join(__dirname, '../docs')
 const publicDir = path.join(__dirname, '../public')
 const manifestPath = path.join(publicDir, 'manifest.json')
 
+// 统计字数（中英文混合）
+function countWords(text) {
+  if (!text) return 0
+  
+  let cleanText = text
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`[^`]*`/g, '')
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    .replace(/[#*_~`>]/g, '')
+    .replace(/\n+/g, ' ')
+  
+  const chineseChars = cleanText.match(/[\u4e00-\u9fa5]/g) || []
+  const englishWords = cleanText
+    .replace(/[\u4e00-\u9fa5]/g, ' ')
+    .match(/[a-zA-Z0-9]+/g) || []
+  
+  return chineseChars.length + englishWords.length
+}
+
 // 递归读取所有 markdown 文件
 function getAllMarkdownFiles(dir, baseDir = dir, category = null) {
   const files = []
@@ -63,7 +83,7 @@ markdownFiles.forEach(({ fullPath, relativePath, category, filename }) => {
   const content = fs.readFileSync(fullPath, 'utf-8')
   
   try {
-    const { data: frontmatter } = matter(content)
+    const { data: frontmatter, content: markdown } = matter(content)
     
     // 检查文章是否设置为不可见（默认为可见）
     const visible = frontmatter.visible !== false
@@ -77,6 +97,9 @@ markdownFiles.forEach(({ fullPath, relativePath, category, filename }) => {
     // 生成唯一ID（使用相对路径，去掉.md后缀）
     const id = relativePath.replace('.md', '').replace(/\\/g, '/')
     
+    // 计算文章字数
+    const wordCount = countWords(markdown)
+    
     articles.push({
       id,
       title: frontmatter.title || 'Untitled',
@@ -85,7 +108,8 @@ markdownFiles.forEach(({ fullPath, relativePath, category, filename }) => {
       tags: frontmatter.tags || [],
       date: frontmatter.date || new Date().toISOString(),
       author: frontmatter.author || undefined,
-      path: relativePath // 保存完整相对路径
+      path: relativePath, // 保存完整相对路径
+      wordCount // 添加字数统计
     })
   } catch (error) {
     console.error(`Failed to parse ${relativePath}:`, error)
