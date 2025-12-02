@@ -263,6 +263,20 @@ export const APP_CONFIG = {
         description: 'sdjz.wiki',
         link: 'https://sdjz.wiki',
         avatar: 'https://sdjz.wiki/shuakami.jpg'
+      },
+      {
+        name: '量子猫步',
+        alias: '',
+        description: 'me.shanshui.site',
+        link: 'https://me.shanshui.site/',
+        avatar: 'https://me.shanshui.site/img/avatar.webp'
+      },
+      {
+        name: '幻歆',
+        alias: '',
+        description: 'blog.huanxinbot.com',
+        link: 'https://blog.huanxinbot.com/',
+        avatar: 'http://q1.qlogo.cn/g?b=qq&nk=3485462167&s=100'
       }
     ]
   },

@@ -8,6 +8,7 @@ import { ArticleSettingsProvider } from './contexts/ArticleSettingsContext'
 import Layout from './components/layout/Layout'
 import AppRoutes from './routes/AppRoutes'
 import CustomCursor from './components/common/CustomCursor'
+import ScrollToTop from './components/common/ScrollToTop'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <LayoutProvider>
               <ArticleSettingsProvider>
                 <BrowserRouter>
+                  <ScrollToTop />
                   <CustomCursor />
                   <Layout>
                     <AppRoutes />
