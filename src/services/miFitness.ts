@@ -11,7 +11,13 @@ const BASE =
   '/api/mifitness';
 
 export const MIFITNESS_UID =
-  (import.meta.env.VITE_MIFITNESS_UID as string | undefined) || '2767148408';
+  (import.meta.env.VITE_MIFITNESS_UID as string | undefined) || '2706034380';
+
+// Mi login session ID. The API falls back to the most recent successful login
+// session when omitted, but we pin a known session for deterministic results.
+export const MIFITNESS_SESSION_ID =
+  (import.meta.env.VITE_MIFITNESS_SESSION_ID as string | undefined) ||
+  '5fd053625cc1d165b3d8f3fd';
 
 interface ApiEnvelope<T> {
   success: boolean;
@@ -20,7 +26,11 @@ interface ApiEnvelope<T> {
 }
 
 async function request<T>(path: string, params: Record<string, string | number> = {}): Promise<T> {
-  const search = new URLSearchParams({ uid: MIFITNESS_UID, ...mapValues(params) });
+  const search = new URLSearchParams({
+    uid: MIFITNESS_UID,
+    ...(MIFITNESS_SESSION_ID ? { sessionId: MIFITNESS_SESSION_ID } : {}),
+    ...mapValues(params),
+  });
   const res = await fetch(`${BASE}${path}?${search.toString()}`, {
     headers: { Accept: 'application/json' },
   });

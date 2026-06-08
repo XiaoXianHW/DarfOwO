@@ -68,7 +68,8 @@ npm run dev                  # http://localhost:3000
 ```
 MIFITNESS_API_KEY=你的密钥        # 由 Vite 代理在服务端注入
 MIFITNESS_API_BASE=https://api.xiaoxian.org
-VITE_MIFITNESS_UID=2767148408    # 展示数据的家庭成员 uid
+VITE_MIFITNESS_UID=2706034380    # 展示数据的家庭成员 uid
+VITE_MIFITNESS_SESSION_ID=5fd053625cc1d165b3d8f3fd  # 可选，小米登录会话 ID
 ```
 
 ## 常用脚本
