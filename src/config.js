@@ -70,20 +70,23 @@ export const config = {
       title: '设备 (Devices)',
       subtitle: 'Gear & workspace',
       icon: 'Monitor',
-      color: 'slate'
+      color: 'slate',
+      path: '/devices'
     },
     {
       title: '音乐 (Music)',
       subtitle: 'Playlists & vibes',
       icon: 'Music',
-      color: 'purple'
+      color: 'purple',
+      path: '/music'
     },
     {
       title: '状态 (Status)',
       subtitle: 'Live metrics & current activity',
       icon: 'Activity',
       color: 'green',
-      span: 2
+      span: 2,
+      path: '/status'
     }
   ]
 };
