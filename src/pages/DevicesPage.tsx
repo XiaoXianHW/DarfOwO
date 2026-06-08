@@ -7,7 +7,7 @@ export const DevicesPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#111111] text-white font-sans overflow-x-hidden selection:bg-blue-500/30">
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans overflow-x-hidden selection:bg-blue-500/30">
       {/* Background Pattern */}
       <div 
         className="fixed inset-0 z-0 opacity-20 pointer-events-none"
@@ -18,7 +18,7 @@ export const DevicesPage = () => {
         }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8 sm:py-12">
+      <div className="relative z-10 mx-auto max-w-[1500px] px-6 py-8 sm:px-10 sm:py-12 lg:px-14">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}

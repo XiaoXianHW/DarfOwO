@@ -11,7 +11,7 @@ import { BandCard } from './cards/BandCard';
 
 export const BentoGrid = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 auto-rows-[200px] gap-6 w-full max-w-6xl mx-auto">
+    <div className="grid w-full grid-cols-1 auto-rows-[200px] gap-5 md:grid-cols-2 lg:grid-cols-4 xl:auto-rows-[230px] xl:gap-6">
       <PCCard />
       <MacMiniCard />
       <PhonesCard />
