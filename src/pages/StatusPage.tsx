@@ -1,158 +1,261 @@
+import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Activity, Flame, Footprints, Moon, Droplets, Scale, Brain, Zap, HeartPulse } from 'lucide-react';
+import {
+  Activity,
+  ArrowLeft,
+  Droplets,
+  Flame,
+  Footprints,
+  HeartPulse,
+  Loader2,
+  Moon,
+  RefreshCw,
+  Scale,
+  Timer,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { useHeartRate } from '../hooks/useHeartRate';
+import { useHealthData } from '../hooks/useHealthData';
+import { StatusCard } from '../components/status/StatusCard';
+import { MetricModal } from '../components/status/MetricModal';
+import type { MetricDescriptor } from '../components/status/types';
+import type { TrendPoint } from '../components/status/TrendChart';
+import { formatDuration, formatNumber, shortDate, weekday } from '../utils/format';
 
-const heartRateData = Array.from({ length: 24 }, (_, i) => ({
-  time: `${i}:00`,
-  value: 60 + Math.random() * 40 + (i > 8 && i < 20 ? 20 : 0) // Higher during day
-}));
+interface Dated {
+  at: string;
+}
 
-const stepsData = Array.from({ length: 7 }, (_, i) => ({
-  day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
-  value: 4000 + Math.random() * 8000
-}));
-
-const sleepData = [
-  { stage: 'Deep', value: 25, fill: '#6366f1' },
-  { stage: 'Light', value: 50, fill: '#8b5cf6' },
-  { stage: 'REM', value: 20, fill: '#d946ef' },
-  { stage: 'Awake', value: 5, fill: '#f43f5e' }
-];
-
-const metrics = [
-  { id: 'steps', label: 'Steps', value: '8,432', unit: 'steps', icon: Footprints, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-  { id: 'calories', label: 'Calories', value: '450', unit: 'kcal', icon: Flame, color: 'text-red-500', bg: 'bg-red-500/10' },
-  { id: 'sleep', label: 'Sleep', value: '7h 24m', unit: '', icon: Moon, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-  { id: 'spo2', label: 'Blood Oxygen', value: '98', unit: '%', icon: Droplets, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
-  { id: 'weight', label: 'Weight', value: '68.5', unit: 'kg', icon: Scale, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-  { id: 'stress', label: 'Stress', value: 'Low', unit: '', icon: Brain, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  { id: 'vitality', label: 'Vitality', value: '85', unit: '/100', icon: Zap, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-];
+function toTrend<T extends Dated>(rows: T[], value: (row: T) => number | null): TrendPoint[] {
+  return [...rows]
+    .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
+    .map((row) => ({ label: `${weekday(row.at)} ${shortDate(row.at)}`, value: value(row) }));
+}
 
 export const StatusPage = () => {
   const navigate = useNavigate();
-  const heartRate = useHeartRate(true);
+  const { overview, histories, loading, error, reload } = useHealthData();
+  const [selected, setSelected] = useState<MetricDescriptor | null>(null);
+
+  const metrics = useMemo<MetricDescriptor[]>(() => {
+    if (!overview || !histories) return [];
+
+    const summary = overview.latestDailySummary;
+    const hr = summary?.heartRate;
+    const stepsToday = summary?.steps;
+    const sleepToday = summary?.sleep;
+    const stepsGoal = overview.goal?.stepsGoal;
+    const calGoal = overview.goal?.caloriesGoal;
+
+    const list: MetricDescriptor[] = [];
+
+    // Heart rate (hero)
+    list.push({
+      id: 'heart-rate',
+      label: '心率',
+      sublabel: 'Heart Rate',
+      icon: HeartPulse,
+      color: '#ef4444',
+      value: hr?.latestHr?.bpm ? String(hr.latestHr.bpm) : hr?.avgHr ? String(hr.avgHr) : '—',
+      unit: 'bpm',
+      hint: hr?.avgRhr ? `静息 ${hr.avgRhr} bpm · 7 日均值趋势` : '7 日均值趋势',
+      chartType: 'area',
+      data: toTrend(histories.heartRate, (r) => r.avgHr ?? null),
+      stats: hr
+        ? [
+            { label: '平均', value: `${hr.avgHr ?? '—'} bpm` },
+            { label: '静息', value: `${hr.avgRhr ?? '—'} bpm` },
+            { label: '最高', value: `${hr.maxHr ?? '—'} bpm` },
+            { label: '最低', value: `${hr.minHr ?? '—'} bpm` },
+          ]
+        : undefined,
+      hero: true,
+    });
+
+    // Steps
+    list.push({
+      id: 'steps',
+      label: '步数',
+      sublabel: 'Steps',
+      icon: Footprints,
+      color: '#f97316',
+      value: stepsToday ? formatNumber(stepsToday.steps) : '—',
+      unit: '步',
+      hint: stepsGoal
+        ? `目标 ${formatNumber(stepsGoal.targetValue)} · ${stepsToday ? ((stepsToday.distance ?? 0) / 1000).toFixed(2) : '0'} km`
+        : undefined,
+      progress: stepsGoal ? stepsGoal.achievedValue / stepsGoal.targetValue : undefined,
+      chartType: 'bar',
+      data: toTrend(histories.steps, (r) => r.steps ?? null),
+      stats: stepsToday
+        ? [
+            { label: '今日步数', value: formatNumber(stepsToday.steps) },
+            { label: '距离', value: `${((stepsToday.distance ?? 0) / 1000).toFixed(2)} km` },
+            { label: '消耗', value: `${stepsToday.calories ?? 0} kcal` },
+          ]
+        : undefined,
+    });
+
+    // Calories
+    list.push({
+      id: 'calories',
+      label: '卡路里',
+      sublabel: 'Calories',
+      icon: Flame,
+      color: '#fb7185',
+      value: overview.calories ? formatNumber(overview.calories.calories) : '—',
+      unit: 'kcal',
+      hint: calGoal ? `目标 ${formatNumber(calGoal.targetValue)} kcal` : undefined,
+      progress: calGoal ? calGoal.achievedValue / calGoal.targetValue : undefined,
+      chartType: 'bar',
+      data: toTrend(histories.calories, (r) => r.calories ?? null),
+    });
+
+    // Sleep
+    list.push({
+      id: 'sleep',
+      label: '睡眠',
+      sublabel: 'Sleep',
+      icon: Moon,
+      color: '#818cf8',
+      value: sleepToday ? formatDuration(sleepToday.totalDuration) : '—',
+      hint: sleepToday?.sleepScore ? `睡眠评分 ${sleepToday.sleepScore}` : undefined,
+      chartType: 'bar',
+      data: toTrend(histories.sleep, (r) =>
+        r.totalDuration ? Math.round((r.totalDuration / 60) * 10) / 10 : null,
+      ),
+      stats: sleepToday
+        ? [
+            { label: '总时长', value: formatDuration(sleepToday.totalDuration) },
+            { label: '评分', value: `${sleepToday.sleepScore ?? '—'}` },
+            { label: '深睡', value: formatDuration(sleepToday.sleepDeepDuration ?? 0) },
+            { label: '浅睡', value: formatDuration(sleepToday.sleepLightDuration ?? 0) },
+            { label: 'REM', value: formatDuration(sleepToday.sleepRemDuration ?? 0) },
+            { label: '血氧', value: sleepToday.avgSpo2 ? `${sleepToday.avgSpo2}%` : '—' },
+          ]
+        : undefined,
+    });
+
+    // Blood oxygen
+    list.push({
+      id: 'spo2',
+      label: '血氧',
+      sublabel: 'SpO₂',
+      icon: Droplets,
+      color: '#22d3ee',
+      value: overview.spo2 ? String(overview.spo2.spo2) : '—',
+      unit: '%',
+      hint: '7 日平均血氧',
+      chartType: 'area',
+      data: toTrend(histories.spo2, (r) => r.avgSpo2 ?? null),
+      stats: histories.spo2.length
+        ? [
+            { label: '最高', value: `${Math.max(...histories.spo2.map((s) => s.maxSpo2))}%` },
+            { label: '最低', value: `${Math.min(...histories.spo2.map((s) => s.minSpo2))}%` },
+          ]
+        : undefined,
+    });
+
+    // Intensity
+    list.push({
+      id: 'intensity',
+      label: '运动强度',
+      sublabel: 'Intensity',
+      icon: Activity,
+      color: '#a78bfa',
+      value: overview.intensity ? String(overview.intensity.duration) : '—',
+      unit: 'min',
+      hint: '中高强度活动时长',
+      chartType: 'bar',
+      data: toTrend(histories.intensity, (r) => r.duration ?? null),
+    });
+
+    // Valid stand
+    list.push({
+      id: 'valid-stand',
+      label: '站立',
+      sublabel: 'Stand',
+      icon: Timer,
+      color: '#34d399',
+      value: overview.validStand ? String(overview.validStand.count) : '—',
+      unit: 'h',
+      hint: '有效站立小时数',
+      chartType: 'bar',
+      data: toTrend(histories.validStand, (r) => r.count ?? null),
+    });
+
+    // Weight
+    list.push({
+      id: 'weight',
+      label: '体重',
+      sublabel: 'Weight',
+      icon: Scale,
+      color: '#facc15',
+      value: overview.weight ? String(overview.weight.weight) : '—',
+      unit: 'kg',
+      hint: overview.weight?.bmi ? `BMI ${overview.weight.bmi.toFixed(1)}` : undefined,
+      chartType: 'area',
+      data: toTrend(histories.weight, (r) => r.weight ?? null),
+    });
+
+    return list;
+  }, [overview, histories]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans overflow-x-hidden selection:bg-green-500/30 pb-20">
-      
-      {/* Top Navigation */}
-      <div className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex items-center justify-between">
-        <button 
+    <div className="min-h-screen overflow-x-hidden bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
+      {/* Top navigation */}
+      <div className="sticky top-0 z-50 flex items-center justify-between border-b border-white/5 bg-[#0a0a0a]/80 px-6 py-4 backdrop-blur-xl">
+        <button
           onClick={() => navigate('/')}
-          className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors"
+          className="-ml-2 rounded-full p-2 transition-colors hover:bg-white/10"
+          aria-label="Back"
         >
-          <ArrowLeft className="w-6 h-6" />
+          <ArrowLeft className="h-6 w-6" />
         </button>
-        <h1 className="text-lg font-medium">Health Status</h1>
-        <div className="w-10" /> {/* Spacer for centering */}
+        <h1 className="text-lg font-medium">健康状态 · Health Status</h1>
+        <button
+          onClick={reload}
+          disabled={loading}
+          className="-mr-2 rounded-full p-2 transition-colors hover:bg-white/10 disabled:opacity-40"
+          aria-label="Refresh"
+        >
+          <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
-        
-        {/* Main Heart Rate Card */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-[#1a1a1a] rounded-3xl p-6 border border-white/5 relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-          
-          <div className="flex justify-between items-start mb-8 relative z-10">
-            <div>
-              <div className="flex items-center gap-2 text-red-400 mb-1">
-                <HeartPulse className="w-5 h-5" />
-                <span className="font-medium">Heart Rate</span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-5xl font-bold tracking-tight">{heartRate}</span>
-                <span className="text-white/50 font-medium">bpm</span>
-              </div>
-              <p className="text-sm text-white/40 mt-1">Resting: 62 bpm</p>
-            </div>
-            <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-medium border border-red-500/20">
-              Normal
-            </div>
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+        {loading && (
+          <div className="flex h-[60vh] flex-col items-center justify-center gap-3 text-white/50">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="text-sm">正在拉取真实健康数据…</p>
           </div>
+        )}
 
-          <div className="h-40 w-full relative z-10 -ml-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={heartRateData}>
-                <defs>
-                  <linearGradient id="colorHr" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                  itemStyle={{ color: '#ef4444' }}
-                />
-                <Area type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorHr)" />
-              </AreaChart>
-            </ResponsiveContainer>
+        {!loading && error && (
+          <div className="flex h-[60vh] flex-col items-center justify-center gap-4 text-center">
+            <p className="text-white/60">数据加载失败：{error}</p>
+            <button
+              onClick={reload}
+              className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm transition-colors hover:bg-white/10"
+            >
+              重试
+            </button>
           </div>
-        </motion.div>
+        )}
 
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          {metrics.map((metric, index) => {
-            const Icon = metric.icon;
-            return (
-              <motion.div
-                key={metric.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-[#1a1a1a] rounded-3xl p-5 border border-white/5 flex flex-col justify-between aspect-[4/3]"
-              >
-                <div className="flex items-center gap-2">
-                  <div className={`p-2 rounded-xl ${metric.bg}`}>
-                    <Icon className={`w-5 h-5 ${metric.color}`} />
-                  </div>
-                  <span className="text-sm font-medium text-white/70">{metric.label}</span>
-                </div>
-                <div className="mt-4">
-                  <span className="text-2xl font-bold">{metric.value}</span>
-                  {metric.unit && <span className="text-sm text-white/50 ml-1">{metric.unit}</span>}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Steps Chart Card */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-[#1a1a1a] rounded-3xl p-6 border border-white/5"
-        >
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2 text-orange-400">
-              <Footprints className="w-5 h-5" />
-              <span className="font-medium">Weekly Steps</span>
-            </div>
-            <span className="text-sm text-white/50">Avg: 7,240</span>
-          </div>
-          
-          <div className="h-48 w-full -ml-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stepsData}>
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} dy={10} />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                  contentStyle={{ backgroundColor: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                />
-                <Bar dataKey="value" fill="#f97316" radius={[4, 4, 0, 0]} maxBarSize={40} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-
+        {!loading && !error && (
+          <motion.div
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            initial="hidden"
+            animate="show"
+          >
+            {metrics.map((metric, i) => (
+              <StatusCard key={metric.id} metric={metric} index={i} onSelect={setSelected} />
+            ))}
+          </motion.div>
+        )}
       </div>
+
+      <MetricModal metric={selected} onClose={() => setSelected(null)} />
     </div>
   );
 };

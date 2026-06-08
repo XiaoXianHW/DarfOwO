@@ -24,7 +24,7 @@ export const MusicPage = () => {
   const currentTrack = recentlyPlayed[0];
 
   return (
-    <div className="min-h-screen bg-[#111111] text-white font-sans overflow-x-hidden selection:bg-purple-500/30">
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans overflow-x-hidden selection:bg-purple-500/30">
       {/* Background Pattern */}
       <div 
         className="fixed inset-0 z-0 opacity-10 pointer-events-none"
@@ -65,7 +65,7 @@ export const MusicPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl"
+            className="bg-[#1a1a1a] border border-white/5 rounded-3xl p-6 backdrop-blur-xl"
           >
             <div className="aspect-square rounded-2xl overflow-hidden mb-6 relative group shadow-2xl shadow-black/50">
               <img src={currentTrack.cover} alt={currentTrack.album} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -123,7 +123,7 @@ export const MusicPage = () => {
             <h3 className="text-lg font-semibold mb-4 text-white/80">Your Playlists</h3>
             <div className="grid grid-cols-2 gap-4">
               {playlists.map(playlist => (
-                <div key={playlist.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-colors cursor-pointer group">
+                <div key={playlist.id} className="bg-[#1a1a1a] border border-white/5 rounded-3xl p-4 hover:bg-[#222] transition-colors cursor-pointer group">
                   <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${playlist.color} mb-3 shadow-lg group-hover:scale-110 transition-transform`} />
                   <h4 className="font-medium text-sm truncate">{playlist.name}</h4>
                   <p className="text-xs text-white/40 mt-1">{playlist.tracks} tracks</p>
@@ -139,7 +139,7 @@ export const MusicPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md h-full"
+            className="bg-[#1a1a1a] border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md h-full"
           >
             <div className="flex justify-between items-end mb-8">
               <div>
