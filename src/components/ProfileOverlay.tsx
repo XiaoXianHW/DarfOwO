@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { X, Monitor, Music, Activity, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { config } from '../config';
 
 const iconMap = { Monitor, Music, Activity };
@@ -15,6 +16,8 @@ interface ProfileOverlayProps {
 }
 
 export const ProfileOverlay = ({ heartRate, onClose }: ProfileOverlayProps) => {
+  const navigate = useNavigate();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -60,6 +63,7 @@ export const ProfileOverlay = ({ heartRate, onClose }: ProfileOverlayProps) => {
               return (
                 <div 
                   key={card.title}
+                  onClick={() => navigate(card.path)}
                   className={`group cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-5 transition-all duration-300 flex flex-col justify-between aspect-square sm:aspect-auto sm:h-40 ${card.span === 2 ? 'sm:col-span-2' : ''}`}
                 >
                   <div className="flex justify-between items-start">
