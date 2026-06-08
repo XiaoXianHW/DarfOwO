@@ -30,101 +30,102 @@ export const StatusDetailPage = () => {
           <ArrowLeft className="h-6 w-6" />
           <span className="text-sm text-white/70">返回</span>
         </button>
-        <h1 className="text-lg font-medium">
-          {metric ? `${metric.label} · 详情` : '健康详情'}
-        </h1>
+        <h1 className="text-lg font-medium">{metric ? `${metric.label} · 详情` : '健康详情'}</h1>
         <span className="w-16" />
       </div>
 
-      <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-        {loading && (
-          <div className="flex h-[60vh] flex-col items-center justify-center gap-3 text-white/50">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="text-sm">正在拉取真实健康数据…</p>
-          </div>
-        )}
+      {loading && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-white/50">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-sm">正在拉取真实健康数据…</p>
+        </div>
+      )}
 
-        {!loading && error && (
-          <div className="flex h-[60vh] flex-col items-center justify-center gap-4 text-center">
-            <p className="text-white/60">数据加载失败：{error}</p>
-          </div>
-        )}
+      {!loading && error && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+          <p className="text-white/60">数据加载失败：{error}</p>
+        </div>
+      )}
 
-        {!loading && !error && metric && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ease: 'easeOut' }}
-            className="relative overflow-hidden rounded-3xl border border-white/5 bg-[#1a1a1a] p-6"
-          >
-            <div
-              className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full opacity-30 blur-[80px]"
-              style={{ backgroundColor: metric.color }}
-            />
+      {!loading && !error && metric && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ ease: 'easeOut' }}
+          className="relative flex flex-1 flex-col"
+        >
+          {/* Ambient glow */}
+          <div
+            className="pointer-events-none absolute -top-24 left-1/2 h-[400px] w-[700px] -translate-x-1/2 rounded-full opacity-20 blur-[120px]"
+            style={{ backgroundColor: metric.color }}
+          />
 
-            <div className="relative z-10 flex items-center gap-2" style={{ color: metric.color }}>
-              <metric.icon className="h-6 w-6" />
-              <span className="text-lg font-semibold text-white">{metric.label}</span>
+          {/* Hero: headline + full-width chart filling the first screen */}
+          <section className="relative z-10 flex flex-col px-6 pb-6 pt-8 sm:px-10 lg:px-16">
+            <div className="flex items-center gap-3" style={{ color: metric.color }}>
+              <metric.icon className="h-7 w-7" />
+              <span className="text-xl font-semibold text-white sm:text-2xl">{metric.label}</span>
               {metric.sublabel && (
-                <span className="font-mono text-[11px] uppercase tracking-widest text-white/30">
+                <span className="font-mono text-xs uppercase tracking-widest text-white/30">
                   {metric.sublabel}
                 </span>
               )}
             </div>
-            <div className="relative z-10 mt-2 flex items-baseline gap-1">
-              <span className="text-4xl font-bold text-white">{metric.value}</span>
-              {metric.unit && <span className="text-white/50">{metric.unit}</span>}
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-5xl font-bold tracking-tight text-white sm:text-7xl">
+                {metric.value}
+              </span>
+              {metric.unit && <span className="text-xl text-white/50">{metric.unit}</span>}
             </div>
-            {metric.hint && <p className="relative z-10 mt-1 text-sm text-white/40">{metric.hint}</p>}
+            {metric.hint && <p className="mt-2 text-white/40">{metric.hint}</p>}
 
-            <div className="relative z-10 mt-6">
-              <p className="mb-3 font-mono text-[11px] uppercase tracking-widest text-white/40">
-                近 7 天趋势
-              </p>
-              <div className="h-64 w-full sm:h-72">
-                <TrendChart
-                  data={metric.data}
-                  type={metric.chartType}
-                  color={metric.color}
-                  fill
-                  detailed
-                  unit={metric.unit}
-                />
-              </div>
+            <p className="mt-8 font-mono text-[11px] uppercase tracking-widest text-white/40">
+              近 30 天趋势
+            </p>
+            <div className="mt-3 h-[58vh] min-h-[300px] w-full">
+              <TrendChart
+                data={metric.data}
+                type={metric.chartType}
+                color={metric.color}
+                fill
+                detailed
+                unit={metric.unit}
+              />
             </div>
+          </section>
 
+          {/* Stats + daily data below the fold, full width */}
+          <section className="relative z-10 px-6 pb-16 sm:px-10 lg:px-16">
             {metric.stats && metric.stats.length > 0 && (
-              <div className="relative z-10 mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 {metric.stats.map((s) => (
-                  <div key={s.label} className="rounded-2xl bg-white/5 p-3">
+                  <div key={s.label} className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
                     <p className="text-xs text-white/40">{s.label}</p>
-                    <p className="mt-1 font-semibold text-white">{s.value}</p>
+                    <p className="mt-1 text-lg font-semibold text-white">{s.value}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="relative z-10 mt-6">
-              <p className="mb-3 font-mono text-[11px] uppercase tracking-widest text-white/40">
-                每日数据
-              </p>
-              <div className="divide-y divide-white/5 overflow-hidden rounded-2xl bg-white/5">
-                {metric.data.map((p) => (
-                  <div
-                    key={p.label}
-                    className="flex items-center justify-between px-4 py-2.5 text-sm"
-                  >
-                    <span className="text-white/50">{p.label}</span>
-                    <span className="font-medium text-white">
-                      {p.value === null ? '—' : `${p.value}${metric.unit ?? ''}`}
-                    </span>
-                  </div>
-                ))}
-              </div>
+            <p className="mb-3 mt-10 font-mono text-[11px] uppercase tracking-widest text-white/40">
+              每日数据
+            </p>
+            <div className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+              {[...metric.data].reverse().map((p) => (
+                <div
+                  key={p.label}
+                  className="flex items-center justify-between border-b border-white/5 py-2.5 text-sm"
+                >
+                  <span className="text-white/50">{p.label}</span>
+                  <span className="font-medium text-white">
+                    {p.value === null ? '—' : `${p.value}${metric.unit ?? ''}`}
+                  </span>
+                </div>
+              ))}
             </div>
-          </motion.div>
-        )}
-      </div>
+          </section>
+        </motion.div>
+      )}
     </div>
   );
 };

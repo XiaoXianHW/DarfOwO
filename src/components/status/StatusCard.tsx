@@ -72,7 +72,7 @@ export const StatusCard = ({ metric, index, onOpen }: StatusCardProps) => {
             unit={metric.unit}
           />
         ) : (
-          <div className="flex h-full items-center text-xs text-white/30">暂无近 7 天数据</div>
+          <div className="flex h-full items-center text-xs text-white/30">暂无近 30 天数据</div>
         )}
       </div>
 

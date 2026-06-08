@@ -40,7 +40,7 @@ export interface HealthData {
   reload: () => void;
 }
 
-const DAYS = 7;
+const DAYS = 30;
 
 // Module-level cache so navigating between the status grid and a detail page
 // reuses already-fetched data instead of showing the loading spinner again.

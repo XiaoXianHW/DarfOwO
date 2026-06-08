@@ -65,6 +65,8 @@ export const TrendChart = ({
             tickLine={false}
             tick={axisTick}
             dy={8}
+            interval="preserveStartEnd"
+            minTickGap={28}
           />
           <YAxis
             hide={!detailed}
@@ -93,6 +95,8 @@ export const TrendChart = ({
             tickLine={false}
             tick={axisTick}
             dy={8}
+            interval="preserveStartEnd"
+            minTickGap={28}
           />
           <YAxis
             hide={!detailed}

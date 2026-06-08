@@ -55,7 +55,7 @@ export const useMetrics = (): UseMetricsResult => {
       color: '#ef4444',
       value: hr?.latestHr?.bpm ? String(hr.latestHr.bpm) : hr?.avgHr ? String(hr.avgHr) : '—',
       unit: 'bpm',
-      hint: hr?.avgRhr ? `静息 ${hr.avgRhr} bpm · 7 日均值趋势` : '7 日均值趋势',
+      hint: hr?.avgRhr ? `静息 ${hr.avgRhr} bpm · 30 日均值趋势` : '30 日均值趋势',
       chartType: 'area',
       data: toTrend(histories.heartRate, (r) => r.avgHr ?? null),
       stats: hr
@@ -143,7 +143,7 @@ export const useMetrics = (): UseMetricsResult => {
       color: '#22d3ee',
       value: overview.spo2 ? String(overview.spo2.spo2) : '—',
       unit: '%',
-      hint: '7 日平均血氧',
+      hint: '30 日平均血氧',
       chartType: 'area',
       data: toTrend(histories.spo2, (r) => r.avgSpo2 ?? null),
       stats: histories.spo2.length

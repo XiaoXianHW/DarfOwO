@@ -18,7 +18,7 @@ export const DevicesPage = () => {
         }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8 sm:py-12">
+      <div className="relative z-10 mx-auto max-w-[1500px] px-6 py-8 sm:px-10 sm:py-12 lg:px-14">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
