@@ -26,26 +26,26 @@ export const StatusCard = ({ metric, index, onOpen }: StatusCardProps) => {
         style={{ backgroundColor: metric.color }}
       />
 
-      <div className="relative z-10 flex items-start justify-between">
-        <div className="flex items-center gap-2" style={{ color: metric.color }}>
-          <metric.icon className="h-5 w-5" />
-          <span className="font-medium text-white/90">{metric.label}</span>
+      <div className="relative z-10 flex items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2" style={{ color: metric.color }}>
+          <metric.icon className="h-5 w-5 shrink-0" />
+          <span className="truncate font-medium text-white/90">{metric.label}</span>
         </div>
         {metric.sublabel && (
-          <span className="font-mono text-[10px] uppercase tracking-widest text-white/30">
+          <span className="hidden shrink-0 font-mono text-[10px] uppercase tracking-widest text-white/30 sm:block">
             {metric.sublabel}
           </span>
         )}
       </div>
 
-      <div className="relative z-10 mt-3 flex items-baseline gap-1">
-        <span className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+      <div className="relative z-10 mt-3 flex flex-wrap items-baseline gap-x-1">
+        <span className="text-2xl font-bold tracking-tight text-white sm:text-4xl">
           {metric.value}
         </span>
         {metric.unit && <span className="font-medium text-white/50">{metric.unit}</span>}
       </div>
       {metric.hint && (
-        <p className="relative z-10 mt-1 truncate text-sm text-white/40">{metric.hint}</p>
+        <p className="relative z-10 mt-1 text-xs leading-snug text-white/40 sm:text-sm">{metric.hint}</p>
       )}
 
       {typeof metric.progress === 'number' && (

@@ -6,10 +6,10 @@ import { StatusCard } from '../components/status/StatusCard';
 
 // Bento spans so the 8 cards tile a 4×4 grid with no whitespace on large screens.
 const SPAN: Record<string, string> = {
-  'heart-rate': 'col-span-2 lg:row-span-2',
-  steps: 'col-span-2',
-  calories: 'col-span-2',
-  sleep: 'col-span-2 lg:row-span-2',
+  'heart-rate': 'sm:col-span-2 lg:row-span-2',
+  steps: 'sm:col-span-2',
+  calories: 'sm:col-span-2',
+  sleep: 'sm:col-span-2 lg:row-span-2',
 };
 
 export const StatusPage = () => {
@@ -60,7 +60,7 @@ export const StatusPage = () => {
 
         {!loading && !error && (
           <motion.div
-            className="grid h-full auto-rows-[minmax(150px,1fr)] grid-cols-2 gap-3 sm:gap-4 lg:auto-rows-fr lg:grid-cols-4 lg:grid-rows-4"
+            className="grid auto-rows-[minmax(190px,auto)] grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:h-full lg:auto-rows-fr lg:grid-cols-4 lg:grid-rows-4"
             initial="hidden"
             animate="show"
           >
