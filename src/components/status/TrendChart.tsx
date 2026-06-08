@@ -20,6 +20,8 @@ interface TrendChartProps {
   type?: 'area' | 'bar';
   color: string;
   height?: number;
+  /** When true, the chart fills its parent's height instead of using a fixed pixel height. */
+  fill?: boolean;
   detailed?: boolean;
   unit?: string;
 }
@@ -29,11 +31,14 @@ export const TrendChart = ({
   type = 'area',
   color,
   height = 56,
+  fill = false,
   detailed = false,
   unit = '',
 }: TrendChartProps) => {
   const gradientId = `grad-${color.replace('#', '')}`;
   const axisTick = { fill: 'rgba(255,255,255,0.4)', fontSize: 12 };
+  const compact = (v: number) =>
+    Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}k` : String(v);
   const tooltip = detailed ? (
     <Tooltip
       cursor={{ fill: 'rgba(255,255,255,0.05)', stroke: 'rgba(255,255,255,0.1)' }}
@@ -49,7 +54,7 @@ export const TrendChart = ({
   ) : undefined;
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer width="100%" height={fill ? '100%' : height}>
       {type === 'bar' ? (
         <BarChart data={data} margin={{ top: 6, right: 4, bottom: 0, left: detailed ? 0 : -34 }}>
           {detailed && <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.06)" />}
@@ -61,7 +66,14 @@ export const TrendChart = ({
             tick={axisTick}
             dy={8}
           />
-          <YAxis hide={!detailed} axisLine={false} tickLine={false} tick={axisTick} width={36} />
+          <YAxis
+            hide={!detailed}
+            axisLine={false}
+            tickLine={false}
+            tick={axisTick}
+            width={40}
+            tickFormatter={compact}
+          />
           {tooltip}
           <Bar dataKey="value" fill={color} radius={[6, 6, 0, 0]} maxBarSize={detailed ? 44 : 18} />
         </BarChart>
@@ -87,8 +99,9 @@ export const TrendChart = ({
             axisLine={false}
             tickLine={false}
             tick={axisTick}
-            width={36}
+            width={40}
             domain={['dataMin - 4', 'dataMax + 4']}
+            tickFormatter={compact}
           />
           {tooltip}
           <Area

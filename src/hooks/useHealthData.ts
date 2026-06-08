@@ -42,12 +42,17 @@ export interface HealthData {
 
 const DAYS = 7;
 
+// Module-level cache so navigating between the status grid and a detail page
+// reuses already-fetched data instead of showing the loading spinner again.
+let cache: { overview: Overview | null; histories: HealthHistories | null; updatedAt: string } | null =
+  null;
+
 export function useHealthData(): HealthData {
-  const [overview, setOverview] = useState<Overview | null>(null);
-  const [histories, setHistories] = useState<HealthHistories | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [overview, setOverview] = useState<Overview | null>(() => cache?.overview ?? null);
+  const [histories, setHistories] = useState<HealthHistories | null>(() => cache?.histories ?? null);
+  const [loading, setLoading] = useState(() => !cache);
   const [error, setError] = useState<string | null>(null);
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(() => cache?.updatedAt ?? null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -65,9 +70,12 @@ export function useHealthData(): HealthData {
           getValidStandHistory(DAYS),
           getWeightHistory(DAYS),
         ]);
+      const nextHistories = { heartRate, steps, sleep, calories, spo2, intensity, validStand, weight };
+      const ts = new Date().toISOString();
+      cache = { overview: ov.overview, histories: nextHistories, updatedAt: ts };
       setOverview(ov.overview);
-      setHistories({ heartRate, steps, sleep, calories, spo2, intensity, validStand, weight });
-      setUpdatedAt(new Date().toISOString());
+      setHistories(nextHistories);
+      setUpdatedAt(ts);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load health data');
     } finally {
@@ -76,7 +84,8 @@ export function useHealthData(): HealthData {
   }, []);
 
   useEffect(() => {
-    load();
+    // Only fetch on first mount; subsequent mounts reuse the cache.
+    if (!cache) load();
   }, [load]);
 
   return { overview, histories, loading, error, updatedAt, reload: load };

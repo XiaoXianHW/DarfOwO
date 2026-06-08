@@ -5,26 +5,24 @@ import type { MetricDescriptor } from './types';
 interface StatusCardProps {
   metric: MetricDescriptor;
   index: number;
-  onSelect: (metric: MetricDescriptor) => void;
+  onOpen: (metric: MetricDescriptor) => void;
 }
 
-export const StatusCard = ({ metric, index, onSelect }: StatusCardProps) => {
+export const StatusCard = ({ metric, index, onOpen }: StatusCardProps) => {
   const hasData = metric.data.some((p) => p.value !== null);
 
   return (
     <motion.button
       type="button"
-      onClick={() => onSelect(metric)}
+      onClick={() => onOpen(metric)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.05, 0.4), ease: 'easeOut' }}
-      whileHover={{ y: -4 }}
-      className={`group relative flex flex-col overflow-hidden rounded-3xl border border-white/5 bg-[#1a1a1a] p-6 text-left transition-colors hover:border-white/15 ${
-        metric.hero ? 'sm:col-span-2 xl:col-span-2' : ''
-      }`}
+      whileHover={{ y: -3 }}
+      className="group relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl border border-white/5 bg-[#1a1a1a] p-5 text-left transition-colors hover:border-white/15"
     >
       <div
-        className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full blur-[70px] opacity-40 transition-opacity group-hover:opacity-70"
+        className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-40 blur-[70px] transition-opacity group-hover:opacity-70"
         style={{ backgroundColor: metric.color }}
       />
 
@@ -40,11 +38,15 @@ export const StatusCard = ({ metric, index, onSelect }: StatusCardProps) => {
         )}
       </div>
 
-      <div className="relative z-10 mt-4 flex items-baseline gap-1">
-        <span className="text-4xl font-bold tracking-tight text-white">{metric.value}</span>
+      <div className="relative z-10 mt-3 flex items-baseline gap-1">
+        <span className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          {metric.value}
+        </span>
         {metric.unit && <span className="font-medium text-white/50">{metric.unit}</span>}
       </div>
-      {metric.hint && <p className="relative z-10 mt-1 text-sm text-white/40">{metric.hint}</p>}
+      {metric.hint && (
+        <p className="relative z-10 mt-1 truncate text-sm text-white/40">{metric.hint}</p>
+      )}
 
       {typeof metric.progress === 'number' && (
         <div className="relative z-10 mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
@@ -58,13 +60,14 @@ export const StatusCard = ({ metric, index, onSelect }: StatusCardProps) => {
         </div>
       )}
 
-      <div className={`relative z-10 ${metric.hero ? 'mt-6 h-44' : 'mt-5 h-14'}`}>
+      {/* Chart grows to fill all remaining card height */}
+      <div className="relative z-10 mt-4 min-h-[2.5rem] flex-1">
         {hasData ? (
           <TrendChart
             data={metric.data}
             type={metric.chartType}
             color={metric.color}
-            height={metric.hero ? 176 : 56}
+            fill
             detailed={metric.hero}
             unit={metric.unit}
           />
@@ -73,8 +76,8 @@ export const StatusCard = ({ metric, index, onSelect }: StatusCardProps) => {
         )}
       </div>
 
-      <span className="relative z-10 mt-4 font-mono text-[10px] uppercase tracking-widest text-white/25 transition-colors group-hover:text-white/50">
-        点击查看 7 天 →
+      <span className="relative z-10 mt-3 font-mono text-[10px] uppercase tracking-widest text-white/25 transition-colors group-hover:text-white/50">
+        点击查看详情 →
       </span>
     </motion.button>
   );
