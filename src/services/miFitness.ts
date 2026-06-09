@@ -2,22 +2,14 @@
 //
 // Requests go to the same-origin path `/api/mifitness/*`, which the Vite
 // dev/preview proxy (see vite.config.ts) forwards to
-// https://api.xiaoxian.org/api/v1/mi-fitness/* with the secret bearer token
-// injected server-side. The key is therefore never bundled into the client.
-// In production, a reverse proxy must provide the same `/api/mifitness/*` path.
+// https://api.xiaoxian.org/api/v1/mi-fitness/*. The proxy injects the secret
+// bearer token AND the `uid` / `sessionId` server-side, so none of those ever
+// reach the browser. In production, a reverse proxy must do the same: map
+// `/api/mifitness/*` to the upstream and add the key + uid + sessionId.
 
 const BASE =
   (import.meta.env.VITE_MIFITNESS_BASE as string | undefined)?.replace(/\/$/, '') ||
   '/api/mifitness';
-
-export const MIFITNESS_UID =
-  (import.meta.env.VITE_MIFITNESS_UID as string | undefined) || '2706034380';
-
-// Mi login session ID. The API falls back to the most recent successful login
-// session when omitted, but we pin a known session for deterministic results.
-export const MIFITNESS_SESSION_ID =
-  (import.meta.env.VITE_MIFITNESS_SESSION_ID as string | undefined) ||
-  '5fd053625cc1d165b3d8f3fd';
 
 interface ApiEnvelope<T> {
   success: boolean;
@@ -26,12 +18,9 @@ interface ApiEnvelope<T> {
 }
 
 async function request<T>(path: string, params: Record<string, string | number> = {}): Promise<T> {
-  const search = new URLSearchParams({
-    uid: MIFITNESS_UID,
-    ...(MIFITNESS_SESSION_ID ? { sessionId: MIFITNESS_SESSION_ID } : {}),
-    ...mapValues(params),
-  });
-  const res = await fetch(`${BASE}${path}?${search.toString()}`, {
+  const search = new URLSearchParams(mapValues(params));
+  const query = search.toString();
+  const res = await fetch(`${BASE}${path}${query ? `?${query}` : ''}`, {
     headers: { Accept: 'application/json' },
   });
   if (!res.ok) {

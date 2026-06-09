@@ -21,7 +21,7 @@
 | `/` | `App.tsx` | 首页，左右分屏的双重人格交互（含 3D 视差、移动端布局、资料浮层） |
 | `/devices` | `pages/DevicesPage.tsx` | 设备生态，Bento 网格卡片展示硬件 |
 | `/music` | `pages/MusicPage.tsx` | 音乐页，正在播放 / 歌单 / 最近播放 |
-| `/status` | `pages/StatusPage.tsx` | 健康状态，接入真实健康数据，点击卡片查看 7 天历史 |
+| `/status` | `pages/StatusPage.tsx` | 健康状态，接入真实健康数据，点击卡片查看近 30 天（体重近半年）历史 |
 
 三个子页面统一采用一致的卡片风格：深色卡片底色 `#1a1a1a`、`rounded-3xl` 圆角、`border-white/5` 描边。
 
@@ -46,12 +46,12 @@ src/
 
 ## 健康数据（Mi Fitness / DarfAPI）
 
-状态页的数据来自 [DarfAPI](https://github.com/XiaoXianHW/DarfAPI) 的 `mi-fitness` 接口（经 `https://api.xiaoxian.org` 代理）。该接口**不支持 CORS 且需要 Bearer Token**，因此前端不直接请求上游，而是请求同源路径 `/api/mifitness/*`，由代理在服务端注入密钥后转发，密钥**不会进入前端产物**。
+状态页的数据来自 [DarfAPI](https://github.com/XiaoXianHW/DarfAPI) 的 `mi-fitness` 接口（经 `https://api.xiaoxian.org` 代理）。该接口**不支持 CORS 且需要 Bearer Token**，因此前端不直接请求上游，而是请求同源路径 `/api/mifitness/*`，由代理在服务端注入密钥、`uid` 与 `sessionId` 后转发。密钥、uid、sessionId **都不会进入前端产物，也不会出现在浏览器请求里**。
 
-- 开发 / 预览：`vite.config.ts` 内置代理，将 `/api/mifitness/*` → `https://api.xiaoxian.org/api/v1/mi-fitness/*`，并附带 `Authorization` 头。
-- 生产部署：需在反向代理（如 Nginx）配置等价规则，把 `/api/mifitness/*` 转发到上游并补上 `Authorization: Bearer <key>`。
+- 开发 / 预览：`vite.config.ts` 内置代理，将 `/api/mifitness/*` → `https://api.xiaoxian.org/api/v1/mi-fitness/*`，附带 `Authorization` 头并补上 `uid` / `sessionId` 查询参数。
+- 生产部署：需在反向代理（如 Nginx）配置等价规则，把 `/api/mifitness/*` 转发到上游，补上 `Authorization: Bearer <key>` 以及 `uid` / `sessionId`。
 
-涉及的接口：`data/overview`（当日总览）、`data/heart-rate`、`data/steps`、`data/sleep`、`data/calories/history`、`data/spo2/history`、`data/intensity/history`、`data/valid-stand/history`、`data/weight/history`（`?days=7` 取 7 天）。
+涉及的接口：`data/overview`（当日总览）、`data/heart-rate`、`data/steps`、`data/sleep`、`data/calories/history`、`data/spo2/history`、`data/intensity/history`、`data/valid-stand/history`（`?days=30` 取近 30 天）、`data/weight/history`（`?days=180` 取近半年，体重测量较稀疏）。
 
 ## 本地运行
 
@@ -68,8 +68,8 @@ npm run dev                  # http://localhost:3000
 ```
 MIFITNESS_API_KEY=你的密钥        # 由 Vite 代理在服务端注入
 MIFITNESS_API_BASE=https://api.xiaoxian.org
-VITE_MIFITNESS_UID=2706034380    # 展示数据的家庭成员 uid
-VITE_MIFITNESS_SESSION_ID=5fd053625cc1d165b3d8f3fd  # 可选，小米登录会话 ID
+MIFITNESS_UID=2706034380         # 展示数据的家庭成员 uid（服务端注入）
+MIFITNESS_SESSION_ID=5fd053625cc1d165b3d8f3fd  # 可选，小米登录会话 ID（服务端注入）
 ```
 
 ## 常用脚本

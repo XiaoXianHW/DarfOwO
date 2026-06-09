@@ -80,7 +80,7 @@ export const StatusDetailPage = () => {
             {metric.hint && <p className="mt-2 text-white/40">{metric.hint}</p>}
 
             <p className="mt-8 font-mono text-[11px] uppercase tracking-widest text-white/40">
-              近 30 天趋势
+              {metric.rangeLabel ?? '近 30 天'}趋势
             </p>
             <div className="mt-3 h-[58vh] min-h-[300px] w-full">
               <TrendChart

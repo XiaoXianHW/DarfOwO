@@ -41,11 +41,43 @@ export interface HealthData {
 }
 
 const DAYS = 30;
+// Weight is measured infrequently, so a 30-day window is too sparse. Pull half a
+// year so the trend has enough points.
+const WEIGHT_DAYS = 180;
+
+interface HealthSnapshot {
+  overview: Overview | null;
+  histories: HealthHistories | null;
+  updatedAt: string;
+}
 
 // Module-level cache so navigating between the status grid and a detail page
 // reuses already-fetched data instead of showing the loading spinner again.
-let cache: { overview: Overview | null; histories: HealthHistories | null; updatedAt: string } | null =
-  null;
+let cache: HealthSnapshot | null = null;
+
+// In-flight fetch shared across hook instances. React StrictMode mounts effects
+// twice in dev; without this guard each mount fires a duplicate request burst.
+let inFlight: Promise<HealthSnapshot> | null = null;
+
+async function fetchAll(): Promise<HealthSnapshot> {
+  const [ov, heartRate, steps, sleep, calories, spo2, intensity, validStand, weight] =
+    await Promise.all([
+      getOverview(),
+      getHeartRateHistory(DAYS),
+      getStepsHistory(DAYS),
+      getSleepHistory(DAYS),
+      getCaloriesHistory(DAYS),
+      getSpo2History(DAYS),
+      getIntensityHistory(DAYS),
+      getValidStandHistory(DAYS),
+      getWeightHistory(WEIGHT_DAYS),
+    ]);
+  return {
+    overview: ov.overview,
+    histories: { heartRate, steps, sleep, calories, spo2, intensity, validStand, weight },
+    updatedAt: new Date().toISOString(),
+  };
+}
 
 export function useHealthData(): HealthData {
   const [overview, setOverview] = useState<Overview | null>(() => cache?.overview ?? null);
@@ -58,24 +90,16 @@ export function useHealthData(): HealthData {
     setLoading(true);
     setError(null);
     try {
-      const [ov, heartRate, steps, sleep, calories, spo2, intensity, validStand, weight] =
-        await Promise.all([
-          getOverview(),
-          getHeartRateHistory(DAYS),
-          getStepsHistory(DAYS),
-          getSleepHistory(DAYS),
-          getCaloriesHistory(DAYS),
-          getSpo2History(DAYS),
-          getIntensityHistory(DAYS),
-          getValidStandHistory(DAYS),
-          getWeightHistory(DAYS),
-        ]);
-      const nextHistories = { heartRate, steps, sleep, calories, spo2, intensity, validStand, weight };
-      const ts = new Date().toISOString();
-      cache = { overview: ov.overview, histories: nextHistories, updatedAt: ts };
-      setOverview(ov.overview);
-      setHistories(nextHistories);
-      setUpdatedAt(ts);
+      // Reuse an in-flight request if one is already running (dedupes the
+      // StrictMode double-mount burst and rapid refresh clicks).
+      inFlight ??= fetchAll().finally(() => {
+        inFlight = null;
+      });
+      const snapshot = await inFlight;
+      cache = snapshot;
+      setOverview(snapshot.overview);
+      setHistories(snapshot.histories);
+      setUpdatedAt(snapshot.updatedAt);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load health data');
     } finally {

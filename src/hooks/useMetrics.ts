@@ -28,11 +28,12 @@ export interface UseMetricsResult {
   metrics: MetricDescriptor[];
   loading: boolean;
   error: string | null;
+  updatedAt: string | null;
   reload: () => void;
 }
 
 export const useMetrics = (): UseMetricsResult => {
-  const { overview, histories, loading, error, reload } = useHealthData();
+  const { overview, histories, loading, error, updatedAt, reload } = useHealthData();
 
   const metrics = useMemo<MetricDescriptor[]>(() => {
     if (!overview || !histories) return [];
@@ -176,8 +177,8 @@ export const useMetrics = (): UseMetricsResult => {
       icon: Timer,
       color: '#34d399',
       value: overview.validStand ? String(overview.validStand.count) : '—',
-      unit: 'h',
-      hint: '有效站立小时数',
+      unit: '次',
+      hint: '有效站立次数',
       chartType: 'bar',
       data: toTrend(histories.validStand, (r) => r.count ?? null),
     });
@@ -194,10 +195,11 @@ export const useMetrics = (): UseMetricsResult => {
       hint: overview.weight?.bmi ? `BMI ${overview.weight.bmi.toFixed(1)}` : undefined,
       chartType: 'area',
       data: toTrend(histories.weight, (r) => r.weight ?? null),
+      rangeLabel: '近半年',
     });
 
     return list;
   }, [overview, histories]);
 
-  return { metrics, loading, error, reload };
+  return { metrics, loading, error, updatedAt, reload };
 };

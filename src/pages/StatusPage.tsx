@@ -3,6 +3,7 @@ import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMetrics } from '../hooks/useMetrics';
 import { StatusCard } from '../components/status/StatusCard';
+import { formatClock } from '../utils/format';
 
 // Bento spans so the 8 cards tile a 4×4 grid with no whitespace on large screens.
 const SPAN: Record<string, string> = {
@@ -14,7 +15,7 @@ const SPAN: Record<string, string> = {
 
 export const StatusPage = () => {
   const navigate = useNavigate();
-  const { metrics, loading, error, reload } = useMetrics();
+  const { metrics, loading, error, updatedAt, reload } = useMetrics();
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
@@ -27,7 +28,12 @@ export const StatusPage = () => {
         >
           <ArrowLeft className="h-6 w-6" />
         </button>
-        <h1 className="text-lg font-medium">健康状态 · Health Status</h1>
+        <div className="flex min-w-0 flex-col items-center text-center">
+          <h1 className="text-lg font-medium">健康状态 · Health Status</h1>
+          <p className="mt-0.5 truncate text-[11px] text-white/40">
+            {updatedAt ? `最后刷新 ${formatClock(updatedAt)}` : '最后刷新 —'} · 数据源自小米运动健康 · 小米手环 10
+          </p>
+        </div>
         <button
           onClick={reload}
           disabled={loading}
