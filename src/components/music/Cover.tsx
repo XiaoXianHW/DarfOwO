@@ -1,5 +1,7 @@
-// Flat-color monogram fallback when a track/artist/album has no cover image.
+// Flat-color monogram fallback when an image is missing or fails to load.
 // No gradients — a single solid color picked deterministically from the name.
+import { useState } from 'react';
+
 const PALETTE = [
   '#ec4141',
   '#3b82f6',
@@ -28,13 +30,16 @@ interface CoverProps {
 }
 
 export function Cover({ name, cover, className = '', circle = false, textClass = 'text-2xl' }: CoverProps) {
+  const [failed, setFailed] = useState(false);
   const shape = circle ? 'rounded-full' : 'rounded-md';
-  if (cover) {
+
+  if (cover && !failed) {
     return (
       <img
         src={cover}
         alt={name}
         loading="lazy"
+        onError={() => setFailed(true)}
         className={`${shape} object-cover ${className}`}
       />
     );
