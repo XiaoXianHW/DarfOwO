@@ -72,13 +72,11 @@ export const StatusCard = ({ metric, index, onOpen }: StatusCardProps) => {
             unit={metric.unit}
           />
         ) : (
-          <div className="flex h-full items-center text-xs text-white/30">暂无近 30 天数据</div>
+          <div className="flex h-full items-center text-xs text-white/30">
+            暂无{metric.rangeLabel ?? '近 30 天'}数据
+          </div>
         )}
       </div>
-
-      <span className="relative z-10 mt-3 font-mono text-[10px] uppercase tracking-widest text-white/25 transition-colors group-hover:text-white/50">
-        点击查看详情 →
-      </span>
     </motion.button>
   );
 };

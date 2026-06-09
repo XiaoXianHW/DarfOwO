@@ -28,3 +28,11 @@ export function formatDuration(minutes: number): string {
 export function formatNumber(n: number): string {
   return n.toLocaleString('en-US');
 }
+
+// Local "MM-DD HH:MM" used for the "last refreshed" subtitle.
+export function formatClock(at: string): string {
+  const d = parse(at);
+  const hh = `${d.getHours()}`.padStart(2, '0');
+  const mm = `${d.getMinutes()}`.padStart(2, '0');
+  return `${shortDate(at)} ${hh}:${mm}`;
+}

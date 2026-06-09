@@ -20,4 +20,6 @@ export interface MetricDescriptor {
   progress?: number;
   stats?: MetricStat[];
   hero?: boolean;
+  // Human label for the trend window, e.g. "近 30 天" / "近半年". Defaults to 30 days.
+  rangeLabel?: string;
 }
