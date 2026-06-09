@@ -1,207 +1,188 @@
+import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Play, Pause, SkipForward, SkipBack, Heart, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { ALBUMS, ARTISTS, FEATURED, type Track } from '../data/musicLibrary';
+import { Cover } from '../components/music/Cover';
 
-const img = (seed: string, size = 500) => `https://picsum.photos/seed/${seed}/${size}/${size}`;
+function fmt(sec: number): string {
+  if (!isFinite(sec) || sec <= 0) return '';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
 
-const artists = [
-  { id: 'a1', name: 'The Weeknd', seed: 'weeknd' },
-  { id: 'a2', name: 'Daft Punk', seed: 'daftpunk' },
-  { id: 'a3', name: 'M83', seed: 'm83' },
-  { id: 'a4', name: 'HOME', seed: 'homeband' },
-  { id: 'a5', name: 'Tame Impala', seed: 'tameimpala' },
-  { id: 'a6', name: 'ODESZA', seed: 'odesza' },
-  { id: 'a7', name: 'Glass Animals', seed: 'glassanimals' },
-  { id: 'a8', name: 'RÜFÜS', seed: 'rufus' },
-];
-
-const albums = [
-  { id: 'al1', title: 'After Hours', artist: 'The Weeknd', seed: 'afterhours' },
-  { id: 'al2', title: 'Random Access Memories', artist: 'Daft Punk', seed: 'ram' },
-  { id: 'al3', title: "Hurry Up, We're Dreaming", artist: 'M83', seed: 'hurryup' },
-  { id: 'al4', title: 'Odyssey', artist: 'HOME', seed: 'odyssey' },
-  { id: 'al5', title: 'Currents', artist: 'Tame Impala', seed: 'currents' },
-  { id: 'al6', title: 'A Moment Apart', artist: 'ODESZA', seed: 'momentapart' },
-  { id: 'al7', title: 'Dreamland', artist: 'Glass Animals', seed: 'dreamland' },
-  { id: 'al8', title: 'Atlas', artist: 'RÜFÜS', seed: 'atlas' },
-  { id: 'al9', title: 'Starboy', artist: 'The Weeknd', seed: 'starboy' },
-  { id: 'al10', title: 'Discovery', artist: 'Daft Punk', seed: 'discovery' },
-  { id: 'al11', title: 'Junk', artist: 'M83', seed: 'junk' },
-  { id: 'al12', title: 'Resonance', artist: 'HOME', seed: 'resonance' },
-];
-
-const playlists = [
-  { id: 'p1', name: 'Coding Focus', tracks: 142, seed: 'codingfocus' },
-  { id: 'p2', name: 'Late Night Drives', tracks: 86, seed: 'latenight' },
-  { id: 'p3', name: 'Synthwave Essentials', tracks: 215, seed: 'synthwave' },
-  { id: 'p4', name: 'Chill Vibes', tracks: 94, seed: 'chillvibes' },
-  { id: 'p5', name: 'Morning Coffee', tracks: 58, seed: 'morningcoffee' },
-  { id: 'p6', name: 'Deep Work', tracks: 173, seed: 'deepwork' },
-];
-
-const SectionHeader = ({ title, sub }: { title: string; sub?: string }) => (
-  <div className="mb-5 flex items-end justify-between">
-    <div>
-      <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h2>
-      {sub && <p className="mt-1 text-sm text-white/40">{sub}</p>}
+// Small mono section label in the status page's technical style.
+function Label({ en, zh, count }: { en: string; zh: string; count?: number }) {
+  return (
+    <div className="flex items-baseline gap-2">
+      <span className="font-mono text-[11px] tracking-[0.25em] text-white/40">{en}</span>
+      <span className="text-xs text-white/65">{zh}</span>
+      {count != null && <span className="font-mono text-[10px] text-white/25">/ {count}</span>}
     </div>
-    <button className="flex items-center gap-1 text-sm font-medium text-white/50 transition-colors hover:text-white">
-      查看全部 <ChevronRight className="h-4 w-4" />
-    </button>
-  </div>
-);
+  );
+}
+
+type Selection =
+  | { kind: 'featured' }
+  | { kind: 'artist'; id: string }
+  | { kind: 'album'; id: string };
 
 export const MusicPage = () => {
   const navigate = useNavigate();
-  const [isPlaying, setIsPlaying] = useState(true);
-  const current = albums[0];
+  const [sel, setSel] = useState<Selection>({ kind: 'featured' });
+
+  const view = useMemo<{ en: string; zh: string; tracks: Track[] }>(() => {
+    if (sel.kind === 'artist') {
+      const a = ARTISTS.find((x) => x.id === sel.id);
+      return { en: 'ARTIST', zh: `${a?.name ?? ''} · 热门`, tracks: a?.hot ?? [] };
+    }
+    if (sel.kind === 'album') {
+      const al = ALBUMS.find((x) => x.id === sel.id);
+      return { en: 'ALBUM', zh: al?.name ?? '', tracks: al?.tracks ?? [] };
+    }
+    return { en: 'MOST PLAYED', zh: '我最常听', tracks: FEATURED };
+  }, [sel]);
+
+  const openSong = (t: Track) => {
+    navigate(`/music/${t.id}`, {
+      state: { queue: view.tracks.map((x) => x.id), title: view.zh },
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] font-sans text-white selection:bg-pink-500/30">
-      {/* Ambient glow */}
-      <div className="pointer-events-none fixed left-1/2 top-0 z-0 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-fuchsia-900/20 blur-[140px]" />
-
-      {/* Sticky header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/5 bg-[#0a0a0a]/70 px-6 py-4 backdrop-blur-xl sm:px-10 lg:px-16">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/')}
-            className="group rounded-full border border-white/10 bg-white/5 p-2.5 transition-colors hover:bg-white/10"
-            aria-label="Back home"
-          >
-            <ArrowLeft className="h-5 w-5 text-white/70 group-hover:text-white" />
-          </button>
-          <h1 className="text-xl font-bold tracking-tight">音乐 · Music</h1>
+    <div className="flex h-screen flex-col overflow-hidden bg-[#0a0a0a] font-sans text-white selection:bg-white/20">
+      {/* Header — mirrors the status page */}
+      <div className="flex shrink-0 items-center justify-between border-b border-white/5 px-6 py-3.5">
+        <button
+          onClick={() => navigate('/')}
+          className="-ml-2 rounded-full p-2 transition-colors hover:bg-white/10"
+          aria-label="Back"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+        <div className="flex min-w-0 flex-col items-center text-center">
+          <h1 className="text-base font-medium">音乐 · Music</h1>
+          <p className="mt-0.5 truncate text-[11px] text-white/40">
+            我喜欢的歌手 · 专辑 · 单曲 · 数据源自网易云音乐
+          </p>
         </div>
-        <p className="hidden font-mono text-xs uppercase tracking-widest text-white/30 sm:block">
-          Listening Library
-        </p>
-      </header>
-
-      <main className="relative z-10 mx-auto max-w-[1600px] px-6 pb-32 pt-8 sm:px-10 lg:px-16">
-        {/* Artists */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-14"
-        >
-          <SectionHeader title="歌手" sub="Artists you love" />
-          <div className="grid grid-cols-3 gap-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-            {artists.map((a) => (
-              <button key={a.id} className="group flex flex-col items-center gap-3 text-center">
-                <div className="relative aspect-square w-full overflow-hidden rounded-full shadow-lg shadow-black/40 ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-105">
-                  <img
-                    src={img(a.seed, 300)}
-                    alt={a.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </div>
-                <span className="w-full truncate text-sm font-medium text-white/80 group-hover:text-white">
-                  {a.name}
-                </span>
-              </button>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Albums */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-14"
-        >
-          <SectionHeader title="专辑" sub="Albums in your collection" />
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {albums.map((al) => (
-              <button key={al.id} className="group text-left">
-                <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-xl shadow-black/40 ring-1 ring-white/5">
-                  <img
-                    src={img(al.seed)}
-                    alt={al.title}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <div className="absolute bottom-3 right-3 flex h-11 w-11 translate-y-2 items-center justify-center rounded-full bg-white text-black opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                    <Play className="ml-0.5 h-5 w-5 fill-current" />
-                  </div>
-                </div>
-                <h3 className="mt-3 truncate text-sm font-semibold text-white">{al.title}</h3>
-                <p className="truncate text-xs text-white/40">{al.artist}</p>
-              </button>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Playlists */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <SectionHeader title="歌单" sub="Your playlists" />
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
-            {playlists.map((pl) => (
-              <button key={pl.id} className="group text-left">
-                <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-xl shadow-black/40 ring-1 ring-white/5">
-                  <img
-                    src={img(pl.seed)}
-                    alt={pl.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-4">
-                    <h3 className="truncate text-sm font-bold text-white">{pl.name}</h3>
-                    <p className="text-xs text-white/60">{pl.tracks} 首</p>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </motion.section>
-      </main>
-
-      {/* Now playing bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#101010]/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-6 py-3 sm:px-10 lg:px-16">
-          <img
-            src={img(current.seed, 120)}
-            alt={current.title}
-            className="h-12 w-12 rounded-lg object-cover shadow-md"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-white">{current.title}</p>
-            <p className="truncate text-xs text-white/50">{current.artist}</p>
-          </div>
-          <button className="hidden text-white/50 transition-colors hover:text-pink-500 sm:block">
-            <Heart className="h-5 w-5" />
-          </button>
-          <div className="flex items-center gap-5">
-            <button className="text-white/70 transition-colors hover:text-white">
-              <SkipBack className="h-5 w-5 fill-current" />
-            </button>
-            <button
-              onClick={() => setIsPlaying((p) => !p)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105"
-              aria-label={isPlaying ? 'Pause' : 'Play'}
-            >
-              {isPlaying ? (
-                <Pause className="h-5 w-5 fill-current" />
-              ) : (
-                <Play className="ml-0.5 h-5 w-5 fill-current" />
-              )}
-            </button>
-            <button className="text-white/70 transition-colors hover:text-white">
-              <SkipForward className="h-5 w-5 fill-current" />
-            </button>
-          </div>
-        </div>
+        <span className="w-6" />
       </div>
+
+      {/* Body — full-screen two-pane: left list, right (artists top / albums bottom) */}
+      <motion.div
+        className="grid min-h-0 flex-1 grid-rows-[1fr_auto] gap-0 lg:grid-cols-[1.15fr_1fr] lg:grid-rows-1"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.35 }}
+      >
+        {/* LEFT — track / playlist list */}
+        <section className="flex min-h-0 flex-col border-white/5 lg:border-r">
+          <div className="flex shrink-0 items-center justify-between px-6 pb-3 pt-5">
+            <Label en={view.en} zh={view.zh} count={view.tracks.length} />
+            {sel.kind !== 'featured' && (
+              <button
+                onClick={() => setSel({ kind: 'featured' })}
+                className="font-mono text-[10px] tracking-wider text-white/40 transition-colors hover:text-white/80"
+              >
+                ← 最常听
+              </button>
+            )}
+          </div>
+          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-6">
+            {view.tracks.map((t, i) => (
+              <button
+                key={t.id}
+                onClick={() => openSong(t)}
+                className="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-white/[0.06]"
+              >
+                <span className="w-5 shrink-0 text-right font-mono text-[11px] text-white/30 group-hover:hidden">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <Play className="hidden h-3.5 w-3.5 shrink-0 translate-x-0.5 text-[#ec4141] group-hover:block" fill="currentColor" />
+                <Cover name={t.name} cover={t.cover} className="h-9 w-9 shrink-0 ring-1 ring-white/10" textClass="text-sm" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm">{t.name}</p>
+                  <p className="truncate text-[11px] text-white/40">{t.artist}</p>
+                </div>
+                <span className="shrink-0 font-mono text-[10px] text-white/30">{fmt(t.dur)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* RIGHT — artists (top) + albums (bottom) */}
+        <section className="grid min-h-0 grid-rows-[1.1fr_1fr] overflow-hidden">
+          {/* ARTISTS */}
+          <div className="flex min-h-0 flex-col border-b border-white/5">
+            <div className="shrink-0 px-6 pb-3 pt-5">
+              <Label en="ARTISTS" zh="常听歌手" count={ARTISTS.length} />
+            </div>
+            <div className="custom-scrollbar grid min-h-0 flex-1 grid-cols-3 content-start gap-x-2 gap-y-4 overflow-y-auto px-5 pb-4 sm:grid-cols-4 lg:grid-cols-5">
+              {ARTISTS.map((a) => {
+                const on = sel.kind === 'artist' && sel.id === a.id;
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => setSel({ kind: 'artist', id: a.id })}
+                    className="flex flex-col items-center text-center"
+                  >
+                    <Cover
+                      name={a.name}
+                      cover={a.cover}
+                      circle
+                      className={`aspect-square w-full max-w-[72px] transition-all ${on ? 'ring-2 ring-[#ec4141]' : 'ring-1 ring-white/10 hover:ring-white/30'}`}
+                      textClass="text-2xl"
+                    />
+                    <p className={`mt-1.5 line-clamp-1 text-[12px] ${on ? 'text-white' : 'text-white/75'}`}>{a.name}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ALBUMS */}
+          <div className="flex min-h-0 flex-col">
+            <div className="shrink-0 px-6 pb-3 pt-4">
+              <Label en="ALBUMS" zh="专辑 / 合辑" count={ALBUMS.length} />
+            </div>
+            <div className="custom-scrollbar grid min-h-0 flex-1 grid-cols-2 content-start gap-3 overflow-y-auto px-5 pb-5 sm:grid-cols-4">
+              {ALBUMS.map((al) => {
+                const on = sel.kind === 'album' && sel.id === al.id;
+                return (
+                  <div key={al.id} className="flex flex-col">
+                    <button
+                      onClick={() => setSel({ kind: 'album', id: al.id })}
+                      className="group relative block overflow-hidden rounded-md"
+                    >
+                      <Cover
+                        name={al.name}
+                        cover={al.cover}
+                        className={`aspect-square w-full transition-all ${on ? 'ring-2 ring-[#ec4141]' : 'ring-1 ring-white/10 group-hover:ring-white/30'}`}
+                      />
+                      <a
+                        href={`https://music.163.com/album?id=${al.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1 text-white/80 opacity-0 transition-opacity hover:text-white group-hover:opacity-100"
+                        aria-label="在网易云打开"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </button>
+                    <p className={`mt-1.5 line-clamp-1 text-[12px] ${on ? 'text-white' : 'text-white/80'}`}>{al.name}</p>
+                    <p className="line-clamp-1 text-[10px] text-white/40">
+                      {al.artist}{al.year ? ` · ${al.year}` : ''}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      </motion.div>
     </div>
   );
 };
