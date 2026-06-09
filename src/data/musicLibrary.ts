@@ -1,6 +1,7 @@
 // =============================================================================
 // 音乐库数据 — 由网易云音乐公开数据整理（封面 / 歌词 / 歌手信息均为真实数据）。
-// 如需增减，按下方结构追加即可；歌词 lines 为 { time, t(原文), x(译文) }。
+// SONGS = 我精选“最常听”的曲目（含完整中英歌词，进入沉浸详情）。
+// ARTISTS.hot / ALBUMS.tracks = 歌手热门曲 / 专辑曲目（用于左侧歌单列表）。
 // =============================================================================
 
 export interface LyricLine {
@@ -10,6 +11,17 @@ export interface LyricLine {
   t: string;
   /** 译文（中文翻译，无则留空） */
   x?: string;
+}
+
+/** 轻量曲目（列表展示用，无歌词） */
+export interface Track {
+  id: string;
+  name: string;
+  artist: string;
+  album: string;
+  cover: string;
+  /** 时长（秒） */
+  dur: number;
 }
 
 export interface Song {
@@ -29,6 +41,8 @@ export interface Artist {
   alias?: string;
   cover: string;
   bio?: string;
+  /** 热门曲目（左侧歌单列表） */
+  hot: Track[];
 }
 
 export interface Album {
@@ -39,114 +53,292 @@ export interface Album {
   cover: string;
   /** 一句话说明 */
   note?: string;
+  /** 专辑曲目（左侧歌单列表） */
+  tracks: Track[];
 }
 
 export const ARTISTS: Artist[] = [
   {
-    "id": "185858",
-    "name": "The Weeknd",
-    "alias": "",
-    "cover": "https://p1.music.126.net/-yxfLA6pLRgU21jCmj-1pQ==/109951173073348744.jpg",
-    "bio": "加拿大 R&B / 流行歌手，暗色合成器流行与高亢假声。"
+    id: "185858", name: "The Weeknd", alias: "",
+    cover: "https://p1.music.126.net/-yxfLA6pLRgU21jCmj-1pQ==/109951173073348744.jpg",
+    bio: "加拿大 R&B / 流行歌手，暗色合成器流行与高亢假声。",
+    hot: [
+      { id: "442867526", name: "Die For You", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "431610014", name: "Starboy", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1424460203", name: "After Hours", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1909927738", name: "Is There Someone Else?", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2052348113", name: "Popular (Music from the HBO Original Series)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2058139099", name: "One Of The Girls", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "28971281", name: "Love Me Harder", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "442869469", name: "Reminder", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
   },
   {
-    "id": "38797",
-    "name": "Lukas Graham",
-    "alias": "",
-    "cover": "https://p1.music.126.net/54jitDHFpFSKS4YLJqD4kw==/109951167798560224.jpg",
-    "bio": "丹麦流行 / 灵魂乐队，代表作《7 Years》。"
+    id: "38797", name: "Lukas Graham", alias: "",
+    cover: "https://p1.music.126.net/54jitDHFpFSKS4YLJqD4kw==/109951167798560224.jpg",
+    bio: "丹麦流行 / 灵魂乐队，代表作《7 Years》。",
+    hot: [
+      { id: "405599119", name: "7 Years", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "422960737", name: "What We Dream", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1485311012", name: "Share That Love", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1855448284", name: "Happy For You (feat. Janice Vidal)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "412175464", name: "Seven Years (Arcane Echo Flip)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "3374033637", name: "To Know A Girl", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1316766688", name: "Not a Damn Thing Changed", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "408277840", name: "Funeral", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
   },
   {
-    "id": "688047",
-    "name": "Tiësto",
-    "alias": "",
-    "cover": "https://p1.music.126.net/wsCUxrfBw8JIQMqK1W3bHA==/109951170446344160.jpg",
-    "bio": "荷兰传奇 DJ / 制作人，电子舞曲领军人物。"
+    id: "688047", name: "Tiësto", alias: "",
+    cover: "https://p1.music.126.net/wsCUxrfBw8JIQMqK1W3bHA==/109951170446344160.jpg",
+    bio: "荷兰传奇 DJ / 制作人，电子舞曲领军人物。",
+    hot: [
+      { id: "2701926173", name: "Won’t Be Possible", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "474581010", name: "BOOM", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1891446694", name: "The Motto", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2057117099", name: "Drifting", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "26732661", name: "C'mon (Catch 'Em By Surprise)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2718995372", name: "OMG!", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1886142886", name: "Be Something", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "441489836", name: "Let Me Love You (Tiesto's Aftr:Hrs Mix)", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
   },
   {
-    "id": "12054171",
-    "name": "bbno$",
-    "alias": "",
-    "cover": "https://p2.music.126.net/86jMCc8DBi5BRrztr2JzpQ==/109951172160984701.jpg",
-    "bio": "加拿大独立说唱，风格诙谐随性。"
+    id: "12054171", name: "bbno$", alias: "",
+    cover: "https://p2.music.126.net/86jMCc8DBi5BRrztr2JzpQ==/109951172160984701.jpg",
+    bio: "加拿大独立说唱，风格诙谐随性。",
+    hot: [
+      { id: "2068401809", name: "Ticking Away", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2719333628", name: "1-800", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1861126812", name: "Edamame (ft. Rich Brian)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2725907767", name: "in my zone", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2755668811", name: "two", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2750679125", name: "gigolo", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1373835581", name: "Lalala", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2755667841", name: "bing bong", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
   },
   {
-    "id": "525594",
-    "name": "LUNAX",
-    "alias": "",
-    "cover": "https://p2.music.126.net/nEb3OZuQ-425f_k1D6wgyA==/109951169651931033.jpg",
-    "bio": "电子 / 未来低音风格制作人。"
+    id: "525594", name: "LUNAX", alias: "",
+    cover: "https://p2.music.126.net/nEb3OZuQ-425f_k1D6wgyA==/109951169651931033.jpg",
+    bio: "电子 / 未来低音风格制作人。",
+    hot: [
+      { id: "2072051195", name: "Where Do We Go", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1994674693", name: "Low (LUNAX Remix)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1859012278", name: "Bye Bye Bye", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1963460802", name: "Stay", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1814450406", name: "Million Years (Jerome Edit)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1480553106", name: "Stay Low", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1449968903", name: "Hold You", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1451373320", name: "Wicked Game (feat. LYNN)", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
   },
   {
-    "id": "339594",
-    "name": "Mili",
-    "alias": "ミリー",
-    "cover": "https://p1.music.126.net/aUG-1vfVXLx_0RvIEv4jyw==/109951163171185427.jpg",
-    "bio": "日本多国籍独立乐团，游戏与动画配乐常客。"
+    id: "339594", name: "Mili", alias: "ミリー",
+    cover: "https://p1.music.126.net/aUG-1vfVXLx_0RvIEv4jyw==/109951163171185427.jpg",
+    bio: "日本多国籍独立乐团，游戏与动画配乐常客。",
+    hot: [
+      { id: "3342981041", name: "铁花飞", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "3336080601", name: "SAIKAI", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2707332868", name: "TIAN TIAN", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2633225875", name: "Hero", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "435278010", name: "world.execute (me) ;", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2058124989", name: "Fly, My Wings", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2154644185", name: "Through Patches of Violet", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1900488879", name: "In Hell We Live, Lament (feat. KIHOW)", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
   },
   {
-    "id": "20404",
-    "name": "Leaf",
-    "alias": "",
-    "cover": "https://p1.music.126.net/mI_oVJLwrSZpqWj1dBGP2g==/3373301675232188.jpg",
-    "bio": "电子核心 / 东方曲风作曲，节奏游戏圈知名。"
+    id: "20404", name: "Leaf", alias: "",
+    cover: "https://p1.music.126.net/mI_oVJLwrSZpqWj1dBGP2g==/3373301675232188.jpg",
+    bio: "电子核心 / 东方曲风作曲，节奏游戏圈知名。",
+    hot: [
+      { id: "28219022", name: "cloture", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "28219020", name: "恋のような Piano", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "32303109", name: "WHITE ALBUM", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "32303046", name: "運命-SADAME-", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "32303048", name: "永久に", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "26164875", name: "Wonderwoman", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "806113", name: "こんぐらちゅれーしょん!おーるくりあ!", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "32272773", name: "Future World", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
   },
   {
-    "id": "999238",
-    "name": "かめりあ",
-    "alias": "Camellia",
-    "cover": "https://p2.music.126.net/VjfeYqPqNRt0-6oJSv5Qfg==/109951167441551721.jpg",
-    "bio": "日本电子鬼才 Camellia，硬核 / 多曲风制作人。"
+    id: "999238", name: "かめりあ", alias: "Camellia",
+    cover: "https://p2.music.126.net/VjfeYqPqNRt0-6oJSv5Qfg==/109951167441551721.jpg",
+    bio: "日本电子鬼才 Camellia，硬核 / 多曲风制作人。",
+    hot: [
+      { id: "1336689103", name: "S.A.T.E.L.L.I.T.E.", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1482675009", name: "+ERABY+E CONNEC+10N", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1435577041", name: "MEGALOVANIA (Camellia Remix)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1948735477", name: "ヒアソビ (feat. 初音ミク)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1336689106", name: "Tojita Sekai", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "3352044077", name: "Cryogenic (feat. Petra Gurin)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1482677424", name: "Dance with Silence", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "558377341", name: "Villain Virus", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
   },
   {
-    "id": "4292",
-    "name": "李荣浩",
-    "alias": "Ronghao Li",
-    "cover": "https://p1.music.126.net/YSeeLcOZcHKaL42XcpLyPg==/109951170316912578.jpg",
-    "bio": "华语创作型歌手，词曲编唱全才。"
+    id: "4292", name: "李荣浩", alias: "Ronghao Li",
+    cover: "https://p1.music.126.net/YSeeLcOZcHKaL42XcpLyPg==/109951170316912578.jpg",
+    bio: "华语创作型歌手，词曲编唱全才。",
+    hot: [
+      { id: "2600493765", name: "恋人", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "31654343", name: "不将就", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "518686034", name: "戒烟", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "2608448649", name: "走走", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "27731176", name: "模特", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1293886117", name: "年少有为", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1969822728", name: "慢冷 (Live)", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "1959528822", name: "紫荆花盛开", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
   },
   {
-    "id": "2116",
-    "name": "陈奕迅",
-    "alias": "Eason Chan",
-    "cover": "https://p2.music.126.net/jj0EasWfUZpf1LW2SFeN-A==/109951173289562420.jpg",
-    "bio": "香港殿堂级歌手 Eason，粤语 / 国语流行代表。"
-  }
+    id: "2116", name: "陈奕迅", alias: "Eason Chan",
+    cover: "https://p2.music.126.net/jj0EasWfUZpf1LW2SFeN-A==/109951173289562420.jpg",
+    bio: "香港殿堂级歌手 Eason，粤语 / 国语流行代表。",
+    hot: [
+      { id: "65800", name: "最佳损友", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "65766", name: "富士山下", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "64093", name: "孤独患者", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "65528", name: "淘汰", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "409931770", name: "十面埋伏", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "65536", name: "爱情转移", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "25906124", name: "不要说话", artist: "", album: "", cover: "", dur: 0.0 },
+      { id: "66842", name: "十年", artist: "", album: "", cover: "", dur: 0.0 },
+    ],
+  },
 ];
 
 export const ALBUMS: Album[] = [
   {
-    "id": "276211562",
-    "name": "F1 The Album",
-    "artist": "Various Artists",
-    "year": 2025,
-    "cover": "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg",
-    "note": "电影《F1》原声 · 群星合辑"
+    id: "276211562", name: "F1 The Album", artist: "Various Artists", year: 2025,
+    cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg",
+    note: "电影《F1》原声 · 群星合辑",
+    tracks: [
+      { id: "2718994102", name: "Lose My Mind (feat. Doja Cat)", artist: "Don Toliver / Doja Cat", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 209.05 },
+      { id: "2718994103", name: "No Room For A Saint (feat. Nathan Nicholson)", artist: "Dom Dolla / Nathan Nicholson", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 236.13 },
+      { id: "2718995367", name: "Drive", artist: "Ed Sheeran", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 187.4 },
+      { id: "2718994104", name: "Just Keep Watching", artist: "Tate McRae", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 142.55 },
+      { id: "2718995368", name: "Messy", artist: "ROSÉ", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 179.06 },
+      { id: "2718995369", name: "Don't Let Me Drown", artist: "Burna Boy", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 185.59 },
+      { id: "2718994105", name: "Underdog", artist: "Roddy Ricch", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 142.33 },
+      { id: "2718995370", name: "Grandma Calls The Boy Bad News", artist: "RAYE", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 206.73 },
+      { id: "2718995371", name: "Bad As I Used To Be", artist: "Chris Stapleton", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 300.11 },
+      { id: "2718994106", name: "Baja California", artist: "Myke Towers", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 143.31 },
+      { id: "2718995372", name: "OMG!", artist: "Tiësto / Sexyy Red", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 152.99 },
+      { id: "2718994107", name: "All At Once", artist: "Madison Beer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 154.62 },
+      { id: "2718994108", name: "D.A.N.C.E", artist: "Peggy Gou", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 195.4 },
+      { id: "2718995373", name: "DOUBLE C", artist: "PAWSA", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 226.99 },
+      { id: "2718995374", name: "Attention", artist: "Mr Eazi", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 173.15 },
+      { id: "2718994109", name: "Give Me Love", artist: "DARKoO", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 140.71 },
+      { id: "2718994110", name: "Gasoline", artist: "Obongjayar", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 219.41 },
+      { id: "2718995375", name: "F1", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 193.66 },
+      { id: "2718995376", name: "Anything You Wish You'd Done Differently?", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 130.72 },
+      { id: "2718994111", name: "Run For The Podium", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 392.24 },
+      { id: "2718995377", name: "Road To Recovery", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 209.51 },
+      { id: "2718995378", name: "Built For Combat", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 185.44 },
+      { id: "2718994112", name: "Drive Fast", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p1.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 377.82 },
+      { id: "2718995379", name: "Tell Me About Kate", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 94.06 },
+      { id: "2718994113", name: "Keep It In One Piece", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p1.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 177.03 },
+      { id: "2718995380", name: "No One Drives Forever", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 365.02 },
+      { id: "2718995381", name: "Lining Up On The Grid", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 130.12 },
+      { id: "2718995382", name: "It’s All Just Noise", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 240.44 },
+      { id: "2718994114", name: "Elbows Out", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p1.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 448.1 },
+      { id: "2718995383", name: "Red Flag", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 242.98 },
+      { id: "2718995384", name: "Three Laps Is A Lifetime", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 353.46 },
+      { id: "2718995385", name: "See You Down The Road", artist: "Hans Zimmer", album: "F1 The Album (Cinematic Edition)", cover: "https://p2.music.126.net/5H59IPGAJR3Y2LbVDm9RuQ==/109951171354624461.jpg", dur: 171.67 },
+    ],
   },
   {
-    "id": "405493",
-    "name": "Minecraft — Volume Alpha",
-    "artist": "C418",
-    "year": 2011,
-    "cover": "https://p2.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg",
-    "note": "我的世界 原声 · 氛围电子"
+    id: "405493", name: "Minecraft — Volume Alpha", artist: "C418", year: 2011,
+    cover: "https://p2.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg",
+    note: "我的世界 原声 · 氛围电子",
+    tracks: [
+      { id: "4010183", name: "Key", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 65.0 },
+      { id: "4010184", name: "Door", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 111.44 },
+      { id: "4010187", name: "Subwoofer Lullaby", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 208.56 },
+      { id: "4010190", name: "Death", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 41.5 },
+      { id: "4010192", name: "Living Mice", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 177.5 },
+      { id: "4010195", name: "Moog City", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 160.0 },
+      { id: "4010198", name: "Haggstrom", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 204.0 },
+      { id: "4010201", name: "Minecraft", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 254.0 },
+      { id: "4010203", name: "Oxygène", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 65.12 },
+      { id: "4010205", name: "Équinoxe", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 114.88 },
+      { id: "4010207", name: "Mice on Venus", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 281.5 },
+      { id: "4010210", name: "Dry Hands", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 68.5 },
+      { id: "4010213", name: "Wet Hands", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 90.0 },
+      { id: "4010216", name: "Clark", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 191.75 },
+      { id: "4010220", name: "Chris", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 87.75 },
+      { id: "4010223", name: "Thirteen", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 176.5 },
+      { id: "4010226", name: "Excuse", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 124.0 },
+      { id: "4010229", name: "Sweden", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 215.5 },
+      { id: "4010234", name: "Cat", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 186.25 },
+      { id: "4010239", name: "Dog", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 145.75 },
+      { id: "4010243", name: "Danny", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 254.5 },
+      { id: "4010247", name: "Beginning", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 102.1 },
+      { id: "4010251", name: "Droopy Likes Ricochet", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 96.23 },
+      { id: "4010256", name: "Droopy Likes Your Face", artist: "C418", album: "Minecraft - Volume Alpha", cover: "https://p1.music.126.net/fL4ULWzldqG8tT2BB7Vucg==/109951172564006364.jpg", dur: 116.76 },
+    ],
   },
   {
-    "id": "2700855",
-    "name": "Minecraft — Volume Beta",
-    "artist": "C418",
-    "year": 2013,
-    "cover": "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg",
-    "note": "我的世界 原声 · 续作"
+    id: "2700855", name: "Minecraft — Volume Beta", artist: "C418", year: 2013,
+    cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg",
+    note: "我的世界 原声 · 续作",
+    tracks: [
+      { id: "27961147", name: "Ki", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 92.0 },
+      { id: "27961148", name: "Alpha", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 603.0 },
+      { id: "27961149", name: "Dead Voxel", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 296.0 },
+      { id: "27961150", name: "Blind Spots", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 332.5 },
+      { id: "27961151", name: "Flake", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 170.32 },
+      { id: "27961152", name: "Moog City 2", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 180.0 },
+      { id: "27961153", name: "Concrete Halls", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 254.0 },
+      { id: "27961154", name: "Biome Fest", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 378.07 },
+      { id: "27961155", name: "Mutation", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 185.0 },
+      { id: "27961156", name: "Haunt Muskie", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 361.68 },
+      { id: "27961157", name: "Warmth", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 239.0 },
+      { id: "27961158", name: "Floating Trees", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 244.0 },
+      { id: "27961159", name: "Aria Math", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 310.0 },
+      { id: "27961160", name: "Kyoto", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 249.0 },
+      { id: "27961161", name: "Ballad of the Cats", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 275.0 },
+      { id: "27961162", name: "Taswell", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 515.5 },
+      { id: "27961163", name: "Beginning 2", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 176.0 },
+      { id: "27961164", name: "Dreiton", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 497.0 },
+      { id: "27961165", name: "The End", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 904.53 },
+      { id: "27961166", name: "Chirp", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 186.99 },
+      { id: "27961167", name: "Wait", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 234.48 },
+      { id: "27961168", name: "Mellohi", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 98.0 },
+      { id: "27961169", name: "Stal", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 152.0 },
+      { id: "27961170", name: "Strad", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 188.75 },
+      { id: "27961171", name: "Eleven", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 71.11 },
+      { id: "27961172", name: "Ward", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 250.14 },
+      { id: "27961173", name: "Mall", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 198.0 },
+      { id: "27961174", name: "Blocks", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 343.0 },
+      { id: "27961175", name: "Far", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 192.0 },
+      { id: "27961176", name: "Intro", artist: "C418", album: "Minecraft - Volume Beta", cover: "https://p2.music.126.net/gK1cJ0NH4k4923gyAmOhmg==/109951172942786070.jpg", dur: 276.19 },
+    ],
   },
   {
-    "id": "2630919063",
-    "name": "「Hacknet」OST (+DLC)",
-    "artist": "V.A.",
-    "year": 2019,
-    "cover": "https://p2.music.126.net/4TnTRyHqa3-D2H1UnOa00w==/109951163666994621.jpg",
-    "note": "黑客网络 游戏原声 · 22 首"
-  }
+    id: "74424195", name: "Hacknet OST", artist: "Remi Gallego", year: 2015,
+    cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg",
+    note: "黑客网络 游戏原声 · 群星合辑",
+    tracks: [
+      { id: "1325631805", name: "Malware Injection", artist: "Remi Gallego", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 363.75 },
+      { id: "1325630935", name: "The Quickening", artist: "Cinematrik", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 460.39 },
+      { id: "1325631806", name: "Tetrameth", artist: "Sean Gillespie", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 299.29 },
+      { id: "1325631807", name: "Roller Mobster", artist: "Carpenter Brut", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 214.35 },
+      { id: "1325631808", name: "Roja Drifts By (Timo Jahns Strings Remix)", artist: "Rico Puestel", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 592.72 },
+      { id: "1325631809", name: "Panic Track", artist: "Remi Gallego", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 153.75 },
+      { id: "1325631810", name: "Outrun The Wolves", artist: "feeding ear", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 354.54 },
+      { id: "1325631811", name: "You've Got Mail", artist: "N/A", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 3.19 },
+      { id: "1325631812", name: "Revolve (R Mix)", artist: "Cinematrik", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 274.19 },
+      { id: "1325630936", name: "Phase of the Moon", artist: "Ryan Burge", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 524.0 },
+      { id: "1325631813", name: "Recursion", artist: "Ryan Burge", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 414.63 },
+      { id: "1325630937", name: "Irritations", artist: "Tonspender", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 280.0 },
+      { id: "1325631814", name: "Broken Boy", artist: "Tonspender", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 242.4 },
+      { id: "1325630938", name: "Bit", artist: "Chris Larkin & Matt Trobbiani", album: "Hacknet (Original Game Soundtrack)", cover: "https://p2.music.126.net/YPp4E4naabBH1HmTyBpVWw==/109951168975094496.jpg", dur: 159.39 },
+    ],
+  },
 ];
 
 export const SONGS: Song[] = [
@@ -721,5 +913,21 @@ export const SONGS: Song[] = [
   },
 ];
 
+/** 默认左侧歌单：我最常听（即精选 SONGS，含歌词） */
+export const FEATURED: Track[] = SONGS.map((s) => ({
+  id: s.id, name: s.name, artist: s.artist, album: s.album, cover: s.cover,
+  dur: s.lines.length ? Math.ceil(s.lines[s.lines.length - 1].time + 8) : 0,
+}));
 
+// 全部曲目索引（精选 + 歌手热门 + 专辑曲目），用于详情页按 id 查找。
+const TRACK_INDEX: Record<string, Track> = {};
+for (const t of [
+  ...FEATURED,
+  ...ARTISTS.flatMap((a) => a.hot),
+  ...ALBUMS.flatMap((a) => a.tracks),
+]) {
+  if (!TRACK_INDEX[t.id]) TRACK_INDEX[t.id] = t;
+}
+
+export const getTrack = (id: string): Track | undefined => TRACK_INDEX[id];
 export const getSong = (id: string): Song | undefined => SONGS.find((s) => s.id === id);
