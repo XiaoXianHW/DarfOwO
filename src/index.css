@@ -9,6 +9,29 @@
 @theme {
   --font-sans: "MiSans", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-pixel: "Press Start 2P", "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer utilities {
+  /* Crisp, non-blurred pixel-art rendering for the Devices inventory. */
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  /* Hard, stepped blink (no fade) for a retro terminal/game feel. */
+  .pixel-blink {
+    animation: pixel-blink 1s steps(1) infinite;
+  }
+  @keyframes pixel-blink {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    50.01%,
+    100% {
+      opacity: 0;
+    }
+  }
 }
 
 @layer utilities {
