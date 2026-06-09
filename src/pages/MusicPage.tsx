@@ -1,205 +1,209 @@
+import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Play, Pause, SkipForward, SkipBack, Heart, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Play, Pause, SkipBack, SkipForward, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { ARTISTS, ALBUMS, SONGS, type Song } from '../data/musicLibrary';
+import { Cover } from '../components/music/Cover';
 
-const img = (seed: string, size = 500) => `https://picsum.photos/seed/${seed}/${size}/${size}`;
+const ACCENT = '#ec4141';
 
-const artists = [
-  { id: 'a1', name: 'The Weeknd', seed: 'weeknd' },
-  { id: 'a2', name: 'Daft Punk', seed: 'daftpunk' },
-  { id: 'a3', name: 'M83', seed: 'm83' },
-  { id: 'a4', name: 'HOME', seed: 'homeband' },
-  { id: 'a5', name: 'Tame Impala', seed: 'tameimpala' },
-  { id: 'a6', name: 'ODESZA', seed: 'odesza' },
-  { id: 'a7', name: 'Glass Animals', seed: 'glassanimals' },
-  { id: 'a8', name: 'RÜFÜS', seed: 'rufus' },
-];
+// Strip LRC timestamps (e.g. "[00:12.34]") so plain text and LRC both render.
+function parseLyrics(raw?: string): string[] {
+  if (!raw) return [];
+  return raw
+    .split('\n')
+    .map((line) => line.replace(/\[\d{1,2}:\d{2}(?:[.:]\d{1,3})?\]/g, '').trim());
+}
 
-const albums = [
-  { id: 'al1', title: 'After Hours', artist: 'The Weeknd', seed: 'afterhours' },
-  { id: 'al2', title: 'Random Access Memories', artist: 'Daft Punk', seed: 'ram' },
-  { id: 'al3', title: "Hurry Up, We're Dreaming", artist: 'M83', seed: 'hurryup' },
-  { id: 'al4', title: 'Odyssey', artist: 'HOME', seed: 'odyssey' },
-  { id: 'al5', title: 'Currents', artist: 'Tame Impala', seed: 'currents' },
-  { id: 'al6', title: 'A Moment Apart', artist: 'ODESZA', seed: 'momentapart' },
-  { id: 'al7', title: 'Dreamland', artist: 'Glass Animals', seed: 'dreamland' },
-  { id: 'al8', title: 'Atlas', artist: 'RÜFÜS', seed: 'atlas' },
-  { id: 'al9', title: 'Starboy', artist: 'The Weeknd', seed: 'starboy' },
-  { id: 'al10', title: 'Discovery', artist: 'Daft Punk', seed: 'discovery' },
-  { id: 'al11', title: 'Junk', artist: 'M83', seed: 'junk' },
-  { id: 'al12', title: 'Resonance', artist: 'HOME', seed: 'resonance' },
-];
-
-const playlists = [
-  { id: 'p1', name: 'Coding Focus', tracks: 142, seed: 'codingfocus' },
-  { id: 'p2', name: 'Late Night Drives', tracks: 86, seed: 'latenight' },
-  { id: 'p3', name: 'Synthwave Essentials', tracks: 215, seed: 'synthwave' },
-  { id: 'p4', name: 'Chill Vibes', tracks: 94, seed: 'chillvibes' },
-  { id: 'p5', name: 'Morning Coffee', tracks: 58, seed: 'morningcoffee' },
-  { id: 'p6', name: 'Deep Work', tracks: 173, seed: 'deepwork' },
-];
-
-const SectionHeader = ({ title, sub }: { title: string; sub?: string }) => (
-  <div className="mb-5 flex items-end justify-between">
-    <div>
-      <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h2>
-      {sub && <p className="mt-1 text-sm text-white/40">{sub}</p>}
+function SectionTitle({ cn, en }: { cn: string; en: string }) {
+  return (
+    <div className="mb-4 flex items-baseline gap-2">
+      <h2 className="text-lg font-semibold tracking-tight">{cn}</h2>
+      <span className="text-xs uppercase tracking-widest text-white/30">{en}</span>
     </div>
-    <button className="flex items-center gap-1 text-sm font-medium text-white/50 transition-colors hover:text-white">
-      查看全部 <ChevronRight className="h-4 w-4" />
-    </button>
-  </div>
-);
+  );
+}
 
 export const MusicPage = () => {
   const navigate = useNavigate();
-  const [isPlaying, setIsPlaying] = useState(true);
-  const current = albums[0];
+  const [songId, setSongId] = useState(SONGS[0]?.id);
+  const [playing, setPlaying] = useState(false);
+
+  const song: Song | undefined = SONGS.find((s) => s.id === songId) ?? SONGS[0];
+  const lyrics = useMemo(() => parseLyrics(song?.lyrics), [song]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] font-sans text-white selection:bg-pink-500/30">
-      {/* Ambient glow */}
-      <div className="pointer-events-none fixed left-1/2 top-0 z-0 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-fuchsia-900/20 blur-[140px]" />
-
-      {/* Sticky header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/5 bg-[#0a0a0a]/70 px-6 py-4 backdrop-blur-xl sm:px-10 lg:px-16">
-        <div className="flex items-center gap-4">
+    <div className="flex h-screen flex-col overflow-hidden bg-[#0a0a0a] font-sans text-white">
+      {/* Top bar */}
+      <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="group rounded-full border border-white/10 bg-white/5 p-2.5 transition-colors hover:bg-white/10"
+            className="-ml-1 rounded-full p-2 transition-colors hover:bg-white/10"
             aria-label="Back home"
           >
-            <ArrowLeft className="h-5 w-5 text-white/70 group-hover:text-white" />
+            <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-xl font-bold tracking-tight">音乐 · Music</h1>
+          <div className="flex items-baseline gap-2">
+            <span className="h-4 w-1 rounded-full" style={{ backgroundColor: ACCENT }} />
+            <h1 className="text-base font-semibold tracking-tight">音乐 · Music</h1>
+          </div>
         </div>
-        <p className="hidden font-mono text-xs uppercase tracking-widest text-white/30 sm:block">
-          Listening Library
-        </p>
-      </header>
+        <p className="hidden text-[11px] text-white/35 sm:block">本地精选 · 手动编辑歌单</p>
+      </div>
 
-      <main className="relative z-10 mx-auto max-w-[1600px] px-6 pb-32 pt-8 sm:px-10 lg:px-16">
-        {/* Artists */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-14"
-        >
-          <SectionHeader title="歌手" sub="Artists you love" />
-          <div className="grid grid-cols-3 gap-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-            {artists.map((a) => (
-              <button key={a.id} className="group flex flex-col items-center gap-3 text-center">
-                <div className="relative aspect-square w-full overflow-hidden rounded-full shadow-lg shadow-black/40 ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-105">
-                  <img
-                    src={img(a.seed, 300)}
-                    alt={a.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </div>
-                <span className="w-full truncate text-sm font-medium text-white/80 group-hover:text-white">
-                  {a.name}
-                </span>
-              </button>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Albums */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-14"
-        >
-          <SectionHeader title="专辑" sub="Albums in your collection" />
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {albums.map((al) => (
-              <button key={al.id} className="group text-left">
-                <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-xl shadow-black/40 ring-1 ring-white/5">
-                  <img
-                    src={img(al.seed)}
-                    alt={al.title}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <div className="absolute bottom-3 right-3 flex h-11 w-11 translate-y-2 items-center justify-center rounded-full bg-white text-black opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                    <Play className="ml-0.5 h-5 w-5 fill-current" />
+      {/* Library + Player */}
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[1fr_400px]">
+        {/* Library */}
+        <div className="custom-scrollbar order-2 min-h-0 overflow-y-auto px-5 py-6 sm:px-8 lg:order-1">
+          {/* Artists */}
+          <section className="mb-10">
+            <SectionTitle cn="歌手" en="Artists" />
+            <div className="flex flex-wrap gap-x-7 gap-y-5">
+              {ARTISTS.map((a) => (
+                <div key={a.id} className="flex w-16 flex-col items-center gap-2 text-center">
+                  <Cover name={a.name} cover={a.cover} circle className="h-16 w-16" textClass="text-xl" />
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium text-white/85">{a.name}</p>
+                    {a.enName && <p className="truncate text-[10px] text-white/35">{a.enName}</p>}
                   </div>
                 </div>
-                <h3 className="mt-3 truncate text-sm font-semibold text-white">{al.title}</h3>
-                <p className="truncate text-xs text-white/40">{al.artist}</p>
-              </button>
-            ))}
-          </div>
-        </motion.section>
+              ))}
+            </div>
+          </section>
 
-        {/* Playlists */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <SectionHeader title="歌单" sub="Your playlists" />
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
-            {playlists.map((pl) => (
-              <button key={pl.id} className="group text-left">
-                <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-xl shadow-black/40 ring-1 ring-white/5">
-                  <img
-                    src={img(pl.seed)}
-                    alt={pl.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-4">
-                    <h3 className="truncate text-sm font-bold text-white">{pl.name}</h3>
-                    <p className="text-xs text-white/60">{pl.tracks} 首</p>
+          {/* Albums */}
+          <section className="mb-10">
+            <SectionTitle cn="专辑" en="Albums" />
+            <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+              {ALBUMS.map((al) => (
+                <div key={al.id} className="flex items-center gap-3">
+                  <Cover name={al.title} cover={al.cover} className="h-14 w-14 shrink-0" textClass="text-lg" />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{al.title}</p>
+                    <p className="truncate text-xs text-white/40">
+                      {al.artist}
+                      {al.year ? ` · ${al.year}` : ''}
+                    </p>
                   </div>
                 </div>
-              </button>
-            ))}
-          </div>
-        </motion.section>
-      </main>
+              ))}
+            </div>
+          </section>
 
-      {/* Now playing bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#101010]/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-6 py-3 sm:px-10 lg:px-16">
-          <img
-            src={img(current.seed, 120)}
-            alt={current.title}
-            className="h-12 w-12 rounded-lg object-cover shadow-md"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-white">{current.title}</p>
-            <p className="truncate text-xs text-white/50">{current.artist}</p>
-          </div>
-          <button className="hidden text-white/50 transition-colors hover:text-pink-500 sm:block">
-            <Heart className="h-5 w-5" />
-          </button>
-          <div className="flex items-center gap-5">
-            <button className="text-white/70 transition-colors hover:text-white">
-              <SkipBack className="h-5 w-5 fill-current" />
-            </button>
-            <button
-              onClick={() => setIsPlaying((p) => !p)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105"
-              aria-label={isPlaying ? 'Pause' : 'Play'}
-            >
-              {isPlaying ? (
-                <Pause className="h-5 w-5 fill-current" />
-              ) : (
-                <Play className="ml-0.5 h-5 w-5 fill-current" />
-              )}
-            </button>
-            <button className="text-white/70 transition-colors hover:text-white">
-              <SkipForward className="h-5 w-5 fill-current" />
-            </button>
-          </div>
+          {/* Songs */}
+          <section>
+            <SectionTitle cn="歌曲" en="Songs" />
+            <div className="flex flex-col">
+              {SONGS.map((s, i) => {
+                const active = s.id === song?.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setSongId(s.id)}
+                    className={`group flex items-center gap-3 border-b border-white/[0.04] py-2 pl-2 pr-3 text-left transition-colors hover:bg-white/[0.04] ${
+                      active ? 'bg-white/[0.05]' : ''
+                    }`}
+                  >
+                    <span
+                      className="w-5 shrink-0 text-center text-xs tabular-nums"
+                      style={{ color: active ? ACCENT : 'rgba(255,255,255,0.3)' }}
+                    >
+                      {i + 1}
+                    </span>
+                    <Cover name={s.title} cover={s.cover} className="h-10 w-10 shrink-0" textClass="text-sm" />
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="truncate text-sm font-medium"
+                        style={active ? { color: ACCENT } : undefined}
+                      >
+                        {s.title}
+                      </p>
+                      <p className="truncate text-xs text-white/40">{s.artist}</p>
+                    </div>
+                    <span className="hidden truncate text-xs text-white/30 sm:block">{s.album}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+
+        {/* Player / Lyrics */}
+        <div className="order-1 flex min-h-0 flex-col border-b border-white/10 bg-[#0c0c0c] lg:order-2 lg:border-b-0 lg:border-l">
+          {song && (
+            <>
+              {/* Cover + meta */}
+              <div className="flex shrink-0 flex-col items-center px-6 pt-6">
+                <Cover
+                  name={song.title}
+                  cover={song.cover}
+                  className="aspect-square w-40 shadow-lg shadow-black/40 lg:w-52"
+                  textClass="text-5xl"
+                />
+                <h2 className="mt-4 max-w-full truncate text-center text-lg font-semibold">{song.title}</h2>
+                <p className="mt-0.5 truncate text-sm text-white/45">
+                  {song.artist}
+                  {song.album ? ` · ${song.album}` : ''}
+                </p>
+              </div>
+
+              {/* Lyrics */}
+              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-6 py-5">
+                {lyrics.length > 0 ? (
+                  <motion.div
+                    key={song.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.4 }}
+                    className="space-y-2 text-center"
+                  >
+                    {lyrics.map((line, i) =>
+                      line ? (
+                        <p key={i} className="text-sm leading-relaxed text-white/70">
+                          {line}
+                        </p>
+                      ) : (
+                        <div key={i} className="h-3" />
+                      ),
+                    )}
+                  </motion.div>
+                ) : (
+                  <p className="mt-6 text-center text-sm text-white/30">暂无歌词</p>
+                )}
+              </div>
+
+              {/* Controls (visual) */}
+              <div className="shrink-0 border-t border-white/10 px-6 py-4">
+                <div className="mb-3 h-1 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full w-1/3 rounded-full" style={{ backgroundColor: ACCENT }} />
+                </div>
+                <div className="flex items-center justify-center gap-6">
+                  <button className="text-white/60 transition-colors hover:text-white" aria-label="Previous">
+                    <SkipBack className="h-5 w-5 fill-current" />
+                  </button>
+                  <button
+                    onClick={() => setPlaying((p) => !p)}
+                    className="flex h-12 w-12 items-center justify-center rounded-full text-white transition-transform hover:scale-105"
+                    style={{ backgroundColor: ACCENT }}
+                    aria-label={playing ? 'Pause' : 'Play'}
+                  >
+                    {playing ? (
+                      <Pause className="h-5 w-5 fill-current" />
+                    ) : (
+                      <Play className="ml-0.5 h-5 w-5 fill-current" />
+                    )}
+                  </button>
+                  <button className="text-white/60 transition-colors hover:text-white" aria-label="Next">
+                    <SkipForward className="h-5 w-5 fill-current" />
+                  </button>
+                  <button className="ml-2 text-white/40 transition-colors hover:text-white" aria-label="Like">
+                    <Heart className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
