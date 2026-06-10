@@ -35,6 +35,21 @@
 }
 
 @layer utilities {
+  /* Bold auto-scrolling marquee band for the music masthead. */
+  .marquee {
+    animation: marquee 26s linear infinite;
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+@layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }

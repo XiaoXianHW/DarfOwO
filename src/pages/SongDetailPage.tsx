@@ -45,7 +45,10 @@ export const SongDetailPage = () => {
 
   const duration = useMemo(() => {
     const lyricEnd = lines.length ? lines[lines.length - 1].time + 6 : 0;
-    return Math.max(lyricEnd, track?.dur ?? 0, 1);
+    const known = Math.max(lyricEnd, track?.dur ?? 0);
+    // No lyrics and no known length (e.g. an artist's hot track): use a sensible
+    // default so the visual playhead doesn't race through in ~1s and auto-skip.
+    return known > 0 ? known : 210;
   }, [lines, track]);
 
   const go = useCallback(

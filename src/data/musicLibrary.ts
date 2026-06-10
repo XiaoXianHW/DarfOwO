@@ -931,3 +931,5 @@ for (const t of [
 
 export const getTrack = (id: string): Track | undefined => TRACK_INDEX[id];
 export const getSong = (id: string): Song | undefined => SONGS.find((s) => s.id === id);
+export const getArtist = (id: string): Artist | undefined => ARTISTS.find((a) => a.id === id);
+export const getAlbum = (id: string): Album | undefined => ALBUMS.find((a) => a.id === id);
