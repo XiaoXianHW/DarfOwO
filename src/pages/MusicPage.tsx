@@ -24,7 +24,7 @@ export const MusicPage = () => {
   const band = ARTISTS.map((a) => a.name);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-[#0a0a0a] font-sans text-white selection:bg-[#ec4141]/30">
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#0a0a0a] font-sans text-white selection:bg-[#ec4141]/30 lg:h-screen lg:overflow-hidden">
       {/* ===== Masthead — oversized editorial header ===== */}
       <header className="relative shrink-0 px-6 pt-5 lg:px-10">
         <div className="flex items-start justify-between">
@@ -80,19 +80,19 @@ export const MusicPage = () => {
 
       {/* ===== Body — asymmetric: big featured index (left) + artists/albums (right) ===== */}
       <motion.div
-        className="grid min-h-0 flex-1 grid-rows-[1.2fr_1fr] gap-0 lg:grid-cols-[1.5fr_1fr] lg:grid-rows-1"
+        className="flex flex-1 flex-col lg:grid lg:min-h-0 lg:grid-cols-[1.5fr_1fr] lg:grid-rows-1"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.35 }}
       >
         {/* LEFT — MOST PLAYED, big numbered editorial list */}
-        <section className="flex min-h-0 flex-col border-white/5 lg:border-r">
+        <section className="flex flex-col border-white/5 lg:min-h-0 lg:border-r">
           <div className="flex shrink-0 items-baseline gap-2 px-6 pb-2 pt-5 lg:px-8">
             <span className="font-mono text-[11px] tracking-[0.25em] text-white/40">MOST&nbsp;PLAYED</span>
             <span className="text-xs text-white/65">我最常听</span>
             <span className="font-mono text-[10px] text-white/25">/ {FEATURED.length}</span>
           </div>
-          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto pb-6">
+          <div className="custom-scrollbar pb-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
             {FEATURED.map((t, i) => (
               <button
                 key={t.id}
@@ -116,15 +116,15 @@ export const MusicPage = () => {
         </section>
 
         {/* RIGHT — artists (small-image list) + albums (cover strip) */}
-        <section className="grid min-h-0 grid-rows-[1.4fr_1fr] overflow-hidden border-t border-white/5 lg:border-t-0">
+        <section className="flex flex-col border-t border-white/5 lg:grid lg:min-h-0 lg:grid-rows-[1.4fr_1fr] lg:overflow-hidden lg:border-t-0">
           {/* ARTISTS — compact small-image list, click → detail */}
-          <div className="flex min-h-0 flex-col border-b border-white/5">
+          <div className="flex flex-col border-b border-white/5 lg:min-h-0">
             <div className="flex shrink-0 items-baseline gap-2 px-6 pb-2 pt-5">
               <span className="font-mono text-[11px] tracking-[0.25em] text-white/40">ARTISTS</span>
               <span className="text-xs text-white/65">常听歌手</span>
               <span className="font-mono text-[10px] text-white/25">/ {ARTISTS.length}</span>
             </div>
-            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-3">
+            <div className="custom-scrollbar px-3 pb-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
               {ARTISTS.map((a) => (
                 <button
                   key={a.id}
@@ -145,13 +145,13 @@ export const MusicPage = () => {
           </div>
 
           {/* ALBUMS — bold horizontal cover strip, click → detail */}
-          <div className="flex min-h-0 flex-col">
+          <div className="flex flex-col lg:min-h-0">
             <div className="flex shrink-0 items-baseline gap-2 px-6 pb-2 pt-4">
               <span className="font-mono text-[11px] tracking-[0.25em] text-white/40">ALBUMS</span>
               <span className="text-xs text-white/65">专辑 / 合辑</span>
               <span className="font-mono text-[10px] text-white/25">/ {ALBUMS.length}</span>
             </div>
-            <div className="custom-scrollbar flex min-h-0 flex-1 items-start gap-3 overflow-x-auto px-6 pb-4">
+            <div className="custom-scrollbar flex items-start gap-3 overflow-x-auto px-6 pb-4 lg:min-h-0 lg:flex-1">
               {ALBUMS.map((al) => (
                 <button
                   key={al.id}

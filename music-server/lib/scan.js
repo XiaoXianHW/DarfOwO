@@ -171,64 +171,58 @@ export async function scanLibrary(cfg) {
     }
   }
 
-  // ===== 分组：专辑（按文件夹）=====
-  const albumOverrides = cfg.albums || {};
-  const albumMap = new Map();
-  for (const t of all) {
-    const key = t._folder || '__root__';
-    if (!albumMap.has(key)) {
-      const ov = albumOverrides[t._folderName] || albumOverrides[key] || {};
-      albumMap.set(key, {
-        id: slug('album:' + key),
-        name: ov.name || t._folderName,
-        artist: ov.artist || t.artist,
-        year: ov.year,
-        cover: ov.cover || '',
-        note: ov.note,
-        tracks: [],
-        _artists: new Set(),
-      });
-    }
-    const a = albumMap.get(key);
-    a.tracks.push(publicTrack(t));
-    a._artists.add(t.artist);
-    if (!a.cover && t.cover) a.cover = t.cover;
-  }
-  const albums = [...albumMap.values()].map((a) => {
-    if (a._artists.size > 1 && !albumOverrides[a.name]?.artist) a.artist = 'Various Artists';
-    delete a._artists;
-    return a;
-  });
-
-  // ===== 分组：歌手 =====
+  // ===== 分组规则 =====
+  // 只有「在 config 里显式写了名字」的歌手 / 专辑才会出现在右侧（作为可点进详情的卡片），
+  // 且其歌曲从左侧「我最常听」列表中移除；其余歌曲正常留在左侧列表。
   const artistOverrides = cfg.artists || {};
-  const artistMap = new Map();
-  for (const t of all) {
-    const name = t.artist;
-    if (!artistMap.has(name)) {
-      const ov = artistOverrides[name] || {};
-      artistMap.set(name, {
-        id: slug('artist:' + name),
-        name,
-        alias: ov.alias || '',
-        cover: ov.cover || '',
-        bio: ov.bio || '',
-        hot: [],
-      });
-    }
-    const a = artistMap.get(name);
-    a.hot.push(publicTrack(t));
-    if (!a.cover && t.cover) a.cover = t.cover;
-  }
-  const artists = [...artistMap.values()];
+  const albumOverrides = cfg.albums || {};
+  const has = (obj, k) => Object.prototype.hasOwnProperty.call(obj, k);
 
-  // ===== 我最常听（FEATURED）=====
-  const featured = pickFeatured(cfg, all);
+  const claimedByArtist = (t) => has(artistOverrides, t.artist);
+  const claimedByAlbum = (t) => has(albumOverrides, t._folderName) || has(albumOverrides, t.album);
+
+  // 右侧：歌手卡片（仅 config 中写了的歌手，且确有歌曲）
+  const artists = [];
+  for (const [name, raw] of Object.entries(artistOverrides)) {
+    const ov = raw || {};
+    const hot = all.filter((t) => t.artist === name);
+    if (!hot.length) continue;
+    artists.push({
+      id: slug('artist:' + name),
+      name: ov.name || name,
+      alias: ov.alias || '',
+      cover: ov.cover || (hot.find((t) => t.cover) || {}).cover || '',
+      bio: ov.bio || '',
+      hot: hot.map(publicTrack),
+    });
+  }
+
+  // 右侧：专辑卡片（仅 config 中写了的专辑 / 文件夹名，且确有歌曲）
+  const albums = [];
+  for (const [key, raw] of Object.entries(albumOverrides)) {
+    const ov = raw || {};
+    const tracks = all.filter((t) => t._folderName === key || t.album === key);
+    if (!tracks.length) continue;
+    const artistSet = new Set(tracks.map((t) => t.artist));
+    albums.push({
+      id: slug('album:' + key),
+      name: ov.name || key,
+      artist: ov.artist || (artistSet.size === 1 ? [...artistSet][0] : 'Various Artists'),
+      year: ov.year,
+      cover: ov.cover || (tracks.find((t) => t.cover) || {}).cover || '',
+      note: ov.note,
+      tracks: tracks.map(publicTrack),
+    });
+  }
+
+  // 左侧：我最常听 = 未被任何已配置歌手 / 专辑「认领」的歌曲
+  const leftover = all.filter((t) => !claimedByArtist(t) && !claimedByAlbum(t));
+  const featured = orderFeatured(cfg, leftover);
 
   const library = {
     generatedAt: new Date().toISOString(),
     counts: { tracks: all.length, songs: songs.length, artists: artists.length, albums: albums.length },
-    featured: featured.map(publicTrack),
+    featured,
     songs,
     artists,
     albums,
@@ -242,35 +236,25 @@ function publicTrack(t) {
   return { id: t.id, name: t.name, artist: t.artist, album: t.album, cover: t.cover, dur: t.dur, audio: t.audio };
 }
 
-/** 选出「我最常听」：config.liked > 指定文件夹 > 含歌词曲目 > 全部。 */
-function pickFeatured(cfg, all) {
+/**
+ * 左侧「我最常听」的排序。默认按扫描顺序原样返回；
+ * 若 config.liked 写了歌名/相对路径，则把命中的曲目排到最前面（其余跟在后面）。
+ */
+function orderFeatured(cfg, pool) {
   const liked = cfg.liked || [];
-  if (liked.length) {
-    const out = [];
-    for (const want of liked) {
-      const w = String(want).toLowerCase();
-      const hit = all.find(
-        (t) =>
-          t._rel.toLowerCase() === w ||
-          `${t.artist} - ${t.name}`.toLowerCase() === w ||
-          t.name.toLowerCase() === w,
-      );
-      if (hit) out.push(hit);
-    }
-    if (out.length) return out;
-  }
-  const folder = cfg.likedFolder;
-  if (folder) {
-    const inFolder = all.filter(
-      (t) => t._folderName === folder || t._folder === folder,
-    );
-    if (inFolder.length) return inFolder;
-  }
-  const known = ['喜欢', '我喜欢', '我最常听', 'liked', 'favorites', 'favourite'];
-  const auto = all.filter((t) => known.includes(t._folderName.toLowerCase()));
-  if (auto.length) return auto;
+  if (!liked.length) return pool.map(publicTrack);
 
-  const withLyrics = all.filter((t) => t.dur > 0);
-  const pool = withLyrics.length ? all : all;
-  return pool.slice(0, cfg.featuredLimit || 50);
+  const rest = [...pool];
+  const head = [];
+  for (const want of liked) {
+    const w = String(want).toLowerCase();
+    const idx = rest.findIndex(
+      (t) =>
+        t._rel.toLowerCase() === w ||
+        `${t.artist} - ${t.name}`.toLowerCase() === w ||
+        t.name.toLowerCase() === w,
+    );
+    if (idx >= 0) head.push(rest.splice(idx, 1)[0]);
+  }
+  return [...head, ...rest].map(publicTrack);
 }
