@@ -1,9 +1,11 @@
 // Flat-color monogram fallback when an image is missing or fails to load.
 // No gradients — a single solid color picked deterministically from the name.
-// Loaded covers are cached in-memory (see imageCache) so switching sort/group
-// modes or re-rendering never re-fetches or flickers an already-seen cover.
-import { useEffect, useState } from 'react';
-import { hasFailed, isLoaded, preload } from './imageCache';
+// Covers are lazy-loaded natively (loading="lazy") so only visible rows fetch.
+// A small in-memory set (see imageCache) records covers that already finished
+// loading so they render instantly without re-playing the fade-in when their
+// row remounts after a sort/group switch.
+import { useState } from 'react';
+import { hasFailed, isLoaded, markFailed, markLoaded } from './imageCache';
 
 const PALETTE = [
   '#ec4141',
@@ -35,31 +37,20 @@ interface CoverProps {
 export function Cover({ name, cover, className = '', circle = false, textClass = 'text-2xl' }: CoverProps) {
   const shape = circle ? 'rounded-full' : 'rounded-md';
 
-  // 'ready' once the cover is decoded (either already cached or just loaded).
+  // Covers already loaded earlier this session render at full opacity right
+  // away (no fade-in replay); first-time covers fade in once decoded.
   const [ready, setReady] = useState(() => isLoaded(cover));
   const [failed, setFailed] = useState(() => hasFailed(cover));
-
-  useEffect(() => {
-    if (!cover) return;
-    if (isLoaded(cover)) { setReady(true); setFailed(false); return; }
-    if (hasFailed(cover)) { setFailed(true); return; }
-    setReady(false);
-    setFailed(false);
-    let alive = true;
-    preload(cover).then((ok) => {
-      if (!alive) return;
-      if (ok) setReady(true);
-      else setFailed(true);
-    });
-    return () => { alive = false; };
-  }, [cover]);
 
   if (cover && !failed) {
     return (
       <img
         src={cover}
         alt={name}
+        loading="lazy"
         decoding="async"
+        onLoad={() => { markLoaded(cover); setReady(true); }}
+        onError={() => { markFailed(cover); setFailed(true); }}
         className={`${shape} object-cover transition-opacity duration-300 ${ready ? 'opacity-100' : 'opacity-0'} ${className}`}
       />
     );
