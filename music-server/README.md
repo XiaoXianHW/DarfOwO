@@ -63,11 +63,29 @@ music/
 | `host` | `MUSIC_HOST` | `0.0.0.0` | 监听地址 |
 | `musicDir` | `MUSIC_DIR` | `./music` | 音乐根目录 |
 | `publicBaseUrl` | `MUSIC_BASE_URL` | `''` | 对外域名；填了则音频 / 封面返回绝对 URL |
-| `liked` / `likedFolder` | `MUSIC_LIKED_FOLDER` | 自动 | 「我最常听」选取规则 |
+| `liked` | — | `[]` | 左侧列表排序（命中项排到最前），可留空 |
 | `cors` / `corsOrigin` | `MUSIC_CORS_ORIGIN` | `*` | 跨域 |
 | `watch` | `MUSIC_WATCH` | 开 | 目录热更新（`0` 关闭） |
 
-`config.js` 里还可手动覆盖歌手简介 / 别名 / 头像（`artists`）与专辑说明 / 年份（`albums`）。
+### 左 / 右分区（`artists` / `albums`）
+
+音乐页分两块：**左侧**是「我最常听」单曲列表，**右侧**是歌手 / 专辑卡片。
+
+- 在 `config.js` 的 `artists` / `albums` 里**写了名字**的歌手 / 专辑 → 只出现在**右侧**（点进去看详情和歌曲列表），其歌曲**从左侧列表移除**。
+- **没写**名字的歌曲 → 正常留在**左侧**列表。
+
+```js
+// config.js
+artists: {
+  'The Weeknd': {},                       // 仅突出到右侧
+  'Lukas Graham': { alias: 'Lukas', bio: '…', cover: 'https://…' },
+},
+albums: {
+  'After Hours': { year: 2020, note: '…', cover: 'https://…' }, // key = 文件夹名 / 专辑名
+},
+```
+
+值可留空 `{}`（只突出，不改信息），也可覆盖别名 / 简介 / 头像 / 年份 / 封面。
 
 ## 与站点对接
 

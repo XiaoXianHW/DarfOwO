@@ -220,9 +220,7 @@ export const SongDetailPage = () => {
         </div>
 
         {/* RIGHT — lyrics with focus blur + smooth transform scroll */}
-        <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-[#070707]/70 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-[#070707]/80 to-transparent" />
+        <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-hidden text-center">
           {lines.length === 0 ? (
             <div className="flex h-full items-center justify-center">
               <p className="font-mono text-sm tracking-wider text-white/40">纯音乐 · 暂无歌词</p>
@@ -244,7 +242,7 @@ export const SongDetailPage = () => {
                     key={i}
                     ref={(el) => { lineRefs.current[i] = el; }}
                     onClick={() => player.seek(line.time)}
-                    className={`cursor-pointer py-4 transition-all duration-300 lg:py-[18px] ${
+                    className={`cursor-pointer py-2 transition-all duration-300 lg:py-2.5 ${
                       active ? 'text-white' : 'text-white/35 hover:text-white/60'
                     }`}
                     style={{ filter: `blur(${blur}px)` }}
@@ -253,7 +251,7 @@ export const SongDetailPage = () => {
                       {line.t}
                     </p>
                     {line.x && (
-                      <p className={`mt-1 leading-snug ${active ? 'text-base text-white/70' : 'text-sm text-white/25'}`}>
+                      <p className={`mt-0.5 leading-snug ${active ? 'text-base text-white/70' : 'text-sm text-white/25'}`}>
                         {line.x}
                       </p>
                     )}
