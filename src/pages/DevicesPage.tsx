@@ -19,8 +19,9 @@ export const DevicesPage = () => {
         style={{ backgroundImage: PIXEL_GRID }}
       />
 
-      {/* Top bar */}
-      <div className="relative z-10 flex shrink-0 items-center justify-between border-b-2 border-[#1a2030] px-4 py-3 sm:px-6">
+      {/* Top bar — keep above the device grid so the music popup (fixed,
+          nested here) isn't trapped beneath the grid's stacking context. */}
+      <div className="relative z-30 flex shrink-0 items-center justify-between border-b-2 border-[#1a2030] px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
