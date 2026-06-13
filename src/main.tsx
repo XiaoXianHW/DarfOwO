@@ -8,11 +8,13 @@ import { CollectionPage } from './pages/CollectionPage.tsx';
 import { SongDetailPage } from './pages/SongDetailPage.tsx';
 import { StatusPage } from './pages/StatusPage.tsx';
 import { StatusDetailPage } from './pages/StatusDetailPage.tsx';
+import { PlayerProvider } from './components/music/PlayerProvider.tsx';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
+      <PlayerProvider>
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/devices" element={<DevicesPage />} />
@@ -23,6 +25,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/status" element={<StatusPage />} />
         <Route path="/status/:metricId" element={<StatusDetailPage />} />
       </Routes>
+      </PlayerProvider>
     </BrowserRouter>
   </StrictMode>,
 );

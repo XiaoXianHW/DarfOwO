@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { MouseEvent } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { useResponsive } from './hooks/useResponsive';
 import { useHeartRate } from './hooks/useHeartRate';
@@ -10,26 +9,20 @@ import { Avatar } from './components/Avatar';
 import { MobileLayout } from './components/MobileLayout';
 import { Footer } from './components/Footer';
 import { TopControls } from './components/TopControls';
+import { MusicWidget } from './components/music/MusicWidget';
 import { Tagline } from './components/Tagline';
 import { ProfileOverlay } from './components/ProfileOverlay';
 import type { SideType, MousePosition } from './types';
 
+const NO_3D = false;
+const STATIC_MOUSE: MousePosition = { x: 0, y: 0 };
+
 export default function App() {
   const [hoveredSide, setHoveredSide] = useState<SideType>(null);
-  const [is3D, setIs3D] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [mousePos, setMousePos] = useState<MousePosition>({ x: 0, y: 0 });
-  
+
   const isMobile = useResponsive();
   const heartRate = useHeartRate(isProfileOpen);
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!is3D || isMobile) return;
-    const { clientX, clientY } = e;
-    const x = (clientX / window.innerWidth) * 2 - 1;
-    const y = -((clientY / window.innerHeight) * 2 - 1);
-    setMousePos({ x, y });
-  };
 
   const { clip1, clip2, divider } = getClips(isMobile, hoveredSide);
   const avatarAnim = getAvatarAnim(isMobile, hoveredSide);
@@ -38,7 +31,6 @@ export default function App() {
     <main 
       className="relative w-screen h-screen overflow-hidden bg-[#111111]"
       style={{ fontFamily: 'MiSans, Inter, ui-sans-serif, system-ui, sans-serif' }}
-      onMouseMove={handleMouseMove}
     >
       <Background 
         clip1={clip1} 
@@ -46,7 +38,7 @@ export default function App() {
         divider={divider} 
         hoveredSide={hoveredSide} 
         isMobile={isMobile}
-        is3D={is3D}
+        is3D={NO_3D}
       />
 
       {!isMobile && (
@@ -57,8 +49,8 @@ export default function App() {
               clipPath={clip2} 
               hoveredSide={hoveredSide} 
               isMobile={isMobile}
-              is3D={is3D}
-              mousePos={mousePos}
+              is3D={NO_3D}
+              mousePos={STATIC_MOUSE}
               onHover={setHoveredSide}
             />
             <SideCard 
@@ -66,15 +58,15 @@ export default function App() {
               clipPath={clip1} 
               hoveredSide={hoveredSide} 
               isMobile={isMobile}
-              is3D={is3D}
-              mousePos={mousePos}
+              is3D={NO_3D}
+              mousePos={STATIC_MOUSE}
               onHover={setHoveredSide}
             />
             <Avatar 
               hoveredSide={hoveredSide} 
               isProfileOpen={isProfileOpen} 
               avatarAnim={avatarAnim}
-              is3D={is3D}
+              is3D={NO_3D}
               onOpenProfile={() => setIsProfileOpen(true)}
             />
           </div>
@@ -90,7 +82,10 @@ export default function App() {
       )}
 
       <Footer />
-      {!isMobile && <TopControls is3D={is3D} onToggle3D={() => setIs3D(!is3D)} />}
+      {!isMobile && <TopControls />}
+      <div className="fixed top-6 right-6 z-[80]">
+        <MusicWidget />
+      </div>
       <Tagline hoveredSide={hoveredSide} />
 
       <AnimatePresence>

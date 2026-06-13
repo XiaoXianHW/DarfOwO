@@ -4,6 +4,7 @@ import { ArrowLeft, ExternalLink, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAlbum, getArtist, type Track } from '../data/musicLibrary';
 import { Cover } from '../components/music/Cover';
+import { MusicWidget } from '../components/music/MusicWidget';
 
 function fmt(sec: number): string {
   if (!isFinite(sec) || sec <= 0) return '';
@@ -84,6 +85,9 @@ export const CollectionPage = ({ kind }: { kind: Kind }) => {
       >
         <ArrowLeft className="h-6 w-6" />
       </button>
+      <div className="absolute right-5 top-5 z-20">
+        <MusicWidget />
+      </div>
 
       <motion.div
         className="relative z-10 grid h-full min-h-0 grid-rows-[auto_1fr] gap-0 lg:grid-cols-[clamp(320px,38%,520px)_1fr] lg:grid-rows-1"

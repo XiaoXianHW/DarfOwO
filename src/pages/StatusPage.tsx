@@ -3,6 +3,7 @@ import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMetrics } from '../hooks/useMetrics';
 import { StatusCard } from '../components/status/StatusCard';
+import { MusicWidget } from '../components/music/MusicWidget';
 import { formatClock } from '../utils/format';
 
 // Bento spans so the 8 cards tile a 4×4 grid with no whitespace on large screens.
@@ -34,14 +35,17 @@ export const StatusPage = () => {
             {updatedAt ? `最后刷新 ${formatClock(updatedAt)}` : '最后刷新 —'} · 数据源自小米运动健康 · 小米手环 10
           </p>
         </div>
-        <button
-          onClick={reload}
-          disabled={loading}
-          className="-mr-2 rounded-full p-2 transition-colors hover:bg-white/10 disabled:opacity-40"
-          aria-label="Refresh"
-        >
-          <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={reload}
+            disabled={loading}
+            className="rounded-full p-2 transition-colors hover:bg-white/10 disabled:opacity-40"
+            aria-label="Refresh"
+          >
+            <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <MusicWidget />
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">

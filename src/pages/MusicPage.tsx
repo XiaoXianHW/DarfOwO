@@ -3,6 +3,7 @@ import { ArrowLeft, ChevronRight, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ALBUMS, ARTISTS, FEATURED, type Track } from '../data/musicLibrary';
 import { Cover } from '../components/music/Cover';
+import { MusicWidget } from '../components/music/MusicWidget';
 
 function fmt(sec: number): string {
   if (!isFinite(sec) || sec <= 0) return '';
@@ -34,7 +35,7 @@ export const MusicPage = () => {
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <div className="flex gap-6 pt-1 lg:gap-10">
+          <div className="flex items-start gap-6 pt-1 lg:gap-10">
             {[
               { n: ARTISTS.length, l: 'ARTISTS' },
               { n: ALBUMS.length, l: 'ALBUMS' },
@@ -47,6 +48,7 @@ export const MusicPage = () => {
                 <div className="mt-1 font-mono text-[9px] tracking-[0.25em] text-white/35">{s.l}</div>
               </div>
             ))}
+            <MusicWidget />
           </div>
         </div>
 

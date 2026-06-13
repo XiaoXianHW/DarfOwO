@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'motion/react';
 import {
   ArrowLeft, ListMusic, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X,
 } from 'lucide-react';
-import { FEATURED, getSong, getTrack, type LyricLine } from '../data/musicLibrary';
+import { getSong, getTrack, type LyricLine } from '../data/musicLibrary';
 import { Cover } from '../components/music/Cover';
+import { usePlayer } from '../components/music/PlayerProvider';
 
 function fmt(sec: number): string {
   if (!isFinite(sec) || sec < 0) sec = 0;
@@ -13,81 +15,55 @@ function fmt(sec: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-type Mode = 'loop' | 'shuffle';
-
 export const SongDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
+  const player = usePlayer();
 
   const track = id ? getTrack(id) : undefined;
   const song = id ? getSong(id) : undefined;
   const lines: LyricLine[] = song?.lines ?? [];
 
-  // Play queue passed from the library (the list you launched from); fallback to featured.
-  const queue = useMemo<string[]>(() => {
-    const st = location.state as { queue?: string[] } | null;
-    const q = st?.queue?.length ? st.queue : FEATURED.map((t) => t.id);
-    return id && !q.includes(id) ? [id, ...q] : q;
-  }, [location.state, id]);
-  const queueTitle = (location.state as { title?: string } | null)?.title ?? '我最常听';
-  const pos = Math.max(0, queue.indexOf(id ?? ''));
+  const launchState = location.state as { queue?: string[]; title?: string } | null;
 
-  const [mode, setMode] = useState<Mode>('loop');
-  const [time, setTime] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  // Drive the shared global player: start this track if it isn't already the
+  // one playing (e.g. opened directly or from the library list).
+  useEffect(() => {
+    if (!id || !track) return;
+    if (player.currentId !== id) {
+      player.play(id, launchState?.queue, launchState?.title);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  // Follow the player when it advances on its OWN (auto-skip / next / prev).
+  // `follow` only arms once the player has caught up to this route, so the
+  // initial mount (when currentId is still the previous track) can't bounce us
+  // back to whatever was playing before.
+  const follow = useRef(false);
+  useEffect(() => {
+    follow.current = false;
+  }, [id]);
+  useEffect(() => {
+    if (!id) return;
+    if (player.currentId === id) {
+      follow.current = true;
+    } else if (follow.current && player.currentId) {
+      navigate(`/music/${player.currentId}`, { state: location.state, replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [player.currentId, id]);
+
+  const { time, duration, playing, mode, queue, queueTitle } = player;
+  const pos = player.index;
+
   const [showList, setShowList] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
   const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [offset, setOffset] = useState(0);
-
-  const duration = useMemo(() => {
-    const lyricEnd = lines.length ? lines[lines.length - 1].time + 6 : 0;
-    const known = Math.max(lyricEnd, track?.dur ?? 0);
-    // No lyrics and no known length (e.g. an artist's hot track): use a sensible
-    // default so the visual playhead doesn't race through in ~1s and auto-skip.
-    return known > 0 ? known : 210;
-  }, [lines, track]);
-
-  const go = useCallback(
-    (targetId: string) => navigate(`/music/${targetId}`, { state: location.state }),
-    [navigate, location.state],
-  );
-  const pick = useCallback(
-    (dir: 1 | -1) => {
-      if (queue.length <= 1) return queue[0];
-      if (mode === 'shuffle') {
-        let n = pos;
-        while (n === pos) n = Math.floor(Math.random() * queue.length);
-        return queue[n];
-      }
-      return queue[(pos + dir + queue.length) % queue.length];
-    },
-    [queue, pos, mode],
-  );
-
-  useEffect(() => {
-    setTime(0);
-    setPlaying(true);
-  }, [id]);
-
-  // Advance the visual playhead (no real audio); auto-skip at the end.
-  useEffect(() => {
-    if (!playing) return;
-    const t = setInterval(() => {
-      setTime((prev) => {
-        const next = prev + 0.2;
-        if (next >= duration) {
-          go(pick(1));
-          return duration;
-        }
-        return next;
-      });
-    }, 200);
-    return () => clearInterval(t);
-  }, [playing, duration, go, pick]);
 
   const activeIndex = useMemo(() => {
     let idx = -1;
@@ -110,16 +86,13 @@ export const SongDetailPage = () => {
 
   // Draggable / clickable progress bar.
   const barRef = useRef<HTMLDivElement | null>(null);
-  const seekFromClientX = useCallback(
-    (clientX: number) => {
-      const bar = barRef.current;
-      if (!bar) return;
-      const r = bar.getBoundingClientRect();
-      const ratio = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
-      setTime(ratio * duration);
-    },
-    [duration],
-  );
+  const seekFromClientX = (clientX: number) => {
+    const bar = barRef.current;
+    if (!bar || !duration) return;
+    const r = bar.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+    player.seek(ratio * duration);
+  };
   const onBarDown = (e: React.PointerEvent) => {
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     seekFromClientX(e.clientX);
@@ -139,10 +112,15 @@ export const SongDetailPage = () => {
     );
   }
 
-  const pct = Math.min(100, (time / duration) * 100);
+  const pct = duration ? Math.min(100, (time / duration) * 100) : 0;
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[#070707] font-sans text-white">
+    <motion.div
+      initial={{ opacity: 0, scale: 1.03 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      className="relative h-screen overflow-hidden bg-[#070707] font-sans text-white"
+    >
       {/* Ambient background: cover, gaussian-blurred + enlarged */}
       <div
         key={track.cover}
@@ -215,7 +193,7 @@ export const SongDetailPage = () => {
           {/* Controls */}
           <div className="mt-5 flex items-center justify-center gap-5 lg:justify-start">
             <button
-              onClick={() => setMode((m) => (m === 'loop' ? 'shuffle' : 'loop'))}
+              onClick={player.cycleMode}
               className="text-white/55 transition-colors hover:text-white"
               aria-label={mode === 'loop' ? '列表循环' : '随机播放'}
               title={mode === 'loop' ? '列表循环' : '随机播放'}
@@ -224,17 +202,17 @@ export const SongDetailPage = () => {
                 ? <Repeat className="h-[18px] w-[18px]" />
                 : <Shuffle className="h-[18px] w-[18px] text-[#ec4141]" />}
             </button>
-            <button onClick={() => go(pick(-1))} className="text-white/70 transition-colors hover:text-white" aria-label="Previous">
+            <button onClick={player.prev} className="text-white/70 transition-colors hover:text-white" aria-label="Previous">
               <SkipBack className="h-6 w-6" fill="currentColor" />
             </button>
             <button
-              onClick={() => setPlaying((p) => !p)}
+              onClick={player.toggle}
               className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105"
               aria-label={playing ? 'Pause' : 'Play'}
             >
               {playing ? <Pause className="h-6 w-6" fill="currentColor" /> : <Play className="h-6 w-6 translate-x-0.5" fill="currentColor" />}
             </button>
-            <button onClick={() => go(pick(1))} className="text-white/70 transition-colors hover:text-white" aria-label="Next">
+            <button onClick={player.next} className="text-white/70 transition-colors hover:text-white" aria-label="Next">
               <SkipForward className="h-6 w-6" fill="currentColor" />
             </button>
             <span className="ml-1 font-mono text-[10px] text-white/30">{pos + 1}/{queue.length}</span>
@@ -265,7 +243,7 @@ export const SongDetailPage = () => {
                   <div
                     key={i}
                     ref={(el) => { lineRefs.current[i] = el; }}
-                    onClick={() => setTime(line.time)}
+                    onClick={() => player.seek(line.time)}
                     className={`cursor-pointer py-4 transition-all duration-300 lg:py-[18px] ${
                       active ? 'text-white' : 'text-white/35 hover:text-white/60'
                     }`}
@@ -307,11 +285,11 @@ export const SongDetailPage = () => {
           {queue.map((qid, i) => {
             const t = getTrack(qid);
             if (!t) return null;
-            const cur = qid === id;
+            const cur = qid === player.currentId;
             return (
               <button
                 key={qid}
-                onClick={() => go(qid)}
+                onClick={() => player.play(qid, queue, queueTitle)}
                 className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-white/[0.06] ${cur ? 'bg-white/[0.05]' : ''}`}
               >
                 <span className={`w-5 shrink-0 text-right font-mono text-[11px] ${cur ? 'text-[#ec4141]' : 'text-white/30'}`}>
@@ -326,6 +304,6 @@ export const SongDetailPage = () => {
           })}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
