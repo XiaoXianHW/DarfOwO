@@ -3,6 +3,7 @@
 // progress, play/pause and track skipping. Rendered on every primary page; the
 // playback state itself lives in PlayerProvider so it persists across routes.
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -83,8 +84,11 @@ export function MusicWidget() {
         )}
       </button>
 
-      {/* ===== Popup mini-player ===== */}
-      <AnimatePresence>
+      {/* ===== Popup mini-player — portaled to <body> so it escapes any host
+          page's stacking / backdrop-filter context, keeping the z-order and
+          the gaussian-blur backdrop working consistently on every page. ===== */}
+      {createPortal(
+        <AnimatePresence>
         {open && (
           <>
             <motion.div
@@ -252,8 +256,10 @@ export function MusicWidget() {
               )}
             </motion.div>
           </>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </>
   );
 }

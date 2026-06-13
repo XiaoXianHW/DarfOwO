@@ -151,9 +151,9 @@ export const SongDetailPage = () => {
       </div>
 
       {/* Main: cover + controls (left), lyrics (right) */}
-      <div className="relative z-10 flex h-[calc(100vh-64px)] flex-col gap-8 px-6 pb-8 lg:flex-row lg:items-center lg:gap-12 lg:px-14">
-        {/* LEFT — sharp cover, title, progress, controls */}
-        <div className="flex shrink-0 flex-col items-center lg:w-[40%] lg:items-start">
+      <div className="relative z-10 flex h-[calc(100vh-64px)] flex-col gap-8 px-6 pb-8 lg:flex-row lg:items-stretch lg:gap-12 lg:px-14">
+        {/* LEFT — sharp cover, title, progress, controls; anchored bottom-left on desktop */}
+        <div className="flex shrink-0 flex-col items-center lg:w-[40%] lg:items-start lg:justify-end lg:pb-6">
           <Cover
             name={track.name}
             cover={track.cover}
