@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DeviceTile } from '../components/devices/DeviceRegistry';
 import { DEVICES } from '../components/devices/inventory';
+import { MusicWidget } from '../components/music/MusicWidget';
 
 // Faint pixel-dot grid (crisp SVG rects, no gradients) for the retro backdrop.
 const PIXEL_GRID =
@@ -34,9 +35,12 @@ export const DevicesPage = () => {
             <span className="h-4 w-2 bg-[#4ade80] pixel-blink" />
           </div>
         </div>
-        <p className="font-pixel text-[8px] tracking-widest text-white/35">
-          {DEVICES.length} UNITS · ALL ONLINE
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="hidden font-pixel text-[8px] tracking-widest text-white/35 sm:block">
+            {DEVICES.length} UNITS · ALL ONLINE
+          </p>
+          <MusicWidget />
+        </div>
       </div>
 
       {/* Single-screen auto-fit grid: hero (Main Desktop PC) spans 2×2 so the
