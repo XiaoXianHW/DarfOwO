@@ -2,7 +2,7 @@
 // or a music note) that opens a popup mini-player — playlist, draggable
 // progress, play/pause and track skipping. Rendered on every primary page; the
 // playback state itself lives in PlayerProvider so it persists across routes.
-import { useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
@@ -28,6 +28,27 @@ export function MusicWidget() {
   const p = usePlayer();
   const navigate = useNavigate();
   const barRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  // Anchor the (body-portaled) popup to the trigger button's real position so
+  // its top-right corner lines up just under the button on every page,
+  // regardless of that page's header padding.
+  const [anchor, setAnchor] = useState({ top: 64, right: 12 });
+  const updateAnchor = () => {
+    const b = triggerRef.current;
+    if (!b) return;
+    const r = b.getBoundingClientRect();
+    setAnchor({ top: Math.round(r.bottom + 10), right: Math.max(8, Math.round(window.innerWidth - r.right)) });
+  };
+  useLayoutEffect(() => {
+    if (open && !expanding) updateAnchor();
+  }, [open, expanding]);
+  useEffect(() => {
+    if (!open) return;
+    const onResize = () => updateAnchor();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [open]);
 
   const expand = () => {
     if (!p.currentId) return;
@@ -63,7 +84,8 @@ export function MusicWidget() {
     <>
       {/* ===== Trigger button (top-right on every page) ===== */}
       <button
-        onClick={() => setOpen((o) => !o)}
+        ref={triggerRef}
+        onClick={() => { updateAnchor(); setOpen((o) => !o); }}
         aria-label="音乐播放器"
         title="音乐播放器"
         className={`relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur-md transition-all hover:bg-black/60 ${
@@ -109,8 +131,9 @@ export function MusicWidget() {
               className={
                 expanding
                   ? 'fixed inset-0 z-[110] flex flex-col overflow-hidden border-0 bg-[#070707] text-white'
-                  : 'fixed right-3 top-16 z-[100] flex max-h-[min(560px,calc(100vh-5rem))] w-[330px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c0c]/70 text-white shadow-2xl shadow-black/60 backdrop-blur-2xl'
+                  : 'fixed z-[100] flex max-h-[min(560px,calc(100vh-5rem))] w-[330px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c0c]/70 text-white shadow-2xl shadow-black/60 backdrop-blur-2xl'
               }
+              style={expanding ? undefined : { top: anchor.top, right: anchor.right }}
             >
               {expanding ? (
                 <ExpandHero name={p.currentTrack?.name ?? '♪'} cover={p.currentTrack?.cover} artist={p.currentTrack?.artist} />

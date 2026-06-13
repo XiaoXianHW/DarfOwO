@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowDownAZ, ArrowLeft, Disc3, Play, Shuffle, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { allTracks, ARTISTS, type Track } from '../data/musicLibrary';
+import { allTracks, type Track } from '../data/musicLibrary';
 import { Cover } from '../components/music/Cover';
 import { MusicWidget } from '../components/music/MusicWidget';
 
@@ -34,9 +34,6 @@ export const MusicPage = () => {
   const [mode, setMode] = useState<SortMode>('shuffle');
 
   const tracks = useMemo(() => allTracks(), []);
-
-  // Marquee band content (doubled for a seamless loop).
-  const band = useMemo(() => ARTISTS.map((a) => a.name), []);
 
   // Shuffle once per mount so the default order is randomized but stable while
   // browsing (re-selecting 打乱 keeps the same order until the page reloads).
@@ -80,7 +77,7 @@ export const MusicPage = () => {
       className="group relative flex w-full items-center gap-4 px-6 py-2.5 text-left transition-colors hover:bg-white/[0.05] lg:px-8"
     >
       <span className="absolute left-0 top-0 h-full w-[3px] origin-top scale-y-0 bg-[#ec4141] transition-transform duration-200 group-hover:scale-y-100" />
-      <span className="w-9 shrink-0 font-mono text-2xl font-black tabular-nums text-white/10 transition-colors group-hover:text-[#ec4141] lg:text-3xl">
+      <span className="w-9 shrink-0 text-right font-mono text-lg font-black tabular-nums text-white/15 transition-colors group-hover:text-[#ec4141] lg:w-12 lg:text-2xl">
         {String(n).padStart(2, '0')}
       </span>
       <Cover name={t.name} cover={t.cover} className="h-11 w-11 shrink-0 ring-1 ring-white/10" textClass="text-base" />
@@ -95,49 +92,32 @@ export const MusicPage = () => {
 
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#0a0a0a] font-sans text-white selection:bg-[#ec4141]/30 lg:h-screen lg:overflow-hidden">
-      {/* ===== Masthead — title beside the back button, total count on the right ===== */}
-      <header className="relative shrink-0 px-6 pt-5 lg:px-10">
-        <div className="flex items-end justify-between gap-4">
-          <div className="flex min-w-0 items-end gap-3 lg:gap-4">
+      {/* ===== Masthead ===== */}
+      <header className="shrink-0 px-6 pt-7 lg:px-12 lg:pt-10">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3 lg:gap-4">
             <button
               onClick={() => navigate('/')}
-              className="-ml-2 mb-3 shrink-0 rounded-full p-2 transition-colors hover:bg-white/10"
+              className="-ml-1 shrink-0 rounded-full p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
               aria-label="Back"
             >
-              <ArrowLeft className="h-6 w-6" />
+              <ArrowLeft className="h-5 w-5" />
             </button>
-            <h1 className="text-[56px] font-black leading-[0.82] tracking-tighter lg:text-[88px]">音乐</h1>
-            <div className="mb-3 hidden sm:block">
-              <div className="h-2 w-16 bg-[#ec4141] lg:w-24" />
-              <p className="mt-2 font-mono text-[10px] tracking-[0.3em] text-white/40 lg:text-[11px]">
-                SOUND&nbsp;LIBRARY
-              </p>
-            </div>
+            <h1 className="text-3xl font-black tracking-tight lg:text-4xl">音乐</h1>
+            <span className="hidden translate-y-[3px] font-mono text-[10px] tracking-[0.4em] text-white/25 sm:inline lg:text-[11px]">
+              SOUND&nbsp;LIBRARY
+            </span>
           </div>
 
-          <div className="flex shrink-0 items-start gap-5 pt-1 lg:gap-8">
-            <div className="text-right">
-              <div className="text-3xl font-black leading-none lg:text-4xl">{tracks.length}</div>
-              <div className="mt-1 font-mono text-[9px] tracking-[0.25em] text-white/35">首音乐 · SONGS</div>
+          <div className="flex shrink-0 items-center gap-3 lg:gap-4">
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5">
+              <span className="font-mono text-sm font-bold tabular-nums text-white/90">{tracks.length}</span>
+              <span className="text-xs text-white/45">首音乐</span>
             </div>
             <MusicWidget />
           </div>
         </div>
       </header>
-
-      {/* ===== Bold marquee band ===== */}
-      {band.length > 0 && (
-        <div className="relative mt-3 shrink-0 overflow-hidden border-y border-white/10 bg-[#ec4141] py-2">
-          <div className="marquee flex w-max whitespace-nowrap">
-            {[...band, ...band].map((name, i) => (
-              <span key={i} className="mx-5 font-mono text-sm font-bold uppercase tracking-wider text-black">
-                {name}
-                <span className="ml-10 text-black/40">✦</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ===== Body — single full-width editorial list of all songs ===== */}
       <motion.div
@@ -147,7 +127,7 @@ export const MusicPage = () => {
         transition={{ duration: 0.35 }}
       >
         {/* Sort / group — underline tabs */}
-        <div className="flex shrink-0 items-center gap-1 border-b border-white/10 px-4 pt-4 lg:px-8">
+        <div className="mt-5 flex shrink-0 items-center gap-1 border-b border-white/10 px-4 lg:mt-7 lg:px-8">
           {SORTS.map(({ key, label, icon: Icon }) => {
             const active = mode === key;
             return (

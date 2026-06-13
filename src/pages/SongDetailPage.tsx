@@ -219,8 +219,12 @@ export const SongDetailPage = () => {
           </div>
         </div>
 
-        {/* RIGHT — lyrics with focus blur + smooth transform scroll */}
-        <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-hidden text-center">
+        {/* RIGHT — Apple Music-style lyrics: big bold lines, active one lifts &
+            brightens, neighbours dim/blur, with top/bottom fade mask. */}
+        <div
+          ref={scrollRef}
+          className="relative min-h-0 flex-1 overflow-hidden text-center lg:text-left [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_15%,#000_82%,transparent)] [mask-image:linear-gradient(to_bottom,transparent,#000_15%,#000_82%,transparent)]"
+        >
           {lines.length === 0 ? (
             <div className="flex h-full items-center justify-center">
               <p className="font-mono text-sm tracking-wider text-white/40">纯音乐 · 暂无歌词</p>
@@ -229,36 +233,44 @@ export const SongDetailPage = () => {
             <div
               ref={innerRef}
               className="will-change-transform"
-              style={{ transform: `translateY(${offset}px)`, transition: 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)' }}
+              style={{ transform: `translateY(${offset}px)`, transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
             >
-              {/* top padding so the first line can reach center */}
-              <div style={{ height: '42vh' }} />
+              {/* top padding so the first line can reach the focus point */}
+              <div style={{ height: '40vh' }} />
               {lines.map((line, i) => {
                 const dist = Math.abs(i - activeIndex);
                 const active = i === activeIndex;
-                const blur = active ? 0 : dist === 1 ? 0.8 : dist === 2 ? 1.6 : 2.6;
+                const sung = i < activeIndex;
+                const blur = active ? 0 : Math.min(3.2, dist * 0.8);
+                const opacity = active ? 1 : Math.max(0.22, 1 - dist * 0.16);
                 return (
                   <div
                     key={i}
                     ref={(el) => { lineRefs.current[i] = el; }}
                     onClick={() => player.seek(line.time)}
-                    className={`cursor-pointer py-2 transition-all duration-300 lg:py-2.5 ${
-                      active ? 'text-white' : 'text-white/35 hover:text-white/60'
+                    className={`group cursor-pointer select-none px-1 py-2.5 transition-[color,filter,opacity] duration-500 lg:py-3 ${
+                      active ? 'text-white' : sung ? 'text-white/40 hover:text-white/70' : 'text-white/30 hover:text-white/60'
                     }`}
-                    style={{ filter: `blur(${blur}px)` }}
+                    style={{ filter: `blur(${blur}px)`, opacity }}
                   >
-                    <p className={`leading-snug ${active ? 'text-2xl font-semibold lg:text-[26px]' : 'text-lg lg:text-xl'}`}>
+                    <p
+                      className={`origin-left font-bold leading-tight transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                        active
+                          ? 'scale-100 text-[26px] drop-shadow-[0_2px_24px_rgba(255,255,255,0.18)] lg:text-[40px]'
+                          : 'scale-[0.94] text-[21px] lg:text-[30px]'
+                      }`}
+                    >
                       {line.t}
                     </p>
                     {line.x && (
-                      <p className={`mt-0.5 leading-snug ${active ? 'text-base text-white/70' : 'text-sm text-white/25'}`}>
+                      <p className={`mt-1 font-medium leading-snug transition-all duration-500 ${active ? 'text-base text-white/65 lg:text-lg' : 'text-sm text-white/20'}`}>
                         {line.x}
                       </p>
                     )}
                   </div>
                 );
               })}
-              <div style={{ height: '42vh' }} />
+              <div style={{ height: '40vh' }} />
             </div>
           )}
         </div>
