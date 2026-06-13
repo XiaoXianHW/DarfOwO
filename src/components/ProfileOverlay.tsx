@@ -11,11 +11,10 @@ const colorMap = {
 };
 
 interface ProfileOverlayProps {
-  heartRate: number;
   onClose: () => void;
 }
 
-export const ProfileOverlay = ({ heartRate, onClose }: ProfileOverlayProps) => {
+export const ProfileOverlay = ({ onClose }: ProfileOverlayProps) => {
   const navigate = useNavigate();
 
   return (
@@ -72,16 +71,11 @@ export const ProfileOverlay = ({ heartRate, onClose }: ProfileOverlayProps) => {
                     </div>
                     <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/70 transition-colors" />
                   </div>
-                  <div className={`mt-4 ${card.span === 2 ? 'flex justify-between items-end' : ''}`}>
+                  <div className="mt-4">
                     <div>
                       <h4 className="text-white font-medium text-lg">{card.title}</h4>
                       <p className="text-white/50 text-xs mt-1 font-light">{card.subtitle}</p>
                     </div>
-                    {card.icon === 'Activity' && (
-                      <div className="text-right">
-                        <p className="text-white font-mono text-xl">{heartRate} <span className="text-sm text-white/50">bpm</span></p>
-                      </div>
-                    )}
                   </div>
                 </div>
               );

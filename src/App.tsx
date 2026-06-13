@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { useResponsive } from './hooks/useResponsive';
-import { useHeartRate } from './hooks/useHeartRate';
 import { getClips, getAvatarAnim } from './utils/animations';
 import { Background } from './components/Background';
 import { SideCard } from './components/SideCard';
@@ -22,7 +21,6 @@ export default function App() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const isMobile = useResponsive();
-  const heartRate = useHeartRate(isProfileOpen);
 
   const { clip1, clip2, divider } = getClips(isMobile, hoveredSide);
   const avatarAnim = getAvatarAnim(isMobile, hoveredSide);
@@ -91,7 +89,6 @@ export default function App() {
       <AnimatePresence>
         {isProfileOpen && (
           <ProfileOverlay 
-            heartRate={heartRate} 
             onClose={() => setIsProfileOpen(false)} 
           />
         )}

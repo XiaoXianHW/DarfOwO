@@ -1,9 +1,8 @@
 // Global music player state shared across every page.
 //
-// Playback is REAL whenever the current track has an audio source
-// (see getAudioSrc / AUDIO_SOURCES in the music library): an <audio> element
-// drives the playhead, seeking and auto-advance. Tracks without a source fall
-// back to a simulated visual playhead so the UI still flows. The provider keeps
+// Playback is driven by a single <audio> element using the current track's
+// real audio source (see getAudioSrc / AUDIO_SOURCES in the music library),
+// which provides the playhead, seeking and auto-advance. The provider keeps
 // the queue / current track / play state so it survives route changes and can
 // be driven from both the floating MusicWidget and the immersive detail page.
 import {
@@ -19,22 +18,11 @@ import {
 import {
   FEATURED,
   getAudioSrc,
-  getSong,
   getTrack,
   type Track,
 } from '../../data/musicLibrary';
 
 export type PlayMode = 'loop' | 'shuffle';
-
-/** Fallback (simulated) duration for a track id with no real audio source. */
-function durationOf(id: string | null): number {
-  if (!id) return 0;
-  const song = getSong(id);
-  const track = getTrack(id);
-  const lyricEnd = song?.lines.length ? song.lines[song.lines.length - 1].time + 6 : 0;
-  const known = Math.max(lyricEnd, track?.dur ?? 0);
-  return known > 0 ? known : 210;
-}
 
 interface PlayerValue {
   queue: string[];
@@ -78,7 +66,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const currentTrack = currentId ? getTrack(currentId) : undefined;
   const src = useMemo(() => getAudioSrc(currentId), [currentId]);
   const hasAudio = !!src;
-  const duration = hasAudio && realDuration > 0 ? realDuration : durationOf(currentId);
+  const duration = realDuration;
 
   // Single, persistent <audio> element (created lazily, browser only).
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -206,22 +194,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       a.pause();
     }
   }, [playing, src]);
-
-  // Simulated playhead: ONLY for tracks without a real audio source.
-  useEffect(() => {
-    if (!playing || hasAudio) return;
-    const t = setInterval(() => {
-      setTime((prev) => {
-        const nx = prev + 0.2;
-        if (nx >= duration) {
-          nextRef.current();
-          return 0;
-        }
-        return nx;
-      });
-    }, 200);
-    return () => clearInterval(t);
-  }, [playing, hasAudio, duration]);
 
   const value: PlayerValue = {
     queue,
