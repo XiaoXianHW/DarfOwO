@@ -20,8 +20,10 @@ export const StatusPage = () => {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
-      {/* Top navigation */}
-      <div className="flex shrink-0 items-center justify-between border-b border-white/5 bg-[#0a0a0a]/80 px-6 py-4 backdrop-blur-xl">
+      {/* Top navigation — `relative z-30` keeps this bar's stacking context
+          (it creates one via backdrop-blur) above the content grid, so the
+          nested fixed music popup isn't painted beneath the cards. */}
+      <div className="relative z-30 flex shrink-0 items-center justify-between border-b border-white/5 bg-[#0a0a0a]/80 px-6 py-4 backdrop-blur-xl">
         <button
           onClick={() => navigate('/')}
           className="-ml-2 rounded-full p-2 transition-colors hover:bg-white/10"
