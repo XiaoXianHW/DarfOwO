@@ -37,6 +37,8 @@ interface PlayerValue {
   time: number;
   duration: number;
   mode: PlayMode;
+  /** Whether the floating real-time lyric overlay is enabled site-wide. */
+  lyricsOverlay: boolean;
   /** Start (or restart) playback of a track, optionally replacing the queue. */
   play: (id: string, queue?: string[], title?: string) => void;
   toggle: () => void;
@@ -44,6 +46,14 @@ interface PlayerValue {
   next: () => void;
   prev: () => void;
   cycleMode: () => void;
+  toggleLyricsOverlay: () => void;
+  /**
+   * Subscribe to high-frequency (rAF) playhead updates for smooth progress
+   * animation. Returns an unsubscribe fn. The callback is invoked immediately
+   * with the current time. This avoids re-rendering the whole tree 60x/sec —
+   * subscribers update their own DOM imperatively.
+   */
+  subscribeTime: (cb: (t: number) => void) => () => void;
 }
 
 const PlayerContext = createContext<PlayerValue | null>(null);
@@ -59,8 +69,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [mode, setMode] = useState<PlayMode>('loop');
+  const [lyricsOverlay, setLyricsOverlay] = useState(false);
   // Real duration reported by the <audio> element (0 until metadata loads).
   const [realDuration, setRealDuration] = useState(0);
+
+  // rAF playhead subscribers (smooth progress bars) — see subscribeTime.
+  const timeListeners = useRef(new Set<(t: number) => void>());
+  const emitTime = useCallback((t: number) => {
+    timeListeners.current.forEach((cb) => cb(t));
+  }, []);
+  const subscribeTime = useCallback((cb: (t: number) => void) => {
+    timeListeners.current.add(cb);
+    cb(audioRef.current?.currentTime ?? 0);
+    return () => {
+      timeListeners.current.delete(cb);
+    };
+  }, []);
 
   const currentId = started ? queue[index] ?? null : null;
   const currentTrack = currentId ? getTrack(currentId) : undefined;
@@ -134,6 +158,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const a = audioRef.current;
       if (a && src) a.currentTime = clamped;
       setTime(clamped);
+      emitTime(clamped);
     },
     [duration, src],
   );
@@ -143,6 +168,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const toggleLyricsOverlay = useCallback(() => setLyricsOverlay((v) => !v), []);
+
   // Keep a stable ref to `next` for event handlers / timers.
   const nextRef = useRef(next);
   nextRef.current = next;
@@ -151,7 +178,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
-    const onTime = () => setTime(a.currentTime);
+    const onTime = () => { setTime(a.currentTime); emitTime(a.currentTime); };
     const onMeta = () => setRealDuration(a.duration || 0);
     const onEnded = () => nextRef.current();
     a.addEventListener('timeupdate', onTime);
@@ -164,7 +191,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       a.removeEventListener('durationchange', onMeta);
       a.removeEventListener('ended', onEnded);
     };
-  }, []);
+  }, [emitTime]);
+
+  // Smooth playhead: while playing, push the live currentTime to subscribers
+  // every animation frame so progress bars move fluidly (the native
+  // `timeupdate` event only fires ~4x/sec, which looks stuttery).
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a || !src || !playing) return;
+    let raf = 0;
+    const loop = () => {
+      emitTime(a.currentTime);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [src, playing, emitTime]);
 
   // Load the source whenever the current track changes.
   useEffect(() => {
@@ -207,12 +249,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     time,
     duration,
     mode,
+    lyricsOverlay,
     play,
     toggle,
     seek,
     next,
     prev,
     cycleMode,
+    toggleLyricsOverlay,
+    subscribeTime,
   };
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

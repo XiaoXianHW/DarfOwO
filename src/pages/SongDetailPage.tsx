@@ -86,6 +86,20 @@ export const SongDetailPage = () => {
 
   // Draggable / clickable progress bar.
   const barRef = useRef<HTMLDivElement | null>(null);
+  const fillRef = useRef<HTMLDivElement | null>(null);
+  const thumbRef = useRef<HTMLDivElement | null>(null);
+
+  // Smooth (rAF-driven) progress: update the fill/thumb imperatively so the
+  // bar glides instead of stepping with the ~4Hz `timeupdate` event.
+  useEffect(() => {
+    return player.subscribeTime((t) => {
+      const pc = duration ? Math.min(100, (t / duration) * 100) : 0;
+      if (fillRef.current) fillRef.current.style.width = `${pc}%`;
+      if (thumbRef.current) thumbRef.current.style.left = `${pc}%`;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [duration, player.currentId, player.subscribeTime]);
+
   const seekFromClientX = (clientX: number) => {
     const bar = barRef.current;
     if (!bar || !duration) return;
@@ -112,13 +126,12 @@ export const SongDetailPage = () => {
     );
   }
 
-  const pct = duration ? Math.min(100, (time / duration) * 100) : 0;
-
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 1.03 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      // No entrance fade/scale: when arriving via the widget's expand morph the
+      // page is revealed under a fullscreen hero, so animating here would cause
+      // a visible flash at the hand-off.
+      initial={false}
       className="relative h-screen overflow-hidden bg-[#070707] font-sans text-white"
     >
       {/* Ambient background: cover, gaussian-blurred + enlarged */}
@@ -163,9 +176,6 @@ export const SongDetailPage = () => {
           <div className="mt-5 w-full text-center lg:text-left">
             <h2 className="text-2xl font-semibold leading-tight lg:text-3xl">{track.name}</h2>
             <p className="mt-1 text-sm text-white/60">{track.artist}</p>
-            <p className="mt-0.5 font-mono text-[11px] text-white/35">
-              {track.album}{song?.year ? ` · ${song.year}` : ''}
-            </p>
           </div>
 
           {/* Draggable progress */}
@@ -177,11 +187,11 @@ export const SongDetailPage = () => {
               className="group relative -my-2 cursor-pointer py-2"
             >
               <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
-                <div className="h-full rounded-full bg-white/80" style={{ width: `${pct}%` }} />
+                <div ref={fillRef} className="h-full w-0 rounded-full bg-white/80" />
               </div>
               <div
-                className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover:opacity-100"
-                style={{ left: `${pct}%` }}
+                ref={thumbRef}
+                className="absolute left-0 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover:opacity-100"
               />
             </div>
             <div className="mt-1.5 flex justify-between font-mono text-[10px] text-white/40">

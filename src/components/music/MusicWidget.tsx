@@ -7,7 +7,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import {
-  Maximize2, Music, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X,
+  Captions, Maximize2, Music, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X,
 } from 'lucide-react';
 import { getTrack } from '../../data/musicLibrary';
 import { usePlayer } from './PlayerProvider';
@@ -29,6 +29,8 @@ export function MusicWidget() {
   const navigate = useNavigate();
   const barRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const fillRef = useRef<HTMLDivElement | null>(null);
+  const thumbRef = useRef<HTMLDivElement | null>(null);
 
   // Anchor the (body-portaled) popup to the trigger button's real position so
   // its top-right corner lines up just under the button on every page,
@@ -57,12 +59,28 @@ export function MusicWidget() {
   const onExpandDone = () => {
     if (!expanding) return;
     const id = p.currentId;
-    setOpen(false);
-    setExpanding(false);
+    // Navigate first so the destination page mounts UNDER the still-present
+    // fullscreen hero, then drop the overlay a couple of frames later. This
+    // hands off without the whole screen flashing between the two views.
     if (id) navigate(`/music/${id}`);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        setOpen(false);
+        setExpanding(false);
+      }),
+    );
   };
 
-  const pct = p.duration ? Math.min(100, (p.time / p.duration) * 100) : 0;
+  // Smooth (rAF-driven) progress fill + thumb; updated imperatively so the
+  // whole widget doesn't re-render 60x/sec.
+  useEffect(() => {
+    if (!open || expanding) return;
+    return p.subscribeTime((t) => {
+      const pc = p.duration ? Math.min(100, (t / p.duration) * 100) : 0;
+      if (fillRef.current) fillRef.current.style.width = `${pc}%`;
+      if (thumbRef.current) thumbRef.current.style.left = `${pc}%`;
+    });
+  }, [open, expanding, p.duration, p.currentId, p.subscribeTime]);
 
   const seekFromClientX = (clientX: number) => {
     const bar = barRef.current;
@@ -83,28 +101,64 @@ export function MusicWidget() {
   return (
     <>
       {/* ===== Trigger button (top-right on every page) ===== */}
-      <button
-        ref={triggerRef}
-        onClick={() => { updateAnchor(); setOpen((o) => !o); }}
-        aria-label="音乐播放器"
-        title="音乐播放器"
-        className={`relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur-md transition-all hover:bg-black/60 ${
-          open ? 'ring-2 ring-[#ec4141]' : ''
-        }`}
-      >
-        {p.currentTrack?.cover ? (
-          <Cover name={p.currentTrack.name} cover={p.currentTrack.cover} className="h-full w-full" textClass="text-sm" />
-        ) : (
-          <Music className="h-5 w-5" />
+      <div className="group relative flex items-center">
+        {/* Quick controls — slide out to the LEFT on hover when a track is loaded */}
+        {p.hasTrack && (
+          <div className="pointer-events-none absolute right-full top-1/2 mr-2 flex -translate-y-1/2 translate-x-2 items-center gap-0.5 rounded-full bg-black/60 px-1.5 py-1 opacity-0 ring-1 ring-white/15 backdrop-blur-md transition-all duration-200 group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100">
+            <button
+              onClick={(e) => { e.stopPropagation(); p.prev(); }}
+              className="flex h-7 w-7 items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="上一首"
+            >
+              <SkipBack className="h-3.5 w-3.5" fill="currentColor" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); p.toggle(); }}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105"
+              aria-label={p.playing ? '暂停' : '播放'}
+            >
+              {p.playing
+                ? <Pause className="h-3.5 w-3.5" fill="currentColor" />
+                : <Play className="h-3.5 w-3.5 translate-x-px" fill="currentColor" />}
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); p.next(); }}
+              className="flex h-7 w-7 items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="下一首"
+            >
+              <SkipForward className="h-3.5 w-3.5" fill="currentColor" />
+            </button>
+          </div>
         )}
-        {p.playing && (
-          <span className="absolute bottom-1 right-1 flex h-2.5 items-end gap-[1.5px]">
-            <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '0ms' }} />
-            <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '150ms' }} />
-            <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '300ms' }} />
-          </span>
-        )}
-      </button>
+
+        <button
+          ref={triggerRef}
+          onClick={() => { updateAnchor(); setOpen((o) => !o); }}
+          aria-label="音乐播放器"
+          title="音乐播放器"
+          className={`relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur-md transition-all hover:bg-black/60 ${
+            open ? 'ring-2 ring-[#ec4141]' : ''
+          }`}
+        >
+          {p.currentTrack?.cover ? (
+            <Cover
+              name={p.currentTrack.name}
+              cover={p.currentTrack.cover}
+              className={`h-full w-full ${p.playing ? 'animate-spin-slow' : ''}`}
+              textClass="text-sm"
+            />
+          ) : (
+            <Music className="h-5 w-5" />
+          )}
+          {p.playing && (
+            <span className="absolute bottom-1 right-1 flex h-2.5 items-end gap-[1.5px]">
+              <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '0ms' }} />
+              <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '150ms' }} />
+              <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '300ms' }} />
+            </span>
+          )}
+        </button>
+      </div>
 
       {/* ===== Popup mini-player — portaled to <body> so it escapes any host
           page's stacking / backdrop-filter context, keeping the z-order and
@@ -146,6 +200,17 @@ export function MusicWidget() {
                   <span className="truncate text-xs text-white/65">{p.queueTitle}</span>
                 </div>
                 <div className="flex items-center gap-0.5">
+                  <button
+                    onClick={p.toggleLyricsOverlay}
+                    disabled={!p.hasTrack}
+                    className={`rounded-full p-1.5 transition-colors hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent ${
+                      p.lyricsOverlay ? 'text-[#ec4141]' : 'text-white/55 hover:text-white'
+                    }`}
+                    aria-label="桌面歌词"
+                    title={p.lyricsOverlay ? '关闭桌面歌词' : '开启桌面歌词'}
+                  >
+                    <Captions className="h-4 w-4" />
+                  </button>
                   <button
                     onClick={expand}
                     disabled={!p.hasTrack}
@@ -199,11 +264,11 @@ export function MusicWidget() {
                   className={`group relative mt-3 -my-1.5 py-1.5 ${p.hasTrack ? 'cursor-pointer' : ''}`}
                 >
                   <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
-                    <div className="h-full rounded-full bg-[#ec4141]" style={{ width: `${pct}%` }} />
+                    <div ref={fillRef} className="h-full w-0 rounded-full bg-[#ec4141]" />
                   </div>
                   <div
-                    className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover:opacity-100"
-                    style={{ left: `${pct}%` }}
+                    ref={thumbRef}
+                    className="absolute left-0 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover:opacity-100"
                   />
                 </div>
                 <div className="mt-1 flex justify-between font-mono text-[10px] text-white/40">

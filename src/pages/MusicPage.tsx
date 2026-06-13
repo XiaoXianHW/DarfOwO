@@ -74,10 +74,10 @@ export const MusicPage = () => {
     <button
       key={t.id}
       onClick={() => openSong(t)}
-      className="group relative flex w-full items-center gap-4 px-6 py-2.5 text-left transition-colors hover:bg-white/[0.05] lg:px-8"
+      className="group relative flex w-full items-center gap-3 px-6 py-2.5 text-left transition-colors hover:bg-white/[0.05] lg:gap-4 lg:px-8"
     >
       <span className="absolute left-0 top-0 h-full w-[3px] origin-top scale-y-0 bg-[#ec4141] transition-transform duration-200 group-hover:scale-y-100" />
-      <span className="w-9 shrink-0 text-right font-mono text-lg font-black tabular-nums text-white/15 transition-colors group-hover:text-[#ec4141] lg:w-12 lg:text-2xl">
+      <span className="w-6 shrink-0 text-right font-mono text-base font-black tabular-nums text-white/15 transition-colors group-hover:text-[#ec4141] lg:w-8 lg:text-lg">
         {String(n).padStart(2, '0')}
       </span>
       <Cover name={t.name} cover={t.cover} className="h-11 w-11 shrink-0 ring-1 ring-white/10" textClass="text-base" />
