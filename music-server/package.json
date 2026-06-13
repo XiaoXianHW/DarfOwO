@@ -1,0 +1,19 @@
+{
+  "name": "xiaoxian-music-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "扫描本地音乐目录（音频 + 同名 .lrc），按文件夹自动分组，输出 JSON 歌单 / 音频流 / 封面，供 xiaoxian.org 音乐页消费。",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "scan": "node -e \"import('./lib/scan.js').then(async m=>{const{config}=await import('./config.js');const r=await m.scanLibrary(config);console.log(JSON.stringify(r.library.counts,null,2))})\"",
+    "test": "node lib/lrc.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "music-metadata": "^11.13.0"
+  }
+}

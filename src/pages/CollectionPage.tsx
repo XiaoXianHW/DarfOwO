@@ -33,7 +33,7 @@ export const CollectionPage = ({ kind }: { kind: Kind }) => {
         cover: artist.cover,
         circle: true,
         tracks: artist.hot,
-        link: `https://music.163.com/artist?id=${artist.id}`,
+        link: /^\d+$/.test(artist.id) ? `https://music.163.com/artist?id=${artist.id}` : '',
       };
     }
     if (album) {
@@ -45,7 +45,7 @@ export const CollectionPage = ({ kind }: { kind: Kind }) => {
         cover: album.cover,
         circle: false,
         tracks: album.tracks,
-        link: `https://music.163.com/album?id=${album.id}`,
+        link: /^\d+$/.test(album.id) ? `https://music.163.com/album?id=${album.id}` : '',
       };
     }
     return null;
@@ -122,14 +122,16 @@ export const CollectionPage = ({ kind }: { kind: Kind }) => {
               <Play className="h-4 w-4" fill="currentColor" /> 播放全部
             </button>
             <span className="font-mono text-[11px] text-white/40">{info.tracks.length} TRACKS</span>
-            <a
-              href={info.link}
-              target="_blank"
-              rel="noreferrer"
-              className="ml-auto inline-flex items-center gap-1 font-mono text-[11px] text-white/40 transition-colors hover:text-white"
-            >
-              网易云 <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            {info.link && (
+              <a
+                href={info.link}
+                target="_blank"
+                rel="noreferrer"
+                className="ml-auto inline-flex items-center gap-1 font-mono text-[11px] text-white/40 transition-colors hover:text-white"
+              >
+                网易云 <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            )}
           </div>
         </section>
 

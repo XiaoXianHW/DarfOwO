@@ -33,6 +33,22 @@ export default defineConfig(({mode}) => {
     },
   };
 
+  // Optional same-origin reverse-proxy for the XiaoXian music server
+  // (music-server/). Set MUSIC_SERVER_URL to proxy the library / audio / cover
+  // endpoints, so the frontend can fetch them same-origin with VITE_MUSIC_API
+  // left empty. In production, configure an equivalent reverse proxy (or point
+  // VITE_MUSIC_API at the music server's own domain instead).
+  const musicProxy = env.MUSIC_SERVER_URL
+    ? {
+        '/api/library': { target: env.MUSIC_SERVER_URL, changeOrigin: true },
+        '/api/audio': { target: env.MUSIC_SERVER_URL, changeOrigin: true },
+        '/api/cover': { target: env.MUSIC_SERVER_URL, changeOrigin: true },
+        '/api/rescan': { target: env.MUSIC_SERVER_URL, changeOrigin: true },
+      }
+    : {};
+
+  const proxy = { ...miFitnessProxy, ...musicProxy };
+
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
@@ -44,10 +60,10 @@ export default defineConfig(({mode}) => {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      proxy: miFitnessProxy,
+      proxy,
     },
     preview: {
-      proxy: miFitnessProxy,
+      proxy,
     },
   };
 });

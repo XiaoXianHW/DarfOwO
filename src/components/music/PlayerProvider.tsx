@@ -60,11 +60,11 @@ interface PlayerValue {
 
 const PlayerContext = createContext<PlayerValue | null>(null);
 
-const DEFAULT_QUEUE = FEATURED.map((t) => t.id);
+const defaultQueue = (): string[] => FEATURED.map((t) => t.id);
 const DEFAULT_TITLE = '我最常听';
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
-  const [queue, setQueue] = useState<string[]>(DEFAULT_QUEUE);
+  const [queue, setQueue] = useState<string[]>(defaultQueue);
   const [queueTitle, setQueueTitle] = useState(DEFAULT_TITLE);
   const [index, setIndex] = useState(0);
   const [started, setStarted] = useState(false);
@@ -89,7 +89,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const play = useCallback(
     (id: string, q?: string[], title?: string) => {
-      let nextQueue = q && q.length ? q : queue.length ? queue : DEFAULT_QUEUE;
+      let nextQueue = q && q.length ? q : queue.length ? queue : defaultQueue();
       let idx = nextQueue.indexOf(id);
       if (idx < 0) {
         nextQueue = [id, ...nextQueue];

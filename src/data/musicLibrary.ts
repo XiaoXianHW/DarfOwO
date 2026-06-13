@@ -923,12 +923,75 @@ export const FEATURED: Track[] = SONGS.map((s) => ({
 
 // 全部曲目索引（精选 + 歌手热门 + 专辑曲目），用于详情页按 id 查找。
 const TRACK_INDEX: Record<string, Track> = {};
-for (const t of [
-  ...FEATURED,
-  ...ARTISTS.flatMap((a) => a.hot),
-  ...ALBUMS.flatMap((a) => a.tracks),
-]) {
-  if (!TRACK_INDEX[t.id]) TRACK_INDEX[t.id] = t;
+function rebuildIndex(): void {
+  for (const k of Object.keys(TRACK_INDEX)) delete TRACK_INDEX[k];
+  for (const t of [
+    ...FEATURED,
+    ...ARTISTS.flatMap((a) => a.hot),
+    ...ALBUMS.flatMap((a) => a.tracks),
+  ]) {
+    if (!TRACK_INDEX[t.id]) TRACK_INDEX[t.id] = t;
+  }
+}
+rebuildIndex();
+
+// =============================================================================
+// 从「XiaoXian 音乐服务」(music-server/) 拉取真实音乐库。
+// VITE_MUSIC_API 指向服务地址（如 https://music.xiaoxian.org）；留空则用内置回退数据。
+// 拉取成功后整库替换，音频 / 封面的相对地址会补全为服务的绝对地址。
+// =============================================================================
+const MUSIC_API = ((import.meta.env.VITE_MUSIC_API as string | undefined) ?? '').replace(/\/+$/, '');
+
+const absUrl = (u: string | undefined): string =>
+  u && u.startsWith('/') && MUSIC_API ? MUSIC_API + u : (u ?? '');
+
+const fixTrack = (t: Track): Track => ({ ...t, cover: absUrl(t.cover), audio: absUrl(t.audio) });
+
+function replaceArr<T>(target: T[], items: T[]): void {
+  target.splice(0, target.length, ...items);
+}
+
+interface LibraryResponse {
+  featured?: Track[];
+  songs?: Song[];
+  artists?: Artist[];
+  albums?: Album[];
+}
+
+let loaded = false;
+
+/**
+ * 从音乐服务加载整库；失败则保留内置回退数据。
+ * 在应用挂载前调用（见 main.tsx），确保各页面渲染时已是真实数据。
+ */
+export async function loadLibrary(): Promise<boolean> {
+  if (loaded) return true;
+  try {
+    const res = await fetch(`${MUSIC_API}/api/library`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = (await res.json()) as LibraryResponse;
+
+    if (data.featured) replaceArr(FEATURED, data.featured.map(fixTrack));
+    if (data.songs)
+      replaceArr(SONGS, data.songs.map((s) => ({ ...s, cover: absUrl(s.cover) })));
+    if (data.artists)
+      replaceArr(
+        ARTISTS,
+        data.artists.map((a) => ({ ...a, cover: absUrl(a.cover), hot: a.hot.map(fixTrack) })),
+      );
+    if (data.albums)
+      replaceArr(
+        ALBUMS,
+        data.albums.map((a) => ({ ...a, cover: absUrl(a.cover), tracks: a.tracks.map(fixTrack) })),
+      );
+
+    rebuildIndex();
+    loaded = true;
+    return true;
+  } catch (err) {
+    console.warn('[music] 无法从音乐服务加载，使用内置回退数据：', err);
+    return false;
+  }
 }
 
 /**
