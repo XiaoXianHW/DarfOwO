@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Music, MonitorSmartphone, Activity, ChevronRight, Terminal, Cpu, GitBranch, Users, Palette, Sparkles, Coffee, Heart } from 'lucide-react';
+import { Menu, X, Music, MonitorSmartphone, Activity, ChevronRight, Terminal, Users, Palette } from 'lucide-react';
 import type { SideType } from '../types';
 import { config } from '../config';
-
-const iconMap = { Terminal, Cpu, GitBranch, Users, Palette, Sparkles, Coffee, Heart };
 
 const menuItems = [
   { label: 'Music', zh: '音乐', icon: Music, path: '/music' },
   { label: 'Devices', zh: '设备', icon: MonitorSmartphone, path: '/devices' },
   { label: 'Status', zh: '状态', icon: Activity, path: '/status' },
+  { label: 'Friends', zh: '朋友', icon: Users, path: '/friends' },
 ];
 
 interface MobileLayoutProps {
@@ -32,10 +31,8 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
         <button
           onClick={() => setMenuOpen((v) => !v)}
           aria-label="菜单"
-          className={`flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
-            side2Active
-              ? 'border-slate-300 bg-white/40 text-slate-700'
-              : 'border-white/15 bg-white/5 text-white/80 backdrop-blur-sm'
+          className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+            side2Active ? 'text-slate-700' : 'text-white/80'
           }`}
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -99,8 +96,7 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
         >
           <img src={config.avatars.default} alt={config.profile.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         </motion.div>
-        <h1 className={`mt-4 text-3xl font-bold tracking-widest transition-colors ${side2Active ? 'text-slate-900' : 'text-white'}`}>{config.profile.displayName}</h1>
-        <p className={`mt-1 font-serif italic text-sm tracking-wider transition-colors ${side2Active ? 'text-slate-500' : 'text-white/50'}`}>
+        <p className={`mt-4 font-serif italic text-sm tracking-wider transition-colors ${side2Active ? 'text-slate-500' : 'text-white/50'}`}>
           {config.profile.tagline.main}
         </p>
       </div>
@@ -132,9 +128,6 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
             )}
           </button>
         </div>
-        <p className={`mt-3 font-mono text-[10px] uppercase tracking-[0.3em] transition-colors ${side2Active ? 'text-slate-400' : 'text-white/30'}`}>
-          轻触切换 · Tap to switch
-        </p>
       </div>
 
       {/* Side content */}
@@ -160,18 +153,6 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
                 {'}'};
               </div>
 
-              <div className="flex flex-col items-start space-y-4 mb-8 w-full">
-                {config.side1.items.map((item, i) => {
-                  const Icon = iconMap[item.icon as keyof typeof iconMap];
-                  return (
-                    <div key={i} className="flex items-center gap-3 text-slate-300">
-                      <Icon className="w-5 h-5 text-[#5B89D2]" />
-                      <span className="font-bold font-mono text-sm tracking-wide">{item.title}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
               <button
                 className="px-6 py-3 border border-[#5B89D2]/50 text-[#5B89D2] rounded-md font-mono text-sm font-bold bg-[#5B89D2]/10 w-full"
                 onClick={() => window.open(config.links.side1.url, '_blank')}
@@ -194,18 +175,6 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
               <h2 className="text-3xl font-serif italic tracking-tight text-slate-900 mb-8 text-center">
                 {config.side2.heading.main} <br/><span className="font-sans font-bold text-orange-600 not-italic">{config.side2.heading.accent}</span>
               </h2>
-
-              <div className="flex flex-col items-start space-y-4 mb-8 w-full">
-                {config.side2.items.map((item, i) => {
-                  const Icon = iconMap[item.icon as keyof typeof iconMap];
-                  return (
-                    <div key={i} className="flex items-center gap-3 text-slate-700">
-                      <Icon className="w-5 h-5 text-orange-500" />
-                      <span className="font-bold font-sans text-sm tracking-wide">{item.title}</span>
-                    </div>
-                  );
-                })}
-              </div>
 
               <button
                 className="px-6 py-3 border border-orange-500/50 text-orange-600 rounded-md font-mono text-sm font-bold hover:bg-orange-500 hover:text-white transition-colors w-full"

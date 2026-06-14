@@ -73,7 +73,7 @@ export default function App() {
       <div className="fixed top-6 right-6 z-[80]">
         <MusicWidget />
       </div>
-      <Tagline hoveredSide={hoveredSide} />
+      {!isMobile && <Tagline hoveredSide={hoveredSide} />}
 
       <AnimatePresence>
         {isProfileOpen && (
