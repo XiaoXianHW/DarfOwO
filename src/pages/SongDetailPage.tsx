@@ -90,14 +90,16 @@ export const SongDetailPage = () => {
   }, [lines, time]);
 
   // Smooth transform-based lyric scroll: translate the list so the active line
-  // sits at the vertical center of the viewport.
+  // sits at the anchor point — vertically centered on desktop, but biased
+  // toward the upper third on phones (Apple Music-style top-anchored scroll).
+  const lyricAnchor = isMobile ? 0.32 : 0.5;
   useLayoutEffect(() => {
     const box = scrollRef.current;
     const el = lineRefs.current[activeIndex];
     if (!box) return;
     if (!el) { setOffset(0); return; }
-    setOffset(box.clientHeight / 2 - (el.offsetTop + el.clientHeight / 2));
-  }, [activeIndex, song, isMobile]);
+    setOffset(box.clientHeight * lyricAnchor - (el.offsetTop + el.clientHeight / 2));
+  }, [activeIndex, song, isMobile, lyricAnchor]);
 
   // Draggable / clickable progress bar.
   const barRef = useRef<HTMLDivElement | null>(null);
@@ -293,7 +295,7 @@ export const SongDetailPage = () => {
       // page is revealed under a fullscreen hero, so animating here would cause
       // a visible flash at the hand-off.
       initial={false}
-      className="relative h-screen overflow-hidden bg-[#070707] font-sans text-white"
+      className="relative h-[100dvh] overflow-hidden bg-[#070707] font-sans text-white"
     >
       {/* Ambient background: cover, gaussian-blurred + enlarged */}
       <div
@@ -307,20 +309,21 @@ export const SongDetailPage = () => {
 
       {isMobile ? (
         /* ── Mobile: Apple Music-style — cover+meta header, lyrics, bottom controls ── */
-        <div className="relative z-10 flex h-screen flex-col">
-          <div className="flex items-center justify-between px-4 pb-2 pt-4">
+        <div className="relative z-10 flex h-[100dvh] flex-col">
+          {/* Header: track counter (left) + collapse button (right) on one row,
+              then cover + title/artist on the next — uniform px-5 / py rhythm. */}
+          <div className="flex items-center justify-between px-5 pb-1 pt-5">
+            <span className="font-mono text-[11px] tracking-[0.2em] text-white/40">{pos + 1}/{queue.length}</span>
             <button
               onClick={() => navigate('/music')}
-              className="-ml-1 rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10"
+              className="-mr-1 rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10"
               aria-label="Back"
             >
               <ChevronDown className="h-6 w-6" />
             </button>
-            <span className="font-mono text-[11px] tracking-[0.2em] text-white/40">{pos + 1}/{queue.length}</span>
           </div>
 
-          {/* Top-left cover + title/artist to its right */}
-          <div className="flex items-center gap-4 px-5 pb-2 pt-1">
+          <div className="flex items-center gap-4 px-5 pb-4 pt-2">
             <Cover
               name={track.name}
               cover={track.cover}
@@ -333,11 +336,11 @@ export const SongDetailPage = () => {
             </div>
           </div>
 
-          {/* Center: lyrics */}
-          {renderLyrics('px-6 text-center')}
+          {/* Center: lyrics (left-aligned, top-anchored — Apple Music style) */}
+          {renderLyrics('px-5 text-left')}
 
           {/* Bottom: progress + controls/settings */}
-          <div className="px-7 pb-10 pt-3">
+          <div className="shrink-0 px-7 pb-7 pt-3">
             {renderProgress()}
             <div className="mt-5">
               {renderControls(
@@ -374,7 +377,7 @@ export const SongDetailPage = () => {
             </button>
           </div>
 
-          <div className="relative z-10 flex h-[calc(100vh-64px)] flex-col gap-8 px-6 pb-8 lg:flex-row lg:items-stretch lg:gap-12 lg:px-14">
+          <div className="relative z-10 flex h-[calc(100dvh-64px)] flex-col gap-8 px-6 pb-8 lg:flex-row lg:items-stretch lg:gap-12 lg:px-14">
             <div className="flex shrink-0 flex-col items-center lg:w-[40%] lg:items-start lg:justify-end lg:pb-6">
               <Cover
                 name={track.name}
