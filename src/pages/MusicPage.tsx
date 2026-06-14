@@ -35,6 +35,18 @@ export const MusicPage = () => {
 
   const tracks = useMemo(() => allTracks(), []);
 
+  // Unique artist names for the scrolling marquee under the sort tabs.
+  const artists = useMemo(() => {
+    const set = new Set<string>();
+    for (const t of tracks) {
+      for (const a of t.artist.split(/[\/、,]/)) {
+        const n = a.trim();
+        if (n) set.add(n);
+      }
+    }
+    return [...set];
+  }, [tracks]);
+
   // Shuffle once per mount so the default order is randomized but stable while
   // browsing (re-selecting 打乱 keeps the same order until the page reloads).
   const shuffled = useMemo(() => {
@@ -74,7 +86,7 @@ export const MusicPage = () => {
     <button
       key={t.id}
       onClick={() => openSong(t)}
-      className="group relative flex w-full items-center gap-3 px-6 py-2.5 text-left transition-colors hover:bg-white/[0.05] lg:gap-4 lg:px-8"
+      className="group relative flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-white/[0.05] lg:gap-3 lg:px-5"
     >
       <span className="absolute left-0 top-0 h-full w-[3px] origin-top scale-y-0 bg-[#ec4141] transition-transform duration-200 group-hover:scale-y-100" />
       <span className="w-6 shrink-0 text-right font-mono text-base font-black tabular-nums text-white/15 transition-colors group-hover:text-[#ec4141] lg:w-8 lg:text-lg">
@@ -150,6 +162,22 @@ export const MusicPage = () => {
           })}
         </div>
 
+        {/* Scrolling artist marquee */}
+        {artists.length > 0 && (
+          <div className="group relative shrink-0 overflow-hidden bg-[#ec4141] py-2">
+            <div className="marquee-artists flex w-max items-center whitespace-nowrap will-change-transform group-hover:[animation-play-state:paused]">
+              {[...artists, ...artists].map((a, i) => (
+                <span key={i} className="flex items-center font-mono text-[11px] font-medium tracking-[0.15em] text-white/85">
+                  <span className="px-4 transition-colors hover:text-white">{a}</span>
+                  <span className="text-white/35">/</span>
+                </span>
+              ))}
+            </div>
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#ec4141] to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#ec4141] to-transparent" />
+          </div>
+        )}
+
         {tracks.length === 0 ? (
           <div className="flex flex-1 items-center justify-center px-6 pb-20 text-center">
             <p className="font-mono text-sm tracking-wider text-white/40">音乐库为空 · 未连接音乐服务</p>
@@ -159,7 +187,7 @@ export const MusicPage = () => {
             {groups
               ? groups.map((g) => (
                   <div key={g.title}>
-                    <div className="flex items-baseline gap-2 border-t border-white/5 px-6 pb-2 pt-5 first:border-t-0 lg:px-8">
+                    <div className="flex items-baseline gap-2 border-t border-white/5 px-3 pb-2 pt-5 first:border-t-0 lg:px-5">
                       <h2 className="truncate text-base font-bold">{g.title}</h2>
                       <span className="font-mono text-[10px] text-white/25">/ {g.tracks.length}</span>
                     </div>

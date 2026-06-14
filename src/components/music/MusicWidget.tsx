@@ -52,12 +52,18 @@ export function MusicWidget() {
     return () => window.removeEventListener('resize', onResize);
   }, [open]);
 
+  // Guards the hand-off so it runs exactly once even if both the layout-anim
+  // completion callback AND the safety timeout fire.
+  const handedOff = useRef(false);
+
   const expand = () => {
     if (!p.currentId) return;
+    handedOff.current = false;
     setExpanding(true);
   };
   const onExpandDone = () => {
-    if (!expanding) return;
+    if (handedOff.current) return;
+    handedOff.current = true;
     const id = p.currentId;
     // Navigate first so the destination page mounts UNDER the still-present
     // fullscreen hero, then drop the overlay a couple of frames later. This
@@ -70,6 +76,17 @@ export function MusicWidget() {
       }),
     );
   };
+
+  // Safety net: the framer `layout` completion callback occasionally never
+  // fires (e.g. when the morph is interrupted), which used to leave the page
+  // frozen on the fullscreen transition hero. Force the hand-off after the
+  // morph's max duration so expansion always completes.
+  useEffect(() => {
+    if (!expanding) return;
+    const t = setTimeout(onExpandDone, 650);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expanding]);
 
   // Smooth (rAF-driven) progress fill + thumb; updated imperatively so the
   // whole widget doesn't re-render 60x/sec.
@@ -101,10 +118,15 @@ export function MusicWidget() {
   return (
     <>
       {/* ===== Trigger button (top-right on every page) ===== */}
-      <div className="group relative flex items-center">
-        {/* Quick controls — slide out to the LEFT on hover when a track is loaded */}
+      {/* The quick-controls sit IN FLOW (collapsed) right next to the trigger so
+          the whole group — controls + button — is one continuous hover target.
+          (Absolute positioning left a dead zone that made the bar vanish before
+          it could be clicked.) */}
+      <div className="group relative flex items-center justify-end">
+        {/* Quick controls — expand to the LEFT on hover when a track is loaded */}
         {p.hasTrack && (
-          <div className="pointer-events-none absolute right-full top-1/2 mr-2 flex -translate-y-1/2 translate-x-2 items-center gap-0.5 rounded-full bg-black/60 px-1.5 py-1 opacity-0 ring-1 ring-white/15 backdrop-blur-md transition-all duration-200 group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100">
+          <div className="pointer-events-none flex max-w-0 items-center overflow-hidden opacity-0 transition-all duration-200 group-hover:max-w-[160px] group-hover:opacity-100 group-hover:[overflow:visible] group-hover:pointer-events-auto">
+            <div className="mr-1.5 flex items-center gap-0.5 rounded-full bg-black/60 px-1.5 py-1 ring-1 ring-white/15 backdrop-blur-md">
             <button
               onClick={(e) => { e.stopPropagation(); p.prev(); }}
               className="flex h-7 w-7 items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white"
@@ -128,6 +150,7 @@ export function MusicWidget() {
             >
               <SkipForward className="h-3.5 w-3.5" fill="currentColor" />
             </button>
+            </div>
           </div>
         )}
 

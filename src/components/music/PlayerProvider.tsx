@@ -61,17 +61,50 @@ const PlayerContext = createContext<PlayerValue | null>(null);
 const defaultQueue = (): string[] => FEATURED.map((t) => t.id);
 const DEFAULT_TITLE = '我最常听';
 
+// Persisted playback snapshot (localStorage) so a page refresh resumes the
+// same track / position / settings.
+const PERSIST_KEY = 'xx-player-v1';
+
+interface PersistedState {
+  queue?: string[];
+  queueTitle?: string;
+  index?: number;
+  time?: number;
+  playing?: boolean;
+  mode?: PlayMode;
+  lyricsOverlay?: boolean;
+}
+
+function loadPersisted(): PersistedState | null {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(PERSIST_KEY);
+    return raw ? (JSON.parse(raw) as PersistedState) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function PlayerProvider({ children }: { children: ReactNode }) {
-  const [queue, setQueue] = useState<string[]>(defaultQueue);
-  const [queueTitle, setQueueTitle] = useState(DEFAULT_TITLE);
-  const [index, setIndex] = useState(0);
-  const [started, setStarted] = useState(false);
-  const [playing, setPlaying] = useState(false);
-  const [time, setTime] = useState(0);
-  const [mode, setMode] = useState<PlayMode>('loop');
-  const [lyricsOverlay, setLyricsOverlay] = useState(false);
+  const persisted = useRef(loadPersisted()).current;
+  const [queue, setQueue] = useState<string[]>(() =>
+    persisted?.queue?.length ? persisted.queue : defaultQueue(),
+  );
+  const [queueTitle, setQueueTitle] = useState(() => persisted?.queueTitle ?? DEFAULT_TITLE);
+  const [index, setIndex] = useState(() => persisted?.index ?? 0);
+  const [started, setStarted] = useState(() => !!persisted?.queue?.length);
+  const [playing, setPlaying] = useState(() => persisted?.playing ?? false);
+  const [time, setTime] = useState(() => persisted?.time ?? 0);
+  const [mode, setMode] = useState<PlayMode>(() => persisted?.mode ?? 'loop');
+  // Desktop lyric overlay defaults ON (per product preference) unless the user
+  // previously turned it off.
+  const [lyricsOverlay, setLyricsOverlay] = useState(() => persisted?.lyricsOverlay ?? true);
   // Real duration reported by the <audio> element (0 until metadata loads).
   const [realDuration, setRealDuration] = useState(0);
+
+  // Position to restore once the (re-)loaded track reports metadata. Applied
+  // a single time on the very first track that mounts from a persisted state.
+  const restoredTime = useRef(persisted?.time ?? 0);
 
   // rAF playhead subscribers (smooth progress bars) — see subscribeTime.
   const timeListeners = useRef(new Set<(t: number) => void>());
@@ -107,6 +140,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         nextQueue = [id, ...nextQueue];
         idx = 0;
       }
+      restoredTime.current = 0;
       setQueue(nextQueue);
       setQueueTitle(title ?? (q ? DEFAULT_TITLE : queueTitle));
       setIndex(idx);
@@ -132,6 +166,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   );
 
   const next = useCallback(() => {
+    restoredTime.current = 0;
     setIndex(pick(1));
     setTime(0);
     setRealDuration(0);
@@ -140,6 +175,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [pick]);
 
   const prev = useCallback(() => {
+    restoredTime.current = 0;
     setIndex(pick(-1));
     setTime(0);
     setRealDuration(0);
@@ -174,12 +210,49 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const nextRef = useRef(next);
   nextRef.current = next;
 
+  // Persist the current playback snapshot to localStorage. Built from refs so
+  // it can be called from event handlers / timers without stale closures.
+  const persistRef = useRef<() => void>(() => {});
+  persistRef.current = () => {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      const snap: PersistedState = {
+        queue,
+        queueTitle,
+        index,
+        time: audioRef.current?.currentTime ?? time,
+        playing,
+        mode,
+        lyricsOverlay,
+      };
+      localStorage.setItem(PERSIST_KEY, JSON.stringify(snap));
+    } catch {
+      /* ignore quota / serialization errors */
+    }
+  };
+  const lastPersist = useRef(0);
+
   // Wire the <audio> element's events once.
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
-    const onTime = () => { setTime(a.currentTime); emitTime(a.currentTime); };
-    const onMeta = () => setRealDuration(a.duration || 0);
+    const onTime = () => {
+      setTime(a.currentTime);
+      emitTime(a.currentTime);
+      const now = Date.now();
+      if (now - lastPersist.current > 3000) {
+        lastPersist.current = now;
+        persistRef.current();
+      }
+    };
+    const onMeta = () => {
+      setRealDuration(a.duration || 0);
+      // Resume the persisted position the first time metadata is ready.
+      if (restoredTime.current > 0) {
+        try { a.currentTime = restoredTime.current; } catch { /* not seekable yet */ }
+        restoredTime.current = 0;
+      }
+    };
     const onEnded = () => nextRef.current();
     a.addEventListener('timeupdate', onTime);
     a.addEventListener('loadedmetadata', onMeta);
@@ -230,12 +303,96 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (!a || !src) return;
     if (playing) {
       a.play().catch(() => {
-        /* autoplay can be blocked until a user gesture — ignore */
+        // Autoplay can be blocked until a user gesture (e.g. resuming after a
+        // refresh). Reflect reality so the UI doesn't show a false "playing".
+        if (a.paused) setPlaying(false);
       });
     } else {
       a.pause();
     }
   }, [playing, src]);
+
+  // Persist settings / structural changes immediately (time is throttled in
+  // the timeupdate handler above) and on tab close.
+  useEffect(() => {
+    persistRef.current();
+  }, [queue, queueTitle, index, mode, lyricsOverlay, started, playing]);
+  useEffect(() => {
+    const onUnload = () => persistRef.current();
+    window.addEventListener('beforeunload', onUnload);
+    return () => window.removeEventListener('beforeunload', onUnload);
+  }, []);
+
+  // ===== Browser SMTC / Media Session integration =====
+  // Stable refs so the (once-registered) action handlers always call the
+  // latest control fns.
+  const ctrl = useRef({ prev, next, seek });
+  ctrl.current = { prev, next, seek };
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    const ms = navigator.mediaSession;
+    ms.setActionHandler('play', () => { setStarted(true); setPlaying(true); });
+    ms.setActionHandler('pause', () => setPlaying(false));
+    ms.setActionHandler('previoustrack', () => ctrl.current.prev());
+    ms.setActionHandler('nexttrack', () => ctrl.current.next());
+    try {
+      ms.setActionHandler('seekto', (d) => {
+        if (typeof d.seekTime === 'number') ctrl.current.seek(d.seekTime);
+      });
+    } catch { /* seekto unsupported */ }
+    return () => {
+      ms.setActionHandler('play', null);
+      ms.setActionHandler('pause', null);
+      ms.setActionHandler('previoustrack', null);
+      ms.setActionHandler('nexttrack', null);
+      try { ms.setActionHandler('seekto', null); } catch { /* noop */ }
+    };
+  }, []);
+
+  // Track metadata (title / artist / album / cover artwork).
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    if (!currentTrack) {
+      navigator.mediaSession.metadata = null;
+      return;
+    }
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentTrack.name,
+      artist: currentTrack.artist,
+      album: currentTrack.album,
+      artwork: currentTrack.cover
+        ? [96, 192, 512].map((s) => ({
+            src: currentTrack.cover,
+            sizes: `${s}x${s}`,
+            type: 'image/jpeg',
+          }))
+        : [],
+    });
+  }, [currentTrack]);
+
+  // Playback state + position so the SMTC scrubber stays in sync.
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = currentTrack ? (playing ? 'playing' : 'paused') : 'none';
+  }, [playing, currentTrack]);
+  useEffect(() => {
+    if (
+      typeof navigator === 'undefined' ||
+      !('mediaSession' in navigator) ||
+      !navigator.mediaSession.setPositionState
+    )
+      return;
+    if (duration > 0 && isFinite(duration)) {
+      try {
+        navigator.mediaSession.setPositionState({
+          duration,
+          position: Math.min(Math.max(time, 0), duration),
+          playbackRate: 1,
+        });
+      } catch { /* invalid state */ }
+    }
+  }, [duration, time, currentTrack]);
 
   const value: PlayerValue = {
     queue,

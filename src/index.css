@@ -39,6 +39,10 @@
   .marquee {
     animation: marquee 26s linear infinite;
   }
+  /* Slower, continuous artist-name marquee under the music sort tabs. */
+  .marquee-artists {
+    animation: marquee 140s linear infinite;
+  }
   @keyframes marquee {
     from {
       transform: translateX(0);
