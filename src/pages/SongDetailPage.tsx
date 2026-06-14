@@ -221,7 +221,7 @@ export const SongDetailPage = () => {
     </div>
   );
 
-  const renderControls = (justifyClass: string) => (
+  const renderControls = (justifyClass: string, trailing: React.ReactNode) => (
     <div className={`flex items-center gap-5 ${justifyClass}`}>
       <button
         onClick={player.cycleMode}
@@ -246,7 +246,7 @@ export const SongDetailPage = () => {
       <button onClick={player.next} className="text-white/70 transition-colors hover:text-white" aria-label="Next">
         <SkipForward className="h-6 w-6" fill="currentColor" />
       </button>
-      <span className="ml-1 font-mono text-[10px] text-white/30">{pos + 1}/{queue.length}</span>
+      {trailing}
     </div>
   );
 
@@ -316,13 +316,7 @@ export const SongDetailPage = () => {
             >
               <ChevronDown className="h-6 w-6" />
             </button>
-            <button
-              onClick={() => setShowList(true)}
-              className={`rounded-full p-1.5 transition-colors hover:bg-white/10 ${showList ? 'text-[#ec4141]' : 'text-white/80'}`}
-              aria-label="播放列表"
-            >
-              <ListMusic className="h-5 w-5" />
-            </button>
+            <span className="font-mono text-[11px] tracking-[0.2em] text-white/40">{pos + 1}/{queue.length}</span>
           </div>
 
           {/* Top-left cover + title/artist to its right */}
@@ -345,7 +339,18 @@ export const SongDetailPage = () => {
           {/* Bottom: progress + controls/settings */}
           <div className="px-7 pb-10 pt-3">
             {renderProgress()}
-            <div className="mt-5">{renderControls('justify-between')}</div>
+            <div className="mt-5">
+              {renderControls(
+                'justify-between',
+                <button
+                  onClick={() => setShowList(true)}
+                  className={`transition-colors hover:text-white ${showList ? 'text-[#ec4141]' : 'text-white/70'}`}
+                  aria-label="播放列表"
+                >
+                  <ListMusic className="h-[18px] w-[18px]" />
+                </button>,
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -384,7 +389,12 @@ export const SongDetailPage = () => {
 
               <div className="mt-5 w-full max-w-sm lg:max-w-none">{renderProgress()}</div>
 
-              <div className="mt-5">{renderControls('justify-center lg:justify-start')}</div>
+              <div className="mt-5">
+                {renderControls(
+                  'justify-center lg:justify-start',
+                  <span className="ml-1 font-mono text-[10px] text-white/30">{pos + 1}/{queue.length}</span>,
+                )}
+              </div>
             </div>
 
             {renderLyrics('text-center lg:text-left')}
