@@ -15,36 +15,36 @@ const SPAN: Record<string, string> = {
 
 export const StatusPage = () => {
   const navigate = useNavigate();
-  const { metrics, loading, error, updatedAt, reload } = useMetrics();
+  const { metrics, loading, error, latestDataAt, reload } = useMetrics();
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
       {/* Top navigation */}
-      <div className="flex shrink-0 items-center justify-between border-b border-white/5 bg-[#0a0a0a]/80 px-6 py-4 backdrop-blur-xl">
-        <button
-          onClick={() => navigate('/')}
-          className="-ml-2 rounded-full p-2 transition-colors hover:bg-white/10"
-          aria-label="Back"
-        >
-          <ArrowLeft className="h-6 w-6" />
-        </button>
-        <div className="flex min-w-0 flex-col items-center text-center">
-          <h1 className="text-lg font-medium">健康状态 · Health Status</h1>
-          <p className="mt-0.5 truncate text-[11px] text-white/40">
-            {updatedAt ? `最后刷新 ${formatClock(updatedAt)}` : '最后刷新 —'} · 数据源自小米运动健康 · 小米手环 10
-          </p>
-        </div>
-        <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/5 bg-[#0a0a0a]/80 px-6 py-4 backdrop-blur-xl">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            onClick={() => navigate('/')}
+            className="-ml-2 shrink-0 rounded-full p-2 transition-colors hover:bg-white/10"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-lg font-medium leading-tight">健康状态</h1>
+            <p className="mt-0.5 truncate text-[11px] text-white/40">
+              {latestDataAt ? `最后刷新 ${formatClock(latestDataAt)}` : '最后刷新 —'} · 小米手环 10
+            </p>
+          </div>
           <button
             onClick={reload}
             disabled={loading}
-            className="rounded-full p-2 transition-colors hover:bg-white/10 disabled:opacity-40"
+            className="ml-1 shrink-0 rounded-full p-2 transition-colors hover:bg-white/10 disabled:opacity-40"
             aria-label="Refresh"
           >
             <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <MusicWidget />
         </div>
+        <MusicWidget />
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">

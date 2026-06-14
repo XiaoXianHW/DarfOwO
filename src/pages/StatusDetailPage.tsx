@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMetrics } from '../hooks/useMetrics';
 import { TrendChart } from '../components/status/TrendChart';
+import { MusicWidget } from '../components/music/MusicWidget';
 
 export const StatusDetailPage = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export const StatusDetailPage = () => {
           <span className="text-sm text-white/70">返回</span>
         </button>
         <h1 className="text-lg font-medium">{metric ? `${metric.label} · 详情` : '健康详情'}</h1>
-        <span className="w-16" />
+        <MusicWidget />
       </div>
 
       {loading && (

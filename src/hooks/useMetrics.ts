@@ -29,11 +29,12 @@ export interface UseMetricsResult {
   loading: boolean;
   error: string | null;
   updatedAt: string | null;
+  latestDataAt: string | null;
   reload: () => void;
 }
 
 export const useMetrics = (): UseMetricsResult => {
-  const { overview, histories, loading, error, updatedAt, reload } = useHealthData();
+  const { overview, histories, loading, error, updatedAt, latestDataAt, reload } = useHealthData();
 
   const metrics = useMemo<MetricDescriptor[]>(() => {
     if (!overview || !histories) return [];
@@ -201,5 +202,5 @@ export const useMetrics = (): UseMetricsResult => {
     return list;
   }, [overview, histories]);
 
-  return { metrics, loading, error, updatedAt, reload };
+  return { metrics, loading, error, updatedAt, latestDataAt, reload };
 };
