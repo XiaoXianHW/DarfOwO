@@ -43,11 +43,11 @@ export const DevicesPage = () => {
         </div>
       </div>
 
-      {/* Single-screen auto-fit grid: the workstation hero spans 2×2 (with its
-          attached peripherals) while the remaining devices tile the board. */}
+      {/* Single-screen auto-fit grid: the workstation hero claims the full left
+          half (with its attached peripherals); the rest tile the right half. */}
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:h-full lg:auto-rows-fr lg:grid-cols-4 lg:grid-rows-4">
-          <div className="col-span-2 row-span-2 min-h-0">
+          <div className="col-span-2 row-span-2 min-h-0 lg:row-span-4">
             <DeviceTile device={hero} index={0} hero />
           </div>
           {rest.map((device, i) => (

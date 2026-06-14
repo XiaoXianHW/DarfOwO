@@ -112,13 +112,6 @@ export const DEVICES: Device[] = [
     specs: ['Snapdragon XR2 Gen 2', '8 + 512GB'],
   },
   {
-    name: 'Edifier NeoPods Pro',
-    type: 'Earbuds',
-    sprite: 'earbuds',
-    accent: '#e5e7eb',
-    specs: ['Hi-Res', 'LDAC · LHDC'],
-  },
-  {
     name: 'Xiaomi Band 10',
     type: 'Wearable',
     sprite: 'watch',
