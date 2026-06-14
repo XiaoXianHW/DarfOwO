@@ -29,10 +29,10 @@ export const DevicesPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-sm text-[#4ade80]">$</span>
-            <h1 className="font-pixel text-sm tracking-wider">DEVICES</h1>
-            <span className="h-4 w-2 bg-[#4ade80] pixel-blink" />
+          <div className="flex items-center gap-2">
+            <span className="font-pixel text-sm leading-none text-[#4ade80]">$</span>
+            <h1 className="font-pixel text-sm leading-none tracking-wider">DEVICES</h1>
+            <span className="h-3.5 w-[7px] bg-[#4ade80] pixel-blink" />
           </div>
         </div>
         <div className="flex items-center gap-3">
