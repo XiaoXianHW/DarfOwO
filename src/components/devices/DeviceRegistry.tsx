@@ -25,25 +25,22 @@ export function DeviceTile({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
-      className="flex h-full flex-col border-2 border-[#262d3b] bg-[#0e1117] p-4 shadow-[3px_3px_0_0_#05070a] transition-colors hover:border-[#39435a] sm:p-5"
+      className="flex h-full min-h-0 flex-col overflow-hidden border-2 border-[#262d3b] bg-[#0e1117] p-3 shadow-[3px_3px_0_0_#05070a] transition-colors hover:border-[#39435a] sm:p-4"
     >
-      {/* Header: sprite + name/type + online */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div
-            className={`flex shrink-0 items-center justify-center border-2 border-[#222a38] bg-[#0a0d13] ${
-              hero ? 'h-16 w-16' : 'h-12 w-12'
-            }`}
-            style={{ color: device.accent }}
-          >
-            <PixelSprite name={device.sprite} className={hero ? 'h-10 w-10' : 'h-7 w-7'} />
-          </div>
-          <div className="min-w-0">
-            <h3
-              className={`truncate font-semibold leading-tight tracking-tight text-white ${
-                hero ? 'text-xl' : 'text-base'
-              }`}
+      {hero ? (
+        <>
+          {/* Top: sprite + online */}
+          <div className="flex items-start justify-between">
+            <div
+              className="flex h-16 w-16 shrink-0 items-center justify-center border-2 border-[#222a38] bg-[#0a0d13]"
+              style={{ color: device.accent }}
             >
+              <PixelSprite name={device.sprite} className="h-10 w-10" />
+            </div>
+            <OnlineTag />
+          </div>
+          <div className="mt-3">
+            <h3 className="truncate text-xl font-semibold leading-tight tracking-tight text-white">
               {device.name}
             </h3>
             <span
@@ -53,21 +50,48 @@ export function DeviceTile({
               {device.type}
             </span>
           </div>
+        </>
+      ) : (
+        // Compact horizontal header so the spec list keeps its vertical room.
+        <div className="flex items-center gap-2.5">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-[#222a38] bg-[#0a0d13]"
+            style={{ color: device.accent }}
+          >
+            <PixelSprite name={device.sprite} className="h-6 w-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-sm font-semibold leading-tight tracking-tight text-white">
+              {device.name}
+            </h3>
+            <span
+              className="font-mono text-[9px] uppercase tracking-wider"
+              style={{ color: device.accent }}
+            >
+              {device.type}
+            </span>
+          </div>
+          <OnlineTag />
         </div>
-        <OnlineTag />
-      </div>
+      )}
 
       {/* Bulleted spec sheet */}
-      <ul className={`mt-4 ${hero ? 'grid gap-x-8 gap-y-2 sm:grid-cols-2' : 'space-y-2'}`}>
+      <ul
+        className={`mt-2.5 min-h-0 flex-1 overflow-hidden ${
+          hero ? 'grid content-start gap-x-8 gap-y-1.5 sm:grid-cols-2' : 'space-y-1'
+        }`}
+      >
         {device.specs.map((spec, i) => (
           <li
             key={i}
-            className="flex items-start gap-2 font-mono text-[12px] leading-snug text-white/55"
+            className={`flex items-start gap-1.5 font-mono leading-snug text-white/55 ${
+              hero ? 'text-[12px]' : 'text-[10px]'
+            }`}
           >
-            <span className="select-none leading-snug" style={{ color: device.accent }}>
+            <span className="select-none" style={{ color: device.accent }}>
               -
             </span>
-            <span className="min-w-0">{spec}</span>
+            <span className="min-w-0 truncate">{spec}</span>
           </li>
         ))}
       </ul>

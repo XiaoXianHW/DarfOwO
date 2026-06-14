@@ -13,14 +13,14 @@ export const DevicesPage = () => {
   const [hero, ...rest] = DEVICES;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#080a0f] font-mono text-white">
+    <div className="flex h-screen flex-col overflow-hidden bg-[#080a0f] font-mono text-white">
       <div
         className="pointer-events-none fixed inset-0 z-0"
         style={{ backgroundImage: PIXEL_GRID }}
       />
 
       {/* Top bar */}
-      <div className="sticky top-0 z-20 flex shrink-0 items-center justify-between border-b-2 border-[#1a2030] bg-[#080a0f]/90 px-4 py-3 backdrop-blur-md sm:px-6">
+      <div className="relative z-10 flex shrink-0 items-center justify-between border-b-2 border-[#1a2030] px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
@@ -43,15 +43,17 @@ export const DevicesPage = () => {
         </div>
       </div>
 
-      {/* Responsive card board: the workstation hero spans two columns; every
-          card lists its full spec sheet as a bulleted rundown. */}
-      <div className="relative z-10 flex-1 p-4 sm:p-6">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="sm:col-span-2">
+      {/* Single-screen auto-fit grid: hero (Main Desktop PC) spans 2×2 so the
+          13 devices tile a 4×4 board with no scroll on large screens. */}
+      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:h-full lg:auto-rows-fr lg:grid-cols-4 lg:grid-rows-4">
+          <div className="col-span-2 row-span-2 min-h-0">
             <DeviceTile device={hero} index={0} hero />
           </div>
           {rest.map((device, i) => (
-            <DeviceTile key={device.name} device={device} index={i + 1} />
+            <div key={device.name} className="min-h-0">
+              <DeviceTile device={device} index={i + 1} />
+            </div>
           ))}
         </div>
       </div>
