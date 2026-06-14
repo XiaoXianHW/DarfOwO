@@ -1,7 +1,8 @@
+import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, ChevronRight, Play } from 'lucide-react';
+import { ArrowDownAZ, ArrowLeft, Disc3, Play, Shuffle, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ALBUMS, ARTISTS, FEATURED, type Track } from '../data/musicLibrary';
+import { allTracks, type Track } from '../data/musicLibrary';
 import { Cover } from '../components/music/Cover';
 import { MusicWidget } from '../components/music/MusicWidget';
 
@@ -12,166 +13,190 @@ function fmt(sec: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+type SortMode = 'shuffle' | 'az' | 'artist' | 'album';
+
+const SORTS: { key: SortMode; label: string; icon: typeof Shuffle }[] = [
+  { key: 'shuffle', label: '打乱', icon: Shuffle },
+  { key: 'az', label: 'A–Z', icon: ArrowDownAZ },
+  { key: 'artist', label: '按歌手', icon: Users },
+  { key: 'album', label: '按专辑', icon: Disc3 },
+];
+
+interface Group {
+  title: string;
+  tracks: Track[];
+}
+
+const byName = (a: Track, b: Track) => a.name.localeCompare(b.name, 'zh');
+
 export const MusicPage = () => {
   const navigate = useNavigate();
+  const [mode, setMode] = useState<SortMode>('shuffle');
 
+  const tracks = useMemo(() => allTracks(), []);
+
+  // Unique artist names for the scrolling marquee under the sort tabs.
+  const artists = useMemo(() => {
+    const set = new Set<string>();
+    for (const t of tracks) {
+      for (const a of t.artist.split(/[\/、,]/)) {
+        const n = a.trim();
+        if (n) set.add(n);
+      }
+    }
+    return [...set];
+  }, [tracks]);
+
+  // Shuffle once per mount so the default order is randomized but stable while
+  // browsing (re-selecting 打乱 keeps the same order until the page reloads).
+  const shuffled = useMemo(() => {
+    const a = [...tracks];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }, [tracks]);
+
+  const { flat, groups } = useMemo<{ flat: Track[]; groups: Group[] | null }>(() => {
+    if (mode === 'shuffle') return { flat: shuffled, groups: null };
+    if (mode === 'az') return { flat: [...tracks].sort(byName), groups: null };
+
+    const keyOf = (t: Track) =>
+      mode === 'artist' ? t.artist || '未知歌手' : t.album || '未知专辑';
+    const map = new Map<string, Track[]>();
+    for (const t of tracks) {
+      const k = keyOf(t);
+      const arr = map.get(k);
+      if (arr) arr.push(t);
+      else map.set(k, [t]);
+    }
+    const grouped: Group[] = [...map.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0], 'zh'))
+      .map(([title, ts]) => ({ title, tracks: ts.sort(byName) }));
+    return { flat: grouped.flatMap((g) => g.tracks), groups: grouped };
+  }, [mode, tracks, shuffled]);
+
+  const queueIds = useMemo(() => flat.map((t) => t.id), [flat]);
   const openSong = (t: Track) =>
-    navigate(`/music/${t.id}`, {
-      state: { queue: FEATURED.map((x) => x.id), title: '我最常听' },
-    });
+    navigate(`/music/${t.id}`, { state: { queue: queueIds, title: '全部音乐' } });
 
-  // Marquee band content (doubled for a seamless loop).
-  const band = ARTISTS.map((a) => a.name);
+  // Editorial list row: big tabular-nums index + cover + meta.
+  const Row = (t: Track, n: number, label: string) => (
+    <button
+      key={t.id}
+      onClick={() => openSong(t)}
+      className="group relative flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-white/[0.05] lg:gap-3 lg:px-5"
+    >
+      <span className="absolute left-0 top-0 h-full w-[3px] origin-top scale-y-0 bg-[#ec4141] transition-transform duration-200 group-hover:scale-y-100" />
+      <span className="w-6 shrink-0 text-right font-mono text-base font-black tabular-nums text-white/15 transition-colors group-hover:text-[#ec4141] lg:w-8 lg:text-lg">
+        {String(n).padStart(2, '0')}
+      </span>
+      <Cover name={t.name} cover={t.cover} className="h-11 w-11 shrink-0 ring-1 ring-white/10" textClass="text-base" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[15px] font-semibold lg:text-base">{t.name}</p>
+        <p className="truncate text-[11px] text-white/40">{label}</p>
+      </div>
+      <Play className="hidden h-4 w-4 shrink-0 text-[#ec4141] group-hover:block" fill="currentColor" />
+      <span className="shrink-0 font-mono text-[10px] text-white/30 group-hover:hidden">{fmt(t.dur)}</span>
+    </button>
+  );
 
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#0a0a0a] font-sans text-white selection:bg-[#ec4141]/30 lg:h-screen lg:overflow-hidden">
-      {/* ===== Masthead — oversized editorial header ===== */}
-      <header className="relative shrink-0 px-6 pt-5 lg:px-10">
-        <div className="flex items-start justify-between">
-          <button
-            onClick={() => navigate('/')}
-            className="-ml-2 rounded-full p-2 transition-colors hover:bg-white/10"
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </button>
-          <div className="flex items-start gap-6 pt-1 lg:gap-10">
-            {[
-              { n: ARTISTS.length, l: 'ARTISTS' },
-              { n: ALBUMS.length, l: 'ALBUMS' },
-              { n: FEATURED.length, l: 'TRACKS' },
-            ].map((s) => (
-              <div key={s.l} className="text-right">
-                <div className="text-2xl font-black leading-none lg:text-3xl">
-                  {String(s.n).padStart(2, '0')}
-                </div>
-                <div className="mt-1 font-mono text-[9px] tracking-[0.25em] text-white/35">{s.l}</div>
-              </div>
-            ))}
-            <MusicWidget />
-          </div>
-        </div>
-
-        <div className="mt-1 flex items-end gap-4">
-          <h1 className="text-[64px] font-black leading-[0.82] tracking-tighter lg:text-[104px]">
-            音乐
-          </h1>
-          <div className="mb-2 lg:mb-3">
-            <div className="h-2 w-16 bg-[#ec4141] lg:w-24" />
-            <p className="mt-2 font-mono text-[10px] tracking-[0.3em] text-white/40 lg:text-[11px]">
+      {/* ===== Masthead ===== */}
+      <header className="shrink-0 px-6 pt-7 lg:px-12 lg:pt-10">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3 lg:gap-4">
+            <button
+              onClick={() => navigate('/')}
+              className="-ml-1 shrink-0 rounded-full p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Back"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-3xl font-black tracking-tight lg:text-4xl">音乐</h1>
+            <span className="hidden translate-y-[3px] font-mono text-[10px] tracking-[0.4em] text-white/25 sm:inline lg:text-[11px]">
               SOUND&nbsp;LIBRARY
-            </p>
-            <p className="text-[11px] text-white/45">我喜欢的歌手 · 专辑 · 单曲</p>
+            </span>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-3 lg:gap-4">
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5">
+              <span className="font-mono text-sm font-bold tabular-nums text-white/90">{tracks.length}</span>
+              <span className="text-xs text-white/45">首音乐</span>
+            </div>
+            <MusicWidget />
           </div>
         </div>
       </header>
 
-      {/* ===== Bold marquee band ===== */}
-      <div className="relative mt-3 shrink-0 overflow-hidden border-y border-white/10 bg-[#ec4141] py-2">
-        <div className="marquee flex w-max whitespace-nowrap">
-          {[...band, ...band].map((name, i) => (
-            <span key={i} className="mx-5 font-mono text-sm font-bold uppercase tracking-wider text-black">
-              {name}
-              <span className="ml-10 text-black/40">✦</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ===== Body — asymmetric: big featured index (left) + artists/albums (right) ===== */}
+      {/* ===== Body — single full-width editorial list of all songs ===== */}
       <motion.div
-        className="flex flex-1 flex-col lg:grid lg:min-h-0 lg:grid-cols-[1.5fr_1fr] lg:grid-rows-1"
+        className="flex min-h-0 flex-1 flex-col"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.35 }}
       >
-        {/* LEFT — MOST PLAYED, big numbered editorial list */}
-        <section className="flex flex-col border-white/5 lg:min-h-0 lg:border-r">
-          <div className="flex shrink-0 items-baseline gap-2 px-6 pb-2 pt-5 lg:px-8">
-            <span className="font-mono text-[11px] tracking-[0.25em] text-white/40">MOST&nbsp;PLAYED</span>
-            <span className="text-xs text-white/65">我最常听</span>
-            <span className="font-mono text-[10px] text-white/25">/ {FEATURED.length}</span>
-          </div>
-          <div className="custom-scrollbar pb-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
-            {FEATURED.map((t, i) => (
+        {/* Sort / group — underline tabs */}
+        <div className="mt-5 flex shrink-0 items-center gap-1 border-b border-white/10 px-4 lg:mt-7 lg:px-8">
+          {SORTS.map(({ key, label, icon: Icon }) => {
+            const active = mode === key;
+            return (
               <button
-                key={t.id}
-                onClick={() => openSong(t)}
-                className="group relative flex w-full items-center gap-4 px-6 py-2.5 text-left transition-colors hover:bg-white/[0.05] lg:px-8"
+                key={key}
+                onClick={() => setMode(key)}
+                className={`group relative flex items-center gap-1.5 px-3 pb-3 pt-1 font-mono text-[11px] tracking-[0.2em] transition-colors ${
+                  active ? 'text-white' : 'text-white/35 hover:text-white/70'
+                }`}
               >
-                <span className="absolute left-0 top-0 h-full w-[3px] origin-top scale-y-0 bg-[#ec4141] transition-transform duration-200 group-hover:scale-y-100" />
-                <span className="w-9 shrink-0 font-mono text-2xl font-black tabular-nums text-white/10 transition-colors group-hover:text-[#ec4141] lg:text-3xl">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <Cover name={t.name} cover={t.cover} className="h-11 w-11 shrink-0 ring-1 ring-white/10" textClass="text-base" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[15px] font-semibold lg:text-base">{t.name}</p>
-                  <p className="truncate text-[11px] text-white/40">{t.artist}</p>
-                </div>
-                <Play className="hidden h-4 w-4 shrink-0 text-[#ec4141] group-hover:block" fill="currentColor" />
-                <span className="shrink-0 font-mono text-[10px] text-white/30 group-hover:hidden">{fmt(t.dur)}</span>
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+                <span
+                  className={`absolute -bottom-px left-0 h-[2px] w-full origin-left bg-[#ec4141] transition-transform duration-200 ${
+                    active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-50'
+                  }`}
+                />
               </button>
-            ))}
-          </div>
-        </section>
+            );
+          })}
+        </div>
 
-        {/* RIGHT — artists (small-image list) + albums (cover strip) */}
-        <section className="flex flex-col border-t border-white/5 lg:grid lg:min-h-0 lg:grid-rows-[1.4fr_1fr] lg:overflow-hidden lg:border-t-0">
-          {/* ARTISTS — compact small-image list, click → detail */}
-          <div className="flex flex-col border-b border-white/5 lg:min-h-0">
-            <div className="flex shrink-0 items-baseline gap-2 px-6 pb-2 pt-5">
-              <span className="font-mono text-[11px] tracking-[0.25em] text-white/40">ARTISTS</span>
-              <span className="text-xs text-white/65">常听歌手</span>
-              <span className="font-mono text-[10px] text-white/25">/ {ARTISTS.length}</span>
+        {/* Scrolling artist marquee */}
+        {artists.length > 0 && (
+          <div className="group relative shrink-0 overflow-hidden bg-[#ec4141] py-2">
+            <div className="marquee-artists flex w-max items-center whitespace-nowrap will-change-transform group-hover:[animation-play-state:paused]">
+              {[...artists, ...artists].map((a, i) => (
+                <span key={i} className="flex items-center font-mono text-[11px] font-medium tracking-[0.15em] text-white/85">
+                  <span className="px-4 transition-colors hover:text-white">{a}</span>
+                  <span className="text-white/35">/</span>
+                </span>
+              ))}
             </div>
-            <div className="custom-scrollbar px-3 pb-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
-              {ARTISTS.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => navigate(`/music/artist/${a.id}`)}
-                  className="group flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left transition-colors hover:bg-white/[0.06]"
-                >
-                  <Cover name={a.name} cover={a.cover} circle className="h-9 w-9 shrink-0 ring-1 ring-white/10" textClass="text-sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm group-hover:text-white">{a.name}</p>
-                    {(a.alias || a.bio) && (
-                      <p className="truncate text-[10px] text-white/35">{a.alias || a.bio}</p>
-                    )}
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#ec4141] to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#ec4141] to-transparent" />
+          </div>
+        )}
+
+        {tracks.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center px-6 pb-20 text-center">
+            <p className="font-mono text-sm tracking-wider text-white/40">音乐库为空 · 未连接音乐服务</p>
+          </div>
+        ) : (
+          <div className="custom-scrollbar pb-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+            {groups
+              ? groups.map((g) => (
+                  <div key={g.title}>
+                    <div className="flex items-baseline gap-2 border-t border-white/5 px-3 pb-2 pt-5 first:border-t-0 lg:px-5">
+                      <h2 className="truncate text-base font-bold">{g.title}</h2>
+                      <span className="font-mono text-[10px] text-white/25">/ {g.tracks.length}</span>
+                    </div>
+                    {g.tracks.map((t, i) => Row(t, i + 1, mode === 'artist' ? t.album : t.artist))}
                   </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-white/15 transition-colors group-hover:text-[#ec4141]" />
-                </button>
-              ))}
-            </div>
+                ))
+              : flat.map((t, i) => Row(t, i + 1, `${t.artist} · ${t.album}`))}
           </div>
-
-          {/* ALBUMS — bold horizontal cover strip, click → detail */}
-          <div className="flex flex-col lg:min-h-0">
-            <div className="flex shrink-0 items-baseline gap-2 px-6 pb-2 pt-4">
-              <span className="font-mono text-[11px] tracking-[0.25em] text-white/40">ALBUMS</span>
-              <span className="text-xs text-white/65">专辑 / 合辑</span>
-              <span className="font-mono text-[10px] text-white/25">/ {ALBUMS.length}</span>
-            </div>
-            <div className="custom-scrollbar flex items-start gap-3 overflow-x-auto px-6 pb-4 lg:min-h-0 lg:flex-1">
-              {ALBUMS.map((al) => (
-                <button
-                  key={al.id}
-                  onClick={() => navigate(`/music/album/${al.id}`)}
-                  className="group w-28 shrink-0 text-left lg:w-32"
-                >
-                  <Cover
-                    name={al.name}
-                    cover={al.cover}
-                    className="aspect-square w-full ring-1 ring-white/10 transition-all group-hover:ring-2 group-hover:ring-[#ec4141]"
-                  />
-                  <p className="mt-1.5 line-clamp-1 text-xs group-hover:text-white">{al.name}</p>
-                  <p className="line-clamp-1 font-mono text-[10px] text-white/35">
-                    {al.artist}{al.year ? ` · ${al.year}` : ''}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
+        )}
       </motion.div>
     </div>
   );

@@ -2,11 +2,12 @@
 // or a music note) that opens a popup mini-player — playlist, draggable
 // progress, play/pause and track skipping. Rendered on every primary page; the
 // playback state itself lives in PlayerProvider so it persists across routes.
-import { useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import {
-  Maximize2, Music, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X,
+  Captions, Maximize2, Music, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X,
 } from 'lucide-react';
 import { getTrack } from '../../data/musicLibrary';
 import { usePlayer } from './PlayerProvider';
@@ -27,20 +28,76 @@ export function MusicWidget() {
   const p = usePlayer();
   const navigate = useNavigate();
   const barRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const fillRef = useRef<HTMLDivElement | null>(null);
+  const thumbRef = useRef<HTMLDivElement | null>(null);
+
+  // Anchor the (body-portaled) popup to the trigger button's real position so
+  // its top-right corner lines up just under the button on every page,
+  // regardless of that page's header padding.
+  const [anchor, setAnchor] = useState({ top: 64, right: 12 });
+  const updateAnchor = () => {
+    const b = triggerRef.current;
+    if (!b) return;
+    const r = b.getBoundingClientRect();
+    setAnchor({ top: Math.round(r.bottom + 10), right: Math.max(8, Math.round(window.innerWidth - r.right)) });
+  };
+  useLayoutEffect(() => {
+    if (open && !expanding) updateAnchor();
+  }, [open, expanding]);
+  useEffect(() => {
+    if (!open) return;
+    const onResize = () => updateAnchor();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [open]);
+
+  // Guards the hand-off so it runs exactly once even if both the layout-anim
+  // completion callback AND the safety timeout fire.
+  const handedOff = useRef(false);
 
   const expand = () => {
     if (!p.currentId) return;
+    handedOff.current = false;
     setExpanding(true);
   };
   const onExpandDone = () => {
-    if (!expanding) return;
+    if (handedOff.current) return;
+    handedOff.current = true;
     const id = p.currentId;
-    setOpen(false);
-    setExpanding(false);
+    // Navigate first so the destination page mounts UNDER the still-present
+    // fullscreen hero, then drop the overlay a couple of frames later. This
+    // hands off without the whole screen flashing between the two views.
     if (id) navigate(`/music/${id}`);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        setOpen(false);
+        setExpanding(false);
+      }),
+    );
   };
 
-  const pct = p.duration ? Math.min(100, (p.time / p.duration) * 100) : 0;
+  // Safety net: the framer `layout` completion callback occasionally never
+  // fires (e.g. when the morph is interrupted), which used to leave the page
+  // frozen on the fullscreen transition hero. Force the hand-off after the
+  // morph's max duration so expansion always completes.
+  useEffect(() => {
+    if (!expanding) return;
+    const t = setTimeout(onExpandDone, 650);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expanding]);
+
+  // Smooth (rAF-driven) progress fill + thumb; updated imperatively so the
+  // whole widget doesn't re-render 60x/sec.
+  useEffect(() => {
+    if (!open || expanding) return;
+    return p.subscribeTime((t) => {
+      const pc = p.duration ? Math.min(100, (t / p.duration) * 100) : 0;
+      if (fillRef.current) fillRef.current.style.width = `${pc}%`;
+      if (thumbRef.current) thumbRef.current.style.left = `${pc}%`;
+    });
+  }, [open, expanding, p.duration, p.currentId, p.subscribeTime]);
 
   const seekFromClientX = (clientX: number) => {
     const bar = barRef.current;
@@ -61,30 +118,77 @@ export function MusicWidget() {
   return (
     <>
       {/* ===== Trigger button (top-right on every page) ===== */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label="音乐播放器"
-        title="音乐播放器"
-        className={`relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur-md transition-all hover:bg-black/60 ${
-          open ? 'ring-2 ring-[#ec4141]' : ''
-        }`}
-      >
-        {p.currentTrack?.cover ? (
-          <Cover name={p.currentTrack.name} cover={p.currentTrack.cover} className="h-full w-full" textClass="text-sm" />
-        ) : (
-          <Music className="h-5 w-5" />
+      {/* The quick-controls sit IN FLOW (collapsed) right next to the trigger so
+          the whole group — controls + button — is one continuous hover target.
+          (Absolute positioning left a dead zone that made the bar vanish before
+          it could be clicked.) */}
+      <div className="group relative flex items-center justify-end">
+        {/* Quick controls — expand to the LEFT on hover when a track is loaded */}
+        {p.hasTrack && (
+          <div className="pointer-events-none flex max-w-0 items-center overflow-hidden opacity-0 transition-all duration-200 group-hover:max-w-[160px] group-hover:opacity-100 group-hover:[overflow:visible] group-hover:pointer-events-auto">
+            <div className="mr-1.5 flex items-center gap-0.5 rounded-full bg-black/60 px-1.5 py-1 ring-1 ring-white/15 backdrop-blur-md">
+            <button
+              onClick={(e) => { e.stopPropagation(); p.prev(); }}
+              className="flex h-7 w-7 items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="上一首"
+            >
+              <SkipBack className="h-3.5 w-3.5" fill="currentColor" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); p.toggle(); }}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105"
+              aria-label={p.playing ? '暂停' : '播放'}
+            >
+              {p.playing
+                ? <Pause className="h-3.5 w-3.5" fill="currentColor" />
+                : <Play className="h-3.5 w-3.5 translate-x-px" fill="currentColor" />}
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); p.next(); }}
+              className="flex h-7 w-7 items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="下一首"
+            >
+              <SkipForward className="h-3.5 w-3.5" fill="currentColor" />
+            </button>
+            </div>
+          </div>
         )}
-        {p.playing && (
-          <span className="absolute bottom-1 right-1 flex h-2.5 items-end gap-[1.5px]">
-            <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '0ms' }} />
-            <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '150ms' }} />
-            <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '300ms' }} />
-          </span>
-        )}
-      </button>
 
-      {/* ===== Popup mini-player ===== */}
-      <AnimatePresence>
+        <button
+          ref={triggerRef}
+          onClick={() => { updateAnchor(); setOpen((o) => !o); }}
+          aria-label="音乐播放器"
+          title="音乐播放器"
+          className={`relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur-md transition-all hover:bg-black/60 ${
+            open ? 'ring-2 ring-[#ec4141]' : ''
+          }`}
+        >
+          {p.currentTrack?.cover ? (
+            <Cover
+              name={p.currentTrack.name}
+              cover={p.currentTrack.cover}
+              eager
+              className={`h-full w-full ${p.playing ? 'animate-spin-slow' : ''}`}
+              textClass="text-sm"
+            />
+          ) : (
+            <Music className="h-5 w-5" />
+          )}
+          {p.playing && (
+            <span className="absolute bottom-1 right-1 flex h-2.5 items-end gap-[1.5px]">
+              <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '0ms' }} />
+              <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '150ms' }} />
+              <span className="eq-bar w-[2px] bg-[#ec4141]" style={{ animationDelay: '300ms' }} />
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* ===== Popup mini-player — portaled to <body> so it escapes any host
+          page's stacking / backdrop-filter context, keeping the z-order and
+          the gaussian-blur backdrop working consistently on every page. ===== */}
+      {createPortal(
+        <AnimatePresence>
         {open && (
           <>
             <motion.div
@@ -105,8 +209,9 @@ export function MusicWidget() {
               className={
                 expanding
                   ? 'fixed inset-0 z-[110] flex flex-col overflow-hidden border-0 bg-[#070707] text-white'
-                  : 'fixed right-3 top-16 z-[100] flex max-h-[min(560px,calc(100vh-5rem))] w-[330px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c0c]/70 text-white shadow-2xl shadow-black/60 backdrop-blur-2xl'
+                  : 'fixed z-[100] flex max-h-[min(560px,calc(100vh-5rem))] w-[330px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c0c]/70 text-white shadow-2xl shadow-black/60 backdrop-blur-2xl'
               }
+              style={expanding ? undefined : { top: anchor.top, right: anchor.right }}
             >
               {expanding ? (
                 <ExpandHero name={p.currentTrack?.name ?? '♪'} cover={p.currentTrack?.cover} artist={p.currentTrack?.artist} />
@@ -119,6 +224,17 @@ export function MusicWidget() {
                   <span className="truncate text-xs text-white/65">{p.queueTitle}</span>
                 </div>
                 <div className="flex items-center gap-0.5">
+                  <button
+                    onClick={p.toggleLyricsOverlay}
+                    disabled={!p.hasTrack}
+                    className={`rounded-full p-1.5 transition-colors hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent ${
+                      p.lyricsOverlay ? 'text-[#ec4141]' : 'text-white/55 hover:text-white'
+                    }`}
+                    aria-label="桌面歌词"
+                    title={p.lyricsOverlay ? '关闭桌面歌词' : '开启桌面歌词'}
+                  >
+                    <Captions className="h-4 w-4" />
+                  </button>
                   <button
                     onClick={expand}
                     disabled={!p.hasTrack}
@@ -150,6 +266,7 @@ export function MusicWidget() {
                     <Cover
                       name={p.currentTrack?.name ?? '♪'}
                       cover={p.currentTrack?.cover}
+                      eager
                       className="h-14 w-14 ring-1 ring-white/10"
                       textClass="text-xl"
                     />
@@ -172,11 +289,11 @@ export function MusicWidget() {
                   className={`group relative mt-3 -my-1.5 py-1.5 ${p.hasTrack ? 'cursor-pointer' : ''}`}
                 >
                   <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
-                    <div className="h-full rounded-full bg-[#ec4141]" style={{ width: `${pct}%` }} />
+                    <div ref={fillRef} className="h-full w-0 rounded-full bg-[#ec4141]" />
                   </div>
                   <div
-                    className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover:opacity-100"
-                    style={{ left: `${pct}%` }}
+                    ref={thumbRef}
+                    className="absolute left-0 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover:opacity-100"
                   />
                 </div>
                 <div className="mt-1 flex justify-between font-mono text-[10px] text-white/40">
@@ -252,8 +369,10 @@ export function MusicWidget() {
               )}
             </motion.div>
           </>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </>
   );
 }
@@ -277,7 +396,7 @@ function ExpandHero({ name, cover, artist }: { name: string; cover?: string; art
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 flex flex-col items-center text-center"
       >
-        <Cover name={name} cover={cover} className="aspect-square w-56 shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-64" textClass="text-6xl" />
+        <Cover name={name} cover={cover} eager className="aspect-square w-56 shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-64" textClass="text-6xl" />
         <h2 className="mt-6 text-2xl font-semibold">{name}</h2>
         {artist && <p className="mt-1 text-sm text-white/60">{artist}</p>}
       </motion.div>

@@ -160,6 +160,8 @@ export const getAudioSrc = (id: string | null | undefined): string =>
   (id ? AUDIO_SOURCES[id] ?? TRACK_INDEX[id]?.audio ?? '' : '');
 
 export const getTrack = (id: string): Track | undefined => TRACK_INDEX[id];
+/** 全部去重曲目（精选 + 歌手热门 + 专辑曲目），供音乐页整列表展示。 */
+export const allTracks = (): Track[] => Object.values(TRACK_INDEX);
 export const getSong = (id: string): Song | undefined => SONGS.find((s) => s.id === id);
 export const getArtist = (id: string): Artist | undefined => ARTISTS.find((a) => a.id === id);
 export const getAlbum = (id: string): Album | undefined => ALBUMS.find((a) => a.id === id);

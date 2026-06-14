@@ -39,6 +39,10 @@
   .marquee {
     animation: marquee 26s linear infinite;
   }
+  /* Slower, continuous artist-name marquee under the music sort tabs. */
+  .marquee-artists {
+    animation: marquee 140s linear infinite;
+  }
   @keyframes marquee {
     from {
       transform: translateX(0);
@@ -63,6 +67,16 @@
     }
     50% {
       transform: scaleY(1);
+    }
+  }
+
+  /* Slow vinyl-like rotation for the now-playing cover on the widget button. */
+  .animate-spin-slow {
+    animation: spin-slow 10s linear infinite;
+  }
+  @keyframes spin-slow {
+    to {
+      transform: rotate(360deg);
     }
   }
 }

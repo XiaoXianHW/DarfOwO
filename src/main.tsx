@@ -9,6 +9,7 @@ import { SongDetailPage } from './pages/SongDetailPage.tsx';
 import { StatusPage } from './pages/StatusPage.tsx';
 import { StatusDetailPage } from './pages/StatusDetailPage.tsx';
 import { PlayerProvider } from './components/music/PlayerProvider.tsx';
+import { FloatingLyric } from './components/music/FloatingLyric.tsx';
 import { loadLibrary } from './data/musicLibrary.ts';
 import './index.css';
 
@@ -27,6 +28,7 @@ function mount() {
           <Route path="/status" element={<StatusPage />} />
           <Route path="/status/:metricId" element={<StatusDetailPage />} />
         </Routes>
+        <FloatingLyric />
         </PlayerProvider>
       </BrowserRouter>
     </StrictMode>,
