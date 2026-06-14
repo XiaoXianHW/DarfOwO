@@ -75,7 +75,15 @@ export function DeviceTile({
                 >
                   {d.label}
                 </span>
-                <span className="font-mono text-[13px] leading-snug text-white/75">{d.value}</span>
+                <span className="font-mono text-[13px] leading-snug text-white/75">
+                  {Array.isArray(d.value)
+                    ? d.value.map((v) => (
+                        <span key={v} className="block">
+                          {v}
+                        </span>
+                      ))
+                    : d.value}
+                </span>
               </div>
             ))}
           </div>

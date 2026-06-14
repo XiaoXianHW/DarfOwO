@@ -2,7 +2,8 @@ import type { SpriteKey } from './PixelSprite';
 
 export interface SpecDetail {
   label: string;
-  value: string;
+  // A single line, or several lines rendered stacked (e.g. multiple drives).
+  value: string | string[];
 }
 
 export interface Device {
@@ -32,14 +33,20 @@ export const DEVICES: Device[] = [
       '3.5TB SSD + HDD',
     ],
     details: [
-      { label: 'CPU', value: 'Intel Core i9-10900K · 10C/20T · 5.3GHz' },
-      { label: 'GPU', value: 'NVIDIA RTX 2070 Super · 8GB GDDR6' },
-      { label: 'RAM', value: '32GB DDR4 · 3600MHz 双通道' },
+      { label: 'CPU', value: 'Intel Core i9-10900K' },
+      { label: 'GPU', value: 'NVIDIA RTX 2070 Super' },
+      { label: 'RAM', value: '32GB DDR4 3600MHz · 16GB×2' },
       { label: 'Board', value: 'ASUS PRIME Z490-P' },
-      { label: 'Storage', value: '512GB NVMe SSD + 3TB HDD' },
-      { label: 'Power', value: '750W · 80 PLUS 金牌' },
-      { label: 'Cooling', value: '360mm 一体式水冷' },
-      { label: 'System', value: 'Windows 11 Pro' },
+      { label: 'Power', value: '长城 750W 全模组' },
+      { label: 'System', value: 'Windows 11 Pro Workstation' },
+      {
+        label: 'Storage',
+        value: [
+          '三星 970 EVO Plus 512GB · 系统盘',
+          '三星 980 Pro 1TB · 游戏盘',
+          '希捷 HDD 7200 2TB · 数据盘',
+        ],
+      },
     ],
   },
   {
