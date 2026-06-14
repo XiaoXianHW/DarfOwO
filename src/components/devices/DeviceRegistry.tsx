@@ -62,7 +62,7 @@ export function DeviceTile({
       {/* Specs */}
       {hero && device.details ? (
         // Hero: full labeled spec sheet that breathes across the large tile.
-        <div className="mt-6 flex min-h-0 flex-1 flex-col justify-center gap-7 overflow-hidden">
+        <div className="mt-6 flex min-h-0 flex-1 flex-col justify-between gap-6 overflow-hidden">
           {/* Core spec sheet */}
           <div className="grid grid-cols-1 gap-x-12 gap-y-px sm:grid-cols-2">
             {device.details.map((d) => (
@@ -81,20 +81,20 @@ export function DeviceTile({
             ))}
           </div>
 
-          {/* Storage */}
+          {/* Storage — one drive per row */}
           {device.storage && (
-            <div className="border border-[#222a38] bg-[#0a0d13] p-4">
+            <div>
               <span
                 className="font-pixel text-[9px] uppercase tracking-[0.15em]"
                 style={{ color: device.accent }}
               >
                 Storage
               </span>
-              <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <ul className="mt-3 space-y-px">
                 {device.storage.map((drive) => (
                   <li
                     key={drive}
-                    className="flex items-baseline gap-2 font-mono text-[12px] leading-snug text-white/70"
+                    className="flex items-baseline gap-3 border-b border-white/[0.06] py-2.5 font-mono text-[13px] leading-snug text-white/70"
                   >
                     <span className="shrink-0" style={{ color: device.accent }}>
                       ›
@@ -106,7 +106,7 @@ export function DeviceTile({
             </div>
           )}
 
-          {/* Attached peripherals */}
+          {/* Attached peripherals — full-width cards stacked */}
           {device.peripherals && (
             <div>
               <span
@@ -115,29 +115,31 @@ export function DeviceTile({
               >
                 Peripherals
               </span>
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="mt-3 space-y-2.5">
                 {device.peripherals.map((p) => (
                   <div
                     key={p.name}
-                    className="flex items-center gap-3 border border-dashed border-[#2a3346] p-3"
+                    className="flex items-center gap-4 border border-dashed border-[#2a3346] p-3.5"
                   >
                     <div
-                      className="flex h-10 w-10 shrink-0 items-center justify-center border border-[#222a38] bg-[#0a0d13]"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center border border-[#222a38] bg-[#0a0d13]"
                       style={{ color: p.accent }}
                     >
-                      <PixelSprite name={p.sprite} className="h-5 w-5" />
+                      <PixelSprite name={p.sprite} className="h-6 w-6" />
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-[13px] font-semibold leading-tight text-white/90">
-                        {p.name}
-                      </p>
-                      <p
-                        className="truncate font-mono text-[9px] uppercase tracking-wider"
-                        style={{ color: p.accent }}
-                      >
-                        {p.type}
-                      </p>
-                      <p className="mt-0.5 truncate font-mono text-[10px] text-white/45">{p.spec}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="truncate text-[13px] font-semibold leading-tight text-white/90">
+                          {p.name}
+                        </p>
+                        <span
+                          className="shrink-0 font-pixel text-[8px] uppercase tracking-wider"
+                          style={{ color: p.accent }}
+                        >
+                          {p.type}
+                        </span>
+                      </div>
+                      <p className="mt-1 truncate font-mono text-[11px] text-white/45">{p.spec}</p>
                     </div>
                   </div>
                 ))}
