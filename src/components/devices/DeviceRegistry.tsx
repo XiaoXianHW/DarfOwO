@@ -75,26 +75,24 @@ export function DeviceTile({
         </div>
       )}
 
-      {/* Bulleted spec sheet */}
-      <ul
-        className={`mt-2.5 min-h-0 flex-1 overflow-hidden ${
-          hero ? 'grid content-start gap-x-8 gap-y-1.5 sm:grid-cols-2' : 'space-y-1'
+      {/* Spec sheet — pixel-style tags */}
+      <div
+        className={`mt-2.5 flex min-h-0 flex-1 flex-wrap content-start overflow-hidden ${
+          hero ? 'gap-1.5' : 'gap-1'
         }`}
       >
         {device.specs.map((spec, i) => (
-          <li
+          <span
             key={i}
-            className={`flex items-start gap-1.5 font-mono leading-snug text-white/55 ${
-              hero ? 'text-[12px]' : 'text-[10px]'
+            className={`inline-flex items-center gap-1.5 border border-[#222a38] bg-[#0a0d13] font-mono text-white/60 ${
+              hero ? 'px-2 py-1 text-[11px]' : 'px-1.5 py-0.5 text-[9px]'
             }`}
           >
-            <span className="select-none" style={{ color: device.accent }}>
-              -
-            </span>
-            <span className="min-w-0 truncate">{spec}</span>
-          </li>
+            <span className="h-1 w-1 shrink-0" style={{ backgroundColor: device.accent }} />
+            {spec}
+          </span>
         ))}
-      </ul>
+      </div>
     </motion.div>
   );
 }
