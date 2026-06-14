@@ -32,9 +32,16 @@ interface CoverProps {
   circle?: boolean;
   /** Tailwind text-size class for the monogram letter */
   textClass?: string;
+  /**
+   * Always-visible, important covers (widget trigger, mini-player, lyric page).
+   * These load eagerly and decode synchronously so a re-mount (e.g. re-opening
+   * the popup) paints the already-cached bitmap on the first frame instead of
+   * flashing blank for a couple of frames. Lists keep the default lazy loading.
+   */
+  eager?: boolean;
 }
 
-export function Cover({ name, cover, className = '', circle = false, textClass = 'text-2xl' }: CoverProps) {
+export function Cover({ name, cover, className = '', circle = false, textClass = 'text-2xl', eager = false }: CoverProps) {
   const shape = circle ? 'rounded-full' : 'rounded-md';
 
   // Covers already loaded earlier this session render at full opacity right
@@ -47,8 +54,8 @@ export function Cover({ name, cover, className = '', circle = false, textClass =
       <img
         src={cover}
         alt={name}
-        loading="lazy"
-        decoding="async"
+        loading={eager ? 'eager' : 'lazy'}
+        decoding={eager ? 'sync' : 'async'}
         onLoad={() => { markLoaded(cover); setReady(true); }}
         onError={() => { markFailed(cover); setFailed(true); }}
         className={`${shape} object-cover transition-opacity duration-300 ${ready ? 'opacity-100' : 'opacity-0'} ${className}`}

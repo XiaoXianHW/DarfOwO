@@ -167,6 +167,7 @@ export function MusicWidget() {
             <Cover
               name={p.currentTrack.name}
               cover={p.currentTrack.cover}
+              eager
               className={`h-full w-full ${p.playing ? 'animate-spin-slow' : ''}`}
               textClass="text-sm"
             />
@@ -265,6 +266,7 @@ export function MusicWidget() {
                     <Cover
                       name={p.currentTrack?.name ?? '♪'}
                       cover={p.currentTrack?.cover}
+                      eager
                       className="h-14 w-14 ring-1 ring-white/10"
                       textClass="text-xl"
                     />
@@ -394,7 +396,7 @@ function ExpandHero({ name, cover, artist }: { name: string; cover?: string; art
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 flex flex-col items-center text-center"
       >
-        <Cover name={name} cover={cover} className="aspect-square w-56 shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-64" textClass="text-6xl" />
+        <Cover name={name} cover={cover} eager className="aspect-square w-56 shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-64" textClass="text-6xl" />
         <h2 className="mt-6 text-2xl font-semibold">{name}</h2>
         {artist && <p className="mt-1 text-sm text-white/60">{artist}</p>}
       </motion.div>

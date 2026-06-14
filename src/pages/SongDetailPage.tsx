@@ -394,6 +394,7 @@ export const SongDetailPage = () => {
             <Cover
               name={track.name}
               cover={track.cover}
+              eager
               className="aspect-square w-16 shrink-0 rounded-xl shadow-lg shadow-black/50 ring-1 ring-white/10"
               textClass="text-2xl"
             />
@@ -449,6 +450,7 @@ export const SongDetailPage = () => {
               <Cover
                 name={track.name}
                 cover={track.cover}
+                eager
                 className="aspect-square w-44 shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-52 lg:w-72"
                 textClass="text-6xl"
               />
