@@ -80,16 +80,51 @@ export const SongDetailPage = () => {
   const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [offset, setOffset] = useState(0);
 
+  // Render model: lyric lines interleaved with breathing "…" dot markers for
+  // long instrumental gaps (intro + mid-song pauses) so the view is never
+  // blank — the dots fill up as playback approaches the next line.
+  type LyricItem =
+    | { kind: 'line'; t: string; x?: string; start: number }
+    | { kind: 'dots'; start: number; end: number };
+  const items = useMemo<LyricItem[]>(() => {
+    if (lines.length === 0) return [];
+    // Adaptive thresholds: only mark *genuine* instrumental gaps, not the
+    // normal line-to-line spacing of a slow song. Compare each gap against the
+    // track's own median line spacing so ballads don't sprout dots everywhere.
+    const gaps: number[] = [];
+    for (let i = 1; i < lines.length; i++) gaps.push(lines[i].time - lines[i - 1].time);
+    const median = gaps.length
+      ? [...gaps].sort((a, b) => a - b)[Math.floor(gaps.length / 2)]
+      : 0;
+    const MID_GAP = Math.max(8, median * 2.6); // interlude must clearly exceed normal spacing
+    const INTRO_MIN = 5;
+    const HOLD = 3.5; // keep the just-sung line visible before dots take over
+    const out: LyricItem[] = [];
+    if (lines[0].time > INTRO_MIN) {
+      out.push({ kind: 'dots', start: 0, end: lines[0].time });
+    }
+    for (let i = 0; i < lines.length; i++) {
+      const ln = lines[i];
+      out.push({ kind: 'line', t: ln.t, x: ln.x, start: ln.time });
+      const next = lines[i + 1];
+      if (next && next.time - ln.time > MID_GAP) {
+        const start = Math.min(ln.time + HOLD, next.time - 0.5);
+        out.push({ kind: 'dots', start, end: next.time });
+      }
+    }
+    return out;
+  }, [lines]);
+
   const activeIndex = useMemo(() => {
     let idx = -1;
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].time <= time) idx = i;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].start <= time) idx = i;
       else break;
     }
     return idx;
-  }, [lines, time]);
+  }, [items, time]);
 
-  // Smooth transform-based lyric scroll: translate the list so the active line
+  // Smooth transform-based lyric scroll: translate the list so the active item
   // sits at the anchor point — vertically centered on desktop, but biased
   // toward the upper third on phones (Apple Music-style top-anchored scroll).
   const lyricAnchor = isMobile ? 0.32 : 0.5;
@@ -161,17 +196,49 @@ export const SongDetailPage = () => {
           style={{ transform: `translateY(${offset}px)`, transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
           <div style={{ height: '40vh' }} />
-          {lines.map((line, i) => {
+          {items.map((it, i) => {
             const dist = Math.abs(i - activeIndex);
             const active = i === activeIndex;
             const sung = i < activeIndex;
             const blur = active ? 0 : Math.min(3.2, dist * 0.8);
             const opacity = active ? 1 : Math.max(0.22, 1 - dist * 0.16);
+
+            if (it.kind === 'dots') {
+              // Fill the three dots as playback progresses through the gap.
+              const prog = active && it.end > it.start
+                ? Math.min(1, Math.max(0, (time - it.start) / (it.end - it.start)))
+                : sung ? 1 : 0;
+              const thresholds = [0.0, 0.4, 0.74];
+              return (
+                <div
+                  key={i}
+                  ref={(el) => { lineRefs.current[i] = el; }}
+                  onClick={() => player.seek(it.end)}
+                  className="group cursor-pointer select-none px-1 py-3 transition-[filter,opacity] duration-500 lg:py-4"
+                  style={{ filter: `blur(${blur}px)`, opacity }}
+                >
+                  <span className={`inline-flex items-center gap-2 ${active ? 'animate-pulse' : ''}`}>
+                    {thresholds.map((th, d) => {
+                      const lit = prog >= th && (active || sung);
+                      return (
+                        <span
+                          key={d}
+                          className={`block rounded-full transition-all duration-300 ${
+                            active ? 'h-3 w-3 lg:h-3.5 lg:w-3.5' : 'h-2 w-2 lg:h-2.5 lg:w-2.5'
+                          } ${lit ? 'bg-white' : 'bg-white/25'}`}
+                        />
+                      );
+                    })}
+                  </span>
+                </div>
+              );
+            }
+
             return (
               <div
                 key={i}
                 ref={(el) => { lineRefs.current[i] = el; }}
-                onClick={() => player.seek(line.time)}
+                onClick={() => player.seek(it.start)}
                 className={`group cursor-pointer select-none px-1 py-2.5 transition-[color,filter,opacity] duration-500 lg:py-3 ${
                   active ? 'text-white' : sung ? 'text-white/40 hover:text-white/70' : 'text-white/30 hover:text-white/60'
                 }`}
@@ -184,11 +251,11 @@ export const SongDetailPage = () => {
                       : 'scale-[0.94] text-[21px] lg:text-[30px]'
                   }`}
                 >
-                  {line.t}
+                  {it.t}
                 </p>
-                {line.x && (
+                {it.x && (
                   <p className={`mt-1 font-medium leading-snug transition-all duration-500 ${active ? 'text-base text-white/65 lg:text-lg' : 'text-sm text-white/20'}`}>
-                    {line.x}
+                    {it.x}
                   </p>
                 )}
               </div>
