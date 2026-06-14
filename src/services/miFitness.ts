@@ -149,7 +149,13 @@ export interface Overview {
 export interface OverviewResponse {
   queryDate: string;
   days: number;
-  relative: { relativeUid: number; relativeNote: string; relativeIcon: string };
+  relative: {
+    relativeUid: number;
+    relativeNote: string;
+    relativeIcon: string;
+    // Local-time ISO string of the most recent data point (e.g. "2026-06-14T12:25:26+08:00").
+    latestDataAt?: string;
+  };
   overview: Overview;
 }
 

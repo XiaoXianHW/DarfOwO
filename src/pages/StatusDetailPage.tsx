@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMetrics } from '../hooks/useMetrics';
 import { TrendChart } from '../components/status/TrendChart';
+import { StatusNav } from '../components/status/StatusNav';
 
 export const StatusDetailPage = () => {
   const navigate = useNavigate();
   const { metricId } = useParams<{ metricId: string }>();
-  const { metrics, loading, error } = useMetrics();
+  const { metrics, loading, error, latestDataAt, reload } = useMetrics();
 
   const metric = metrics.find((m) => m.id === metricId);
 
@@ -21,18 +22,13 @@ export const StatusDetailPage = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
-      <div className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-white/5 bg-[#0a0a0a]/80 px-6 py-4 backdrop-blur-xl">
-        <button
-          onClick={() => navigate('/status')}
-          className="-ml-2 flex items-center gap-2 rounded-full px-2 py-1 transition-colors hover:bg-white/10"
-          aria-label="Back to status"
-        >
-          <ArrowLeft className="h-6 w-6" />
-          <span className="text-sm text-white/70">返回</span>
-        </button>
-        <h1 className="text-lg font-medium">{metric ? `${metric.label} · 详情` : '健康详情'}</h1>
-        <span className="w-16" />
-      </div>
+      <StatusNav
+        title={metric ? `${metric.label} · 详情` : '健康详情'}
+        onBack={() => navigate('/status')}
+        latestDataAt={latestDataAt}
+        loading={loading}
+        onReload={reload}
+      />
 
       {loading && (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-white/50">

@@ -37,6 +37,8 @@ export interface HealthData {
   loading: boolean;
   error: string | null;
   updatedAt: string | null;
+  // Local-time ISO of the latest data point reported by the overview endpoint.
+  latestDataAt: string | null;
   reload: () => void;
 }
 
@@ -49,6 +51,7 @@ interface HealthSnapshot {
   overview: Overview | null;
   histories: HealthHistories | null;
   updatedAt: string;
+  latestDataAt: string | null;
 }
 
 // Module-level cache so navigating between the status grid and a detail page
@@ -76,6 +79,7 @@ async function fetchAll(): Promise<HealthSnapshot> {
     overview: ov.overview,
     histories: { heartRate, steps, sleep, calories, spo2, intensity, validStand, weight },
     updatedAt: new Date().toISOString(),
+    latestDataAt: ov.relative?.latestDataAt ?? null,
   };
 }
 
@@ -85,6 +89,7 @@ export function useHealthData(): HealthData {
   const [loading, setLoading] = useState(() => !cache);
   const [error, setError] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(() => cache?.updatedAt ?? null);
+  const [latestDataAt, setLatestDataAt] = useState<string | null>(() => cache?.latestDataAt ?? null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -100,6 +105,7 @@ export function useHealthData(): HealthData {
       setOverview(snapshot.overview);
       setHistories(snapshot.histories);
       setUpdatedAt(snapshot.updatedAt);
+      setLatestDataAt(snapshot.latestDataAt);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load health data');
     } finally {
@@ -112,5 +118,5 @@ export function useHealthData(): HealthData {
     if (!cache) load();
   }, [load]);
 
-  return { overview, histories, loading, error, updatedAt, reload: load };
+  return { overview, histories, loading, error, updatedAt, latestDataAt, reload: load };
 }

@@ -1,13 +1,15 @@
+import { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { X, Monitor, Music, Activity, ChevronRight } from 'lucide-react';
+import { X, Monitor, Music, Activity, Users, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { config } from '../config';
 
-const iconMap = { Monitor, Music, Activity };
+const iconMap = { Monitor, Music, Activity, Users };
 const colorMap = {
   slate: { bg: 'bg-slate-500/20', text: 'text-slate-300' },
   purple: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
-  green: { bg: 'bg-green-500/20', text: 'text-green-400' }
+  green: { bg: 'bg-green-500/20', text: 'text-green-400' },
+  rose: { bg: 'bg-rose-500/20', text: 'text-rose-400' }
 };
 
 interface ProfileOverlayProps {
@@ -16,6 +18,14 @@ interface ProfileOverlayProps {
 
 export const ProfileOverlay = ({ onClose }: ProfileOverlayProps) => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   return (
     <motion.div

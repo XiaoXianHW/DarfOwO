@@ -11,10 +11,7 @@ import { TopControls } from './components/TopControls';
 import { MusicWidget } from './components/music/MusicWidget';
 import { Tagline } from './components/Tagline';
 import { ProfileOverlay } from './components/ProfileOverlay';
-import type { SideType, MousePosition } from './types';
-
-const NO_3D = false;
-const STATIC_MOUSE: MousePosition = { x: 0, y: 0 };
+import type { SideType } from './types';
 
 export default function App() {
   const [hoveredSide, setHoveredSide] = useState<SideType>(null);
@@ -36,38 +33,30 @@ export default function App() {
         divider={divider} 
         hoveredSide={hoveredSide} 
         isMobile={isMobile}
-        is3D={NO_3D}
       />
 
       {!isMobile && (
-        <div className="absolute inset-0 z-10" style={{ perspective: '2000px', perspectiveOrigin: '50% 50%' }}>
-          <div className="w-full h-full relative" style={{ transformStyle: 'preserve-3d' }}>
-            <SideCard 
-              side="side2" 
-              clipPath={clip2} 
-              hoveredSide={hoveredSide} 
-              isMobile={isMobile}
-              is3D={NO_3D}
-              mousePos={STATIC_MOUSE}
-              onHover={setHoveredSide}
-            />
-            <SideCard 
-              side="side1" 
-              clipPath={clip1} 
-              hoveredSide={hoveredSide} 
-              isMobile={isMobile}
-              is3D={NO_3D}
-              mousePos={STATIC_MOUSE}
-              onHover={setHoveredSide}
-            />
-            <Avatar 
-              hoveredSide={hoveredSide} 
-              isProfileOpen={isProfileOpen} 
-              avatarAnim={avatarAnim}
-              is3D={NO_3D}
-              onOpenProfile={() => setIsProfileOpen(true)}
-            />
-          </div>
+        <div className="absolute inset-0 z-10">
+          <SideCard 
+            side="side2" 
+            clipPath={clip2} 
+            hoveredSide={hoveredSide} 
+            isMobile={isMobile}
+            onHover={setHoveredSide}
+          />
+          <SideCard 
+            side="side1" 
+            clipPath={clip1} 
+            hoveredSide={hoveredSide} 
+            isMobile={isMobile}
+            onHover={setHoveredSide}
+          />
+          <Avatar 
+            hoveredSide={hoveredSide} 
+            isProfileOpen={isProfileOpen} 
+            avatarAnim={avatarAnim}
+            onOpenProfile={() => setIsProfileOpen(true)}
+          />
         </div>
       )}
 

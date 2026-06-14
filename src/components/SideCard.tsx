@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { Terminal, Cpu, GitBranch, Users, Sparkles, Palette, Coffee, Heart } from 'lucide-react';
-import type { SideType, MousePosition } from '../types';
+import type { SideType } from '../types';
 import { config } from '../config';
 
 interface SideCardProps {
@@ -8,14 +8,12 @@ interface SideCardProps {
   clipPath: string;
   hoveredSide: SideType;
   isMobile: boolean;
-  is3D: boolean;
-  mousePos: MousePosition;
   onHover: (side: SideType) => void;
 }
 
 const iconMap = { Terminal, Cpu, GitBranch, Users, Sparkles, Palette, Coffee, Heart };
 
-export const SideCard = ({ side, clipPath, hoveredSide, isMobile, is3D, mousePos, onHover }: SideCardProps) => {
+export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: SideCardProps) => {
   const isSide1 = side === 'side1';
   const sideConfig = isSide1 ? config.side1 : config.side2;
   const items = sideConfig.items.map(item => ({
@@ -29,18 +27,11 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, is3D, mousePos
       animate={{ clipPath }}
       transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
     >
-      <motion.div 
+      <div 
         className="relative w-full max-w-[1800px] h-full sm:h-[85vh] sm:min-h-[600px] sm:rounded-2xl pointer-events-auto cursor-pointer sm:cursor-default"
         onMouseEnter={() => onHover(side)}
         onClick={() => isMobile && onHover(side)}
         onMouseLeave={() => onHover(null)}
-        animate={{
-          rotateY: is3D && !isMobile ? (hoveredSide === side ? (isSide1 ? 25 : -25) : (isSide1 ? 15 : -15)) : 0,
-          rotateX: is3D && isMobile ? (isSide1 ? -15 : 15) : (is3D ? mousePos.y * 5 : 0),
-          z: is3D ? (hoveredSide === side ? -100 : -50) : 0
-        }}
-        style={{ transformOrigin: isSide1 ? 'center right' : 'center left', transformStyle: 'preserve-3d' }}
-        transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
       >
         <motion.div
           className={`absolute inset-0 flex flex-col ${isSide1 ? 'p-6 pt-12 pb-[15vh] sm:pb-16 sm:p-16 lg:pl-32' : 'p-6 pt-[15vh] pb-32 sm:pt-16 sm:p-16 lg:pr-32'} overflow-hidden`}
@@ -104,7 +95,7 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, is3D, mousePos
           animate={{ opacity: hoveredSide === (isSide1 ? 'side2' : 'side1') ? 1 : 0 }}
           transition={{ duration: 0.5 }}
         />
-      </motion.div>
+      </div>
     </motion.div>
   );
 };

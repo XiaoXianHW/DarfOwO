@@ -29,6 +29,19 @@ export function formatNumber(n: number): string {
   return n.toLocaleString('en-US');
 }
 
+// "m:ss" playhead label (negative clamped to 0). Used by the players.
+export function clockTime(sec: number): string {
+  if (!isFinite(sec) || sec < 0) sec = 0;
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// Track-duration label: same as clockTime but blank when the length is unknown.
+export function trackTime(sec: number): string {
+  return isFinite(sec) && sec > 0 ? clockTime(sec) : '';
+}
+
 // Local "MM-DD HH:MM" used for the "last refreshed" subtitle.
 export function formatClock(at: string): string {
   const d = parse(at);

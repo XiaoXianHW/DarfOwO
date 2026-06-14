@@ -3,15 +3,9 @@ import { motion } from 'motion/react';
 import { ArrowDownAZ, ArrowLeft, Disc3, Play, Shuffle, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { allTracks, type Track } from '../data/musicLibrary';
+import { trackTime as fmt } from '../utils/format';
 import { Cover } from '../components/music/Cover';
 import { MusicWidget } from '../components/music/MusicWidget';
-
-function fmt(sec: number): string {
-  if (!isFinite(sec) || sec <= 0) return '';
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 type SortMode = 'shuffle' | 'az' | 'artist' | 'album';
 

@@ -29,10 +29,10 @@ export const DevicesPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-sm text-[#4ade80]">$</span>
-            <h1 className="font-pixel text-sm tracking-wider">DEVICES</h1>
-            <span className="h-4 w-2 bg-[#4ade80] pixel-blink" />
+          <div className="flex items-center gap-2">
+            <span className="font-pixel text-sm leading-none text-[#4ade80]">$</span>
+            <h1 className="font-pixel text-sm leading-none tracking-wider">DEVICES</h1>
+            <span className="h-3.5 w-[7px] bg-[#4ade80] pixel-blink" />
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -43,11 +43,11 @@ export const DevicesPage = () => {
         </div>
       </div>
 
-      {/* Single-screen auto-fit grid: hero (Main Desktop PC) spans 2×2 so the
-          13 devices tile a 4×4 board with no scroll on large screens. */}
+      {/* Single-screen auto-fit grid: the workstation hero claims the full left
+          half (with its attached peripherals); the rest tile the right half. */}
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:h-full lg:auto-rows-fr lg:grid-cols-4 lg:grid-rows-4">
-          <div className="col-span-2 row-span-2 min-h-0">
+          <div className="col-span-2 row-span-2 min-h-0 lg:row-span-4">
             <DeviceTile device={hero} index={0} hero />
           </div>
           {rest.map((device, i) => (

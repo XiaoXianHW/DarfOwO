@@ -5,29 +5,10 @@ import {
   ArrowLeft, ChevronDown, ListMusic, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X,
 } from 'lucide-react';
 import { getSong, getTrack, type LyricLine } from '../data/musicLibrary';
+import { clockTime as fmt } from '../utils/format';
+import { useResponsive } from '../hooks/useResponsive';
 import { Cover } from '../components/music/Cover';
 import { usePlayer } from '../components/music/PlayerProvider';
-
-function fmt(sec: number): string {
-  if (!isFinite(sec) || sec < 0) sec = 0;
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-// Phone viewport → dedicated Apple Music-style layout.
-function useIsMobile(): boolean {
-  const [mobile, setMobile] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches,
-  );
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    const on = () => setMobile(mq.matches);
-    mq.addEventListener('change', on);
-    return () => mq.removeEventListener('change', on);
-  }, []);
-  return mobile;
-}
 
 export const SongDetailPage = () => {
   const navigate = useNavigate();
@@ -73,7 +54,7 @@ export const SongDetailPage = () => {
   const pos = player.index;
 
   const [showList, setShowList] = useState(false);
-  const isMobile = useIsMobile();
+  const isMobile = useResponsive();
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);

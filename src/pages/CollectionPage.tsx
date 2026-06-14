@@ -3,15 +3,9 @@ import { motion } from 'motion/react';
 import { ArrowLeft, ExternalLink, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAlbum, getArtist, type Track } from '../data/musicLibrary';
+import { trackTime as fmt } from '../utils/format';
 import { Cover } from '../components/music/Cover';
 import { MusicWidget } from '../components/music/MusicWidget';
-
-function fmt(sec: number): string {
-  if (!isFinite(sec) || sec <= 0) return '';
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 type Kind = 'artist' | 'album';
 
