@@ -46,8 +46,7 @@ export const config = {
     items: [
       { title: '个人技术栈', icon: 'Cpu' },
       { title: '维护的项目', icon: 'GitBranch' },
-      { title: '技术性博客', icon: 'Terminal' },
-      { title: '合作开发者', icon: 'Users' }
+      { title: '或许有彩蛋', icon: 'Terminal' }
     ]
   },
 
@@ -60,7 +59,6 @@ export const config = {
     items: [
       { title: '个人OC介绍', icon: 'Sparkles' },
       { title: '艺术性作品', icon: 'Palette' },
-      { title: '随笔&生活类博客', icon: 'Coffee' },
       { title: '性格及个人简介', icon: 'Heart' }
     ]
   },

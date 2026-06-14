@@ -21,6 +21,10 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
     title: item.title
   }));
 
+  const isActive = hoveredSide === side;
+  const isOpposite = hoveredSide === (isSide1 ? 'side2' : 'side1');
+  const BigIcon = isSide1 ? Terminal : Palette;
+
   return (
     <motion.div 
       className={`absolute inset-0 ${isSide1 ? 'z-20' : 'z-10'} flex items-center justify-center p-0 sm:p-8 pointer-events-none`}
@@ -33,15 +37,27 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
         onClick={() => isMobile && onHover(side)}
         onMouseLeave={() => onHover(null)}
       >
+        {/* Default state — only the enlarged top icon */}
         <motion.div
-          className={`absolute inset-0 flex flex-col ${isSide1 ? 'p-6 pt-12 pb-[15vh] sm:pb-16 sm:p-16 lg:pl-32' : 'p-6 pt-[15vh] pb-32 sm:pt-16 sm:p-16 lg:pr-32'} overflow-hidden`}
+          className={`absolute inset-0 z-10 flex items-center justify-center pointer-events-none ${isSide1 ? 'pr-[50%]' : 'pl-[50%]'}`}
+          animate={{ opacity: isActive ? 0 : isOpposite ? 0.15 : 1, scale: isActive ? 0.6 : 1 }}
+          transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
+        >
+          <BigIcon
+            className={`${isSide1 ? 'text-[#5B89D2]' : 'text-orange-500'} w-32 h-32 sm:w-56 sm:h-56`}
+            strokeWidth={1}
+          />
+        </motion.div>
+
+        {/* Hover state — full details */}
+        <motion.div
+          className={`absolute inset-0 flex flex-col z-10 ${isSide1 ? 'p-6 pt-12 pb-[15vh] sm:pb-16 sm:p-16 lg:pl-32' : 'p-6 pt-[15vh] pb-32 sm:pt-16 sm:p-16 lg:pr-32'} overflow-hidden`}
           animate={{
-            opacity: hoveredSide === (isSide1 ? 'side2' : 'side1') ? (isMobile ? 0 : 0.2) : 1,
-            scale: hoveredSide === (isSide1 ? 'side2' : 'side1') ? 0.95 : hoveredSide === side ? 1.02 : 1,
-            x: hoveredSide === (isSide1 ? 'side2' : 'side1') ? (isMobile ? 0 : (isSide1 ? -40 : 40)) : 0,
-            y: hoveredSide === (isSide1 ? 'side2' : 'side1') ? (isMobile ? (isSide1 ? -20 : 20) : 0) : 0,
+            opacity: isActive ? 1 : 0,
+            scale: isActive ? 1 : 0.97,
           }}
           transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
+          style={{ pointerEvents: isActive ? 'auto' : 'none' }}
         >
           <div className={`relative z-10 w-full max-w-lg flex flex-col h-full justify-center ${isSide1 ? '' : 'items-end text-right ml-auto'}`}>
             <div className={`flex flex-col ${isSide1 ? 'items-start text-left' : 'items-end'} mb-8`}>
@@ -92,7 +108,7 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
         <motion.div
           className={`absolute inset-0 ${isSide1 ? 'bg-[#111111]/60' : 'bg-white/40'} backdrop-blur-xl z-20 pointer-events-none`}
           initial={{ opacity: 0 }}
-          animate={{ opacity: hoveredSide === (isSide1 ? 'side2' : 'side1') ? 1 : 0 }}
+          animate={{ opacity: isOpposite ? 1 : 0 }}
           transition={{ duration: 0.5 }}
         />
       </div>
