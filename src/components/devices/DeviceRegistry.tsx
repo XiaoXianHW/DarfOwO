@@ -62,31 +62,82 @@ export function DeviceTile({
       {/* Specs */}
       {hero && device.details ? (
         // Hero: full labeled spec sheet that breathes across the large tile.
-        <div className="mt-5 flex min-h-0 flex-1 flex-col justify-center">
-          <div className="grid grid-cols-1 gap-x-10 gap-y-px sm:grid-cols-2">
+        <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-x-8 gap-y-5 overflow-hidden md:grid-cols-2 lg:grid-cols-[1.4fr_1.1fr_1.1fr]">
+          {/* Core spec sheet */}
+          <div className="flex flex-col justify-center">
             {device.details.map((d) => (
               <div
                 key={d.label}
-                className="flex items-baseline gap-4 border-b border-white/[0.06] py-2.5"
+                className="flex items-baseline gap-3 border-b border-white/[0.06] py-[7px]"
               >
                 <span
-                  className="w-20 shrink-0 font-pixel text-[9px] uppercase tracking-[0.15em]"
+                  className="w-14 shrink-0 font-pixel text-[8px] uppercase tracking-[0.12em]"
                   style={{ color: device.accent }}
                 >
                   {d.label}
                 </span>
-                <span className="font-mono text-[13px] leading-snug text-white/75">
-                  {Array.isArray(d.value)
-                    ? d.value.map((v) => (
-                        <span key={v} className="block">
-                          {v}
-                        </span>
-                      ))
-                    : d.value}
-                </span>
+                <span className="font-mono text-[12px] leading-snug text-white/75">{d.value}</span>
               </div>
             ))}
           </div>
+
+          {/* Storage */}
+          {device.storage && (
+            <div className="flex flex-col justify-center">
+              <span
+                className="font-pixel text-[9px] uppercase tracking-[0.15em]"
+                style={{ color: device.accent }}
+              >
+                Storage
+              </span>
+              <ul className="mt-2.5 space-y-2">
+                {device.storage.map((drive) => (
+                  <li
+                    key={drive}
+                    className="flex items-baseline gap-2 font-mono text-[12px] leading-snug text-white/70"
+                  >
+                    <span className="shrink-0" style={{ color: device.accent }}>
+                      ›
+                    </span>
+                    {drive}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Attached peripherals */}
+          {device.peripherals && (
+            <div className="flex flex-col justify-center">
+              <span
+                className="font-pixel text-[9px] uppercase tracking-[0.15em]"
+                style={{ color: device.accent }}
+              >
+                Peripherals
+              </span>
+              <div className="mt-2.5 space-y-2">
+                {device.peripherals.map((p) => (
+                  <div
+                    key={p.name}
+                    className="flex items-center gap-2.5 border border-dashed border-[#2a3346] p-2"
+                  >
+                    <div
+                      className="flex h-8 w-8 shrink-0 items-center justify-center border border-[#222a38] bg-[#0a0d13]"
+                      style={{ color: p.accent }}
+                    >
+                      <PixelSprite name={p.sprite} className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-[12px] font-semibold leading-tight text-white/90">
+                        {p.name}
+                      </p>
+                      <p className="truncate font-mono text-[10px] text-white/45">{p.spec}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-0.5 pt-3">

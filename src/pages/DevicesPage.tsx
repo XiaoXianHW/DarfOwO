@@ -43,8 +43,8 @@ export const DevicesPage = () => {
         </div>
       </div>
 
-      {/* Single-screen auto-fit grid: hero (Main Desktop PC) spans 2×2 so the
-          13 devices tile a 4×4 board with no scroll on large screens. */}
+      {/* Single-screen auto-fit grid: the workstation hero spans 2×2 (with its
+          attached peripherals) while the remaining devices tile the board. */}
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:h-full lg:auto-rows-fr lg:grid-cols-4 lg:grid-rows-4">
           <div className="col-span-2 row-span-2 min-h-0">

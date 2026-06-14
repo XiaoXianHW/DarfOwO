@@ -2,8 +2,15 @@ import type { SpriteKey } from './PixelSprite';
 
 export interface SpecDetail {
   label: string;
-  // A single line, or several lines rendered stacked (e.g. multiple drives).
-  value: string | string[];
+  value: string;
+}
+
+export interface Peripheral {
+  name: string;
+  type: string;
+  spec: string;
+  sprite: SpriteKey;
+  accent: string;
 }
 
 export interface Device {
@@ -16,6 +23,10 @@ export interface Device {
   // Optional full, labeled spec sheet — used by the hero tile to fill its
   // larger footprint. Falls back to `specs` when absent.
   details?: SpecDetail[];
+  // Optional storage breakdown rendered as its own block on the hero tile.
+  storage?: string[];
+  // Attached peripherals (monitor / keyboard / mouse) shown as a sub-section.
+  peripherals?: Peripheral[];
 }
 
 // Flat inventory, ordered so the primary workstation leads the grid.
@@ -36,17 +47,19 @@ export const DEVICES: Device[] = [
       { label: 'CPU', value: 'Intel Core i9-10900K' },
       { label: 'GPU', value: 'NVIDIA RTX 2070 Super' },
       { label: 'RAM', value: '32GB DDR4 3600MHz · 16GB×2' },
-      { label: 'Board', value: 'ASUS PRIME Z490-P' },
-      { label: 'Power', value: '长城 750W 全模组' },
+      { label: 'Board', value: 'ASUS PRIME Z490-PLUS' },
+      { label: 'Power', value: 'Great Wall 750W Full-Modular' },
       { label: 'System', value: 'Windows 11 Pro Workstation' },
-      {
-        label: 'Storage',
-        value: [
-          '三星 970 EVO Plus 512GB · 系统盘',
-          '三星 980 Pro 1TB · 游戏盘',
-          '希捷 HDD 7200 2TB · 数据盘',
-        ],
-      },
+    ],
+    storage: [
+      'Samsung 970 EVO Plus 512GB · System',
+      'Samsung 980 Pro 1TB · Games',
+      'Seagate HDD 7200 2TB · Data',
+    ],
+    peripherals: [
+      { name: 'AOC CQ27G2', type: 'Monitor', spec: '27" 2K · 144Hz Curved', sprite: 'monitor', accent: '#22d3ee' },
+      { name: 'AULA F87', type: 'Keyboard', spec: '87-Key Mechanical', sprite: 'keyboard', accent: '#fbbf24' },
+      { name: 'Logitech G502', type: 'Mouse', spec: 'HERO 25K Sensor', sprite: 'mouse', accent: '#f472b6' },
     ],
   },
   {
@@ -92,32 +105,11 @@ export const DEVICES: Device[] = [
     specs: ['4× 4TB IronWolf', 'RAID 5'],
   },
   {
-    name: 'AOC CQ27G2',
-    type: 'Monitor',
-    sprite: 'monitor',
-    accent: '#22d3ee',
-    specs: ['27" 2K', '144Hz Curved'],
-  },
-  {
-    name: 'Logitech G502',
-    type: 'Mouse',
-    sprite: 'mouse',
-    accent: '#f472b6',
-    specs: ['HERO Sensor'],
-  },
-  {
-    name: 'AULA F87',
-    type: 'Keyboard',
-    sprite: 'keyboard',
-    accent: '#fbbf24',
-    specs: ['Mechanical'],
-  },
-  {
     name: 'Meta Quest 3',
     type: 'VR',
     sprite: 'vr',
     accent: '#c084fc',
-    specs: ['512GB'],
+    specs: ['Snapdragon XR2 Gen 2', '8 + 512GB'],
   },
   {
     name: 'Edifier NeoPods Pro',
