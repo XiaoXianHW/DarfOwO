@@ -17,9 +17,8 @@ const host = (u?: string) => {
   }
 };
 
-function FriendAvatar({ friend, accent }: { friend: Friend; accent: string }) {
+function FriendAvatar({ friend }: { friend: Friend }) {
   const [failed, setFailed] = useState(false);
-  const ring = { boxShadow: `0 0 0 2px ${accent}` };
   if (friend.avatar && !failed) {
     return (
       <img
@@ -28,16 +27,12 @@ function FriendAvatar({ friend, accent }: { friend: Friend; accent: string }) {
         referrerPolicy="no-referrer"
         loading="lazy"
         onError={() => setFailed(true)}
-        className="h-12 w-12 shrink-0 rounded-full object-cover"
-        style={ring}
+        className="h-12 w-12 shrink-0 rounded-full object-cover ring-1 ring-white/10"
       />
     );
   }
   return (
-    <div
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white/90"
-      style={{ backgroundColor: accent, ...ring }}
-    >
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-lg font-bold text-white/80 ring-1 ring-white/10">
       {[...friend.name][0]?.toUpperCase() ?? '♪'}
     </div>
   );
@@ -94,36 +89,29 @@ export const FriendsPage = () => {
         {/* Friends — avatar cards */}
         <SectionHead title="朋友" label="MUTUALS" count={FRIENDS.length} />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {FRIENDS.map((f, i) => {
-            const accent = ACCENTS[i % ACCENTS.length];
-            return (
-              <motion.a
-                key={f.name}
-                href={f.link}
-                target="_blank"
-                rel="noreferrer"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: i * 0.05, ease: 'easeOut' }}
-                className="group relative flex items-center gap-3.5 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.06]"
-              >
-                <div
-                  className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-25"
-                  style={{ backgroundColor: accent }}
-                />
-                <FriendAvatar friend={f} accent={accent} />
-                <div className="relative min-w-0 flex-1">
-                  <p className="truncate font-semibold text-white">{f.name}</p>
-                  {f.description && (
-                    <p className="mt-0.5 truncate font-mono text-[11px] text-white/40">
-                      {f.description}
-                    </p>
-                  )}
-                </div>
-                <ArrowUpRight className="relative h-4 w-4 shrink-0 text-white/20 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white/70" />
-              </motion.a>
-            );
-          })}
+          {FRIENDS.map((f, i) => (
+            <motion.a
+              key={f.name}
+              href={f.link}
+              target="_blank"
+              rel="noreferrer"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: i * 0.05, ease: 'easeOut' }}
+              className="group flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.06]"
+            >
+              <FriendAvatar friend={f} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-white">{f.name}</p>
+                {f.description && (
+                  <p className="mt-0.5 truncate font-mono text-[11px] text-white/40">
+                    {f.description}
+                  </p>
+                )}
+              </div>
+              <ArrowUpRight className="h-4 w-4 shrink-0 text-white/20 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white/70" />
+            </motion.a>
+          ))}
         </div>
 
         {/* Friend links — pill cloud (XiaoXian site network) */}

@@ -1,5 +1,10 @@
 import type { SpriteKey } from './PixelSprite';
 
+export interface SpecDetail {
+  label: string;
+  value: string;
+}
+
 export interface Device {
   name: string;
   type: string;
@@ -7,6 +12,9 @@ export interface Device {
   // Flat accent color (no gradients) used for the sprite tint.
   accent: string;
   specs: string[];
+  // Optional full, labeled spec sheet — used by the hero tile to fill its
+  // larger footprint. Falls back to `specs` when absent.
+  details?: SpecDetail[];
 }
 
 // Flat inventory, ordered so the primary workstation leads the grid.
@@ -22,6 +30,16 @@ export const DEVICES: Device[] = [
       '32GB DDR4 3600MHz',
       'ASUS Z490-P · 750W',
       '3.5TB SSD + HDD',
+    ],
+    details: [
+      { label: 'CPU', value: 'Intel Core i9-10900K · 10C/20T · 5.3GHz' },
+      { label: 'GPU', value: 'NVIDIA RTX 2070 Super · 8GB GDDR6' },
+      { label: 'RAM', value: '32GB DDR4 · 3600MHz 双通道' },
+      { label: 'Board', value: 'ASUS PRIME Z490-P' },
+      { label: 'Storage', value: '512GB NVMe SSD + 3TB HDD' },
+      { label: 'Power', value: '750W · 80 PLUS 金牌' },
+      { label: 'Cooling', value: '360mm 一体式水冷' },
+      { label: 'System', value: 'Windows 11 Pro' },
     ],
   },
   {

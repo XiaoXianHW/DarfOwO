@@ -60,29 +60,36 @@ export function DeviceTile({
       </div>
 
       {/* Specs */}
-      <div
-        className={`mt-auto pt-3 ${
-          hero
-            ? 'grid grid-cols-2 gap-1.5'
-            : 'flex flex-wrap items-center gap-x-2 gap-y-0.5'
-        }`}
-      >
-        {device.specs.map((spec, i) =>
-          hero ? (
-            <div
-              key={i}
-              className="border border-[#222a38] bg-[#0a0d13] px-2 py-1 font-mono text-[11px] text-white/55"
-            >
-              {spec}
-            </div>
-          ) : (
+      {hero && device.details ? (
+        // Hero: full labeled spec sheet that breathes across the large tile.
+        <div className="mt-5 flex min-h-0 flex-1 flex-col justify-center">
+          <div className="grid grid-cols-1 gap-x-10 gap-y-px sm:grid-cols-2">
+            {device.details.map((d) => (
+              <div
+                key={d.label}
+                className="flex items-baseline gap-4 border-b border-white/[0.06] py-2.5"
+              >
+                <span
+                  className="w-20 shrink-0 font-pixel text-[9px] uppercase tracking-[0.15em]"
+                  style={{ color: device.accent }}
+                >
+                  {d.label}
+                </span>
+                <span className="font-mono text-[13px] leading-snug text-white/75">{d.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-0.5 pt-3">
+          {device.specs.map((spec, i) => (
             <span key={i} className="flex items-center gap-2 font-mono text-[10px] text-white/45">
               {i > 0 && <span className="text-white/15">·</span>}
               {spec}
             </span>
-          ),
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
