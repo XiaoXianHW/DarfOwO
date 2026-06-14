@@ -85,8 +85,14 @@ export const config = {
       subtitle: 'Live metrics & current activity',
       icon: 'Activity',
       color: 'green',
-      span: 2,
       path: '/status'
+    },
+    {
+      title: '朋友 (Friends)',
+      subtitle: 'Friends & blogroll',
+      icon: 'Users',
+      color: 'rose',
+      path: '/friends'
     }
   ]
 };

@@ -10,6 +10,7 @@ import './index.css';
 // Sub-pages are split into their own chunks (the status pages pull in the heavy
 // Recharts bundle, the song page is large) so the landing route ships less JS.
 const DevicesPage = lazy(() => import('./pages/DevicesPage.tsx').then((m) => ({ default: m.DevicesPage })));
+const FriendsPage = lazy(() => import('./pages/FriendsPage.tsx').then((m) => ({ default: m.FriendsPage })));
 const MusicPage = lazy(() => import('./pages/MusicPage.tsx').then((m) => ({ default: m.MusicPage })));
 const CollectionPage = lazy(() => import('./pages/CollectionPage.tsx').then((m) => ({ default: m.CollectionPage })));
 const SongDetailPage = lazy(() => import('./pages/SongDetailPage.tsx').then((m) => ({ default: m.SongDetailPage })));
@@ -29,6 +30,7 @@ function mount() {
             <Routes>
               <Route path="/" element={<App />} />
               <Route path="/devices" element={<DevicesPage />} />
+              <Route path="/friends" element={<FriendsPage />} />
               <Route path="/music" element={<MusicPage />} />
               <Route path="/music/artist/:id" element={<CollectionPage kind="artist" />} />
               <Route path="/music/album/:id" element={<CollectionPage kind="album" />} />

@@ -1,9 +1,8 @@
-import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMetrics } from '../hooks/useMetrics';
 import { StatusCard } from '../components/status/StatusCard';
-import { MusicWidget } from '../components/music/MusicWidget';
-import { formatClock } from '../utils/format';
+import { StatusNav } from '../components/status/StatusNav';
 
 // Bento spans so the 8 cards tile a 4×4 grid with no whitespace on large screens.
 const SPAN: Record<string, string> = {
@@ -19,33 +18,13 @@ export const StatusPage = () => {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
-      {/* Top navigation */}
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/5 bg-[#0a0a0a]/80 px-6 py-4 backdrop-blur-xl">
-        <div className="flex min-w-0 items-center gap-2">
-          <button
-            onClick={() => navigate('/')}
-            className="-ml-2 shrink-0 rounded-full p-2 transition-colors hover:bg-white/10"
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </button>
-          <div className="min-w-0">
-            <h1 className="text-lg font-medium leading-tight">健康状态</h1>
-            <p className="mt-0.5 truncate text-[11px] text-white/40">
-              {latestDataAt ? `最后刷新 ${formatClock(latestDataAt)}` : '最后刷新 —'} · 小米手环 10
-            </p>
-          </div>
-          <button
-            onClick={reload}
-            disabled={loading}
-            className="ml-1 shrink-0 rounded-full p-2 transition-colors hover:bg-white/10 disabled:opacity-40"
-            aria-label="Refresh"
-          >
-            <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-        <MusicWidget />
-      </div>
+      <StatusNav
+        title="健康状态"
+        onBack={() => navigate('/')}
+        latestDataAt={latestDataAt}
+        loading={loading}
+        onReload={reload}
+      />
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">
         {loading && (
