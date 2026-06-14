@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
-  ArrowLeft, ListMusic, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X,
+  ArrowLeft, ChevronDown, ListMusic, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X,
 } from 'lucide-react';
 import { getSong, getTrack, type LyricLine } from '../data/musicLibrary';
 import { Cover } from '../components/music/Cover';
@@ -13,6 +13,20 @@ function fmt(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// Phone viewport → dedicated Apple Music-style layout.
+function useIsMobile(): boolean {
+  const [mobile, setMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const on = () => setMobile(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return mobile;
 }
 
 export const SongDetailPage = () => {
@@ -59,6 +73,7 @@ export const SongDetailPage = () => {
   const pos = player.index;
 
   const [showList, setShowList] = useState(false);
+  const isMobile = useIsMobile();
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -82,7 +97,7 @@ export const SongDetailPage = () => {
     if (!box) return;
     if (!el) { setOffset(0); return; }
     setOffset(box.clientHeight / 2 - (el.offsetTop + el.clientHeight / 2));
-  }, [activeIndex, song]);
+  }, [activeIndex, song, isMobile]);
 
   // Draggable / clickable progress bar.
   const barRef = useRef<HTMLDivElement | null>(null);
@@ -98,7 +113,7 @@ export const SongDetailPage = () => {
       if (thumbRef.current) thumbRef.current.style.left = `${pc}%`;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [duration, player.currentId, player.subscribeTime]);
+  }, [duration, player.currentId, player.subscribeTime, isMobile]);
 
   const seekFromClientX = (clientX: number) => {
     const bar = barRef.current;
@@ -126,6 +141,152 @@ export const SongDetailPage = () => {
     );
   }
 
+  // ── Shared building blocks (mounted by exactly one layout at a time) ──
+
+  const renderLyrics = (alignClass: string) => (
+    <div
+      ref={scrollRef}
+      className={`relative min-h-0 flex-1 overflow-hidden ${alignClass} [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_15%,#000_82%,transparent)] [mask-image:linear-gradient(to_bottom,transparent,#000_15%,#000_82%,transparent)]`}
+    >
+      {lines.length === 0 ? (
+        <div className="flex h-full items-center justify-center">
+          <p className="font-mono text-sm tracking-wider text-white/40">纯音乐 · 暂无歌词</p>
+        </div>
+      ) : (
+        <div
+          ref={innerRef}
+          className="will-change-transform"
+          style={{ transform: `translateY(${offset}px)`, transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        >
+          <div style={{ height: '40vh' }} />
+          {lines.map((line, i) => {
+            const dist = Math.abs(i - activeIndex);
+            const active = i === activeIndex;
+            const sung = i < activeIndex;
+            const blur = active ? 0 : Math.min(3.2, dist * 0.8);
+            const opacity = active ? 1 : Math.max(0.22, 1 - dist * 0.16);
+            return (
+              <div
+                key={i}
+                ref={(el) => { lineRefs.current[i] = el; }}
+                onClick={() => player.seek(line.time)}
+                className={`group cursor-pointer select-none px-1 py-2.5 transition-[color,filter,opacity] duration-500 lg:py-3 ${
+                  active ? 'text-white' : sung ? 'text-white/40 hover:text-white/70' : 'text-white/30 hover:text-white/60'
+                }`}
+                style={{ filter: `blur(${blur}px)`, opacity }}
+              >
+                <p
+                  className={`origin-left font-bold leading-tight transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    active
+                      ? 'scale-100 text-[26px] drop-shadow-[0_2px_24px_rgba(255,255,255,0.18)] lg:text-[40px]'
+                      : 'scale-[0.94] text-[21px] lg:text-[30px]'
+                  }`}
+                >
+                  {line.t}
+                </p>
+                {line.x && (
+                  <p className={`mt-1 font-medium leading-snug transition-all duration-500 ${active ? 'text-base text-white/65 lg:text-lg' : 'text-sm text-white/20'}`}>
+                    {line.x}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+          <div style={{ height: '40vh' }} />
+        </div>
+      )}
+    </div>
+  );
+
+  const renderProgress = () => (
+    <div>
+      <div
+        ref={barRef}
+        onPointerDown={onBarDown}
+        onPointerMove={onBarMove}
+        className="group relative -my-2 cursor-pointer py-2"
+      >
+        <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
+          <div ref={fillRef} className="h-full w-0 rounded-full bg-white/80" />
+        </div>
+        <div
+          ref={thumbRef}
+          className="absolute left-0 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover:opacity-100"
+        />
+      </div>
+      <div className="mt-1.5 flex justify-between font-mono text-[10px] text-white/40">
+        <span>{fmt(time)}</span>
+        <span>{fmt(duration)}</span>
+      </div>
+    </div>
+  );
+
+  const renderControls = (justifyClass: string) => (
+    <div className={`flex items-center gap-5 ${justifyClass}`}>
+      <button
+        onClick={player.cycleMode}
+        className="text-white/55 transition-colors hover:text-white"
+        aria-label={mode === 'loop' ? '列表循环' : '随机播放'}
+        title={mode === 'loop' ? '列表循环' : '随机播放'}
+      >
+        {mode === 'loop'
+          ? <Repeat className="h-[18px] w-[18px]" />
+          : <Shuffle className="h-[18px] w-[18px] text-[#ec4141]" />}
+      </button>
+      <button onClick={player.prev} className="text-white/70 transition-colors hover:text-white" aria-label="Previous">
+        <SkipBack className="h-6 w-6" fill="currentColor" />
+      </button>
+      <button
+        onClick={player.toggle}
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105"
+        aria-label={playing ? 'Pause' : 'Play'}
+      >
+        {playing ? <Pause className="h-6 w-6" fill="currentColor" /> : <Play className="h-6 w-6 translate-x-0.5" fill="currentColor" />}
+      </button>
+      <button onClick={player.next} className="text-white/70 transition-colors hover:text-white" aria-label="Next">
+        <SkipForward className="h-6 w-6" fill="currentColor" />
+      </button>
+      <span className="ml-1 font-mono text-[10px] text-white/30">{pos + 1}/{queue.length}</span>
+    </div>
+  );
+
+  const drawerHeader = (
+    <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
+      <div className="flex items-baseline gap-2">
+        <span className="font-mono text-[11px] tracking-[0.25em] text-white/40">PLAYLIST</span>
+        <span className="text-xs text-white/65">{queueTitle}</span>
+      </div>
+      <button onClick={() => setShowList(false)} className="rounded-full p-1.5 text-white/60 hover:bg-white/10 hover:text-white" aria-label="关闭">
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+
+  const queueList = (
+    <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-2 py-2">
+      {queue.map((qid, i) => {
+        const t = getTrack(qid);
+        if (!t) return null;
+        const cur = qid === player.currentId;
+        return (
+          <button
+            key={qid}
+            onClick={() => player.play(qid, queue, queueTitle)}
+            className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-white/[0.06] ${cur ? 'bg-white/[0.05]' : ''}`}
+          >
+            <span className={`w-5 shrink-0 text-right font-mono text-[11px] ${cur ? 'text-[#ec4141]' : 'text-white/30'}`}>
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className={`truncate text-sm ${cur ? 'text-[#ec4141]' : ''}`}>{t.name}</p>
+              <p className="truncate text-[11px] text-white/40">{t.artist}</p>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
     <motion.div
       // No entrance fade/scale: when arriving via the widget's expand morph the
@@ -140,190 +301,126 @@ export const SongDetailPage = () => {
         className="pointer-events-none absolute inset-0 scale-125 bg-cover bg-center blur-3xl"
         style={{ backgroundImage: `url(${track.cover})` }}
       />
-      {/* Left→right gradient: vibrant left, darker toward the lyrics */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-black/55 to-black/85" />
+      {/* Vibrant→dark gradient: left-to-right on desktop, top-to-bottom on mobile */}
+      <div className={`pointer-events-none absolute inset-0 ${isMobile ? 'bg-gradient-to-b from-black/35 via-black/55 to-black/85' : 'bg-gradient-to-r from-black/35 via-black/55 to-black/85'}`} />
       <div className="pointer-events-none absolute inset-0 bg-black/25" />
 
-      {/* Top bar */}
-      <div className="relative z-10 flex items-center justify-between px-6 py-4">
-        <button
-          onClick={() => navigate('/music')}
-          className="-ml-2 rounded-full p-2 text-white/80 transition-colors hover:bg-white/10"
-          aria-label="Back"
-        >
-          <ArrowLeft className="h-6 w-6" />
-        </button>
-        <span className="font-mono text-[11px] tracking-[0.3em] text-white/40">NOW PLAYING</span>
-        <button
-          onClick={() => setShowList((s) => !s)}
-          className={`rounded-full p-2 transition-colors hover:bg-white/10 ${showList ? 'text-[#ec4141]' : 'text-white/80'}`}
-          aria-label="播放列表"
-        >
-          <ListMusic className="h-5 w-5" />
-        </button>
-      </div>
-
-      {/* Main: cover + controls (left), lyrics (right) */}
-      <div className="relative z-10 flex h-[calc(100vh-64px)] flex-col gap-8 px-6 pb-8 lg:flex-row lg:items-stretch lg:gap-12 lg:px-14">
-        {/* LEFT — sharp cover, title, progress, controls; anchored bottom-left on desktop */}
-        <div className="flex shrink-0 flex-col items-center lg:w-[40%] lg:items-start lg:justify-end lg:pb-6">
-          <Cover
-            name={track.name}
-            cover={track.cover}
-            className="aspect-square w-44 shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-52 lg:w-72"
-            textClass="text-6xl"
-          />
-          <div className="mt-5 w-full text-center lg:text-left">
-            <h2 className="text-2xl font-semibold leading-tight lg:text-3xl">{track.name}</h2>
-            <p className="mt-1 text-sm text-white/60">{track.artist}</p>
+      {isMobile ? (
+        /* ── Mobile: Apple Music-style — cover+meta header, lyrics, bottom controls ── */
+        <div className="relative z-10 flex h-screen flex-col">
+          <div className="flex items-center justify-between px-4 pb-2 pt-4">
+            <button
+              onClick={() => navigate('/music')}
+              className="-ml-1 rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10"
+              aria-label="Back"
+            >
+              <ChevronDown className="h-6 w-6" />
+            </button>
+            <button
+              onClick={() => setShowList(true)}
+              className={`rounded-full p-1.5 transition-colors hover:bg-white/10 ${showList ? 'text-[#ec4141]' : 'text-white/80'}`}
+              aria-label="播放列表"
+            >
+              <ListMusic className="h-5 w-5" />
+            </button>
           </div>
 
-          {/* Draggable progress */}
-          <div className="mt-5 w-full max-w-sm lg:max-w-none">
-            <div
-              ref={barRef}
-              onPointerDown={onBarDown}
-              onPointerMove={onBarMove}
-              className="group relative -my-2 cursor-pointer py-2"
+          {/* Top-left cover + title/artist to its right */}
+          <div className="flex items-center gap-4 px-5 pb-2 pt-1">
+            <Cover
+              name={track.name}
+              cover={track.cover}
+              className="aspect-square w-16 shrink-0 rounded-xl shadow-lg shadow-black/50 ring-1 ring-white/10"
+              textClass="text-2xl"
+            />
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate text-xl font-semibold leading-tight">{track.name}</h2>
+              <p className="mt-0.5 truncate text-sm text-white/60">{track.artist}</p>
+            </div>
+          </div>
+
+          {/* Center: lyrics */}
+          {renderLyrics('px-6 text-center')}
+
+          {/* Bottom: progress + controls/settings */}
+          <div className="px-7 pb-10 pt-3">
+            {renderProgress()}
+            <div className="mt-5">{renderControls('justify-between')}</div>
+          </div>
+        </div>
+      ) : (
+        /* ── Desktop / tablet layout ── */
+        <>
+          <div className="relative z-10 flex items-center justify-between px-6 py-4">
+            <button
+              onClick={() => navigate('/music')}
+              className="-ml-2 rounded-full p-2 text-white/80 transition-colors hover:bg-white/10"
+              aria-label="Back"
             >
-              <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
-                <div ref={fillRef} className="h-full w-0 rounded-full bg-white/80" />
-              </div>
-              <div
-                ref={thumbRef}
-                className="absolute left-0 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover:opacity-100"
+              <ArrowLeft className="h-6 w-6" />
+            </button>
+            <span className="font-mono text-[11px] tracking-[0.3em] text-white/40">NOW PLAYING</span>
+            <button
+              onClick={() => setShowList((s) => !s)}
+              className={`rounded-full p-2 transition-colors hover:bg-white/10 ${showList ? 'text-[#ec4141]' : 'text-white/80'}`}
+              aria-label="播放列表"
+            >
+              <ListMusic className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="relative z-10 flex h-[calc(100vh-64px)] flex-col gap-8 px-6 pb-8 lg:flex-row lg:items-stretch lg:gap-12 lg:px-14">
+            <div className="flex shrink-0 flex-col items-center lg:w-[40%] lg:items-start lg:justify-end lg:pb-6">
+              <Cover
+                name={track.name}
+                cover={track.cover}
+                className="aspect-square w-44 shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-52 lg:w-72"
+                textClass="text-6xl"
               />
-            </div>
-            <div className="mt-1.5 flex justify-between font-mono text-[10px] text-white/40">
-              <span>{fmt(time)}</span>
-              <span>{fmt(duration)}</span>
-            </div>
-          </div>
+              <div className="mt-5 w-full text-center lg:text-left">
+                <h2 className="text-2xl font-semibold leading-tight lg:text-3xl">{track.name}</h2>
+                <p className="mt-1 text-sm text-white/60">{track.artist}</p>
+              </div>
 
-          {/* Controls */}
-          <div className="mt-5 flex items-center justify-center gap-5 lg:justify-start">
-            <button
-              onClick={player.cycleMode}
-              className="text-white/55 transition-colors hover:text-white"
-              aria-label={mode === 'loop' ? '列表循环' : '随机播放'}
-              title={mode === 'loop' ? '列表循环' : '随机播放'}
-            >
-              {mode === 'loop'
-                ? <Repeat className="h-[18px] w-[18px]" />
-                : <Shuffle className="h-[18px] w-[18px] text-[#ec4141]" />}
-            </button>
-            <button onClick={player.prev} className="text-white/70 transition-colors hover:text-white" aria-label="Previous">
-              <SkipBack className="h-6 w-6" fill="currentColor" />
-            </button>
-            <button
-              onClick={player.toggle}
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105"
-              aria-label={playing ? 'Pause' : 'Play'}
-            >
-              {playing ? <Pause className="h-6 w-6" fill="currentColor" /> : <Play className="h-6 w-6 translate-x-0.5" fill="currentColor" />}
-            </button>
-            <button onClick={player.next} className="text-white/70 transition-colors hover:text-white" aria-label="Next">
-              <SkipForward className="h-6 w-6" fill="currentColor" />
-            </button>
-            <span className="ml-1 font-mono text-[10px] text-white/30">{pos + 1}/{queue.length}</span>
-          </div>
-        </div>
+              <div className="mt-5 w-full max-w-sm lg:max-w-none">{renderProgress()}</div>
 
-        {/* RIGHT — Apple Music-style lyrics: big bold lines, active one lifts &
-            brightens, neighbours dim/blur, with top/bottom fade mask. */}
+              <div className="mt-5">{renderControls('justify-center lg:justify-start')}</div>
+            </div>
+
+            {renderLyrics('text-center lg:text-left')}
+          </div>
+        </>
+      )}
+
+      {/* Playlist drawer — bottom sheet on mobile, side panel on desktop */}
+      {isMobile ? (
+        <>
+          <div
+            onClick={() => setShowList(false)}
+            className={`absolute inset-0 z-20 bg-black/50 transition-opacity duration-300 ${showList ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+          />
+          <div
+            className={`absolute inset-x-0 bottom-0 z-30 flex max-h-[78vh] flex-col rounded-t-2xl border-t border-white/10 bg-[#0c0c0c]/95 backdrop-blur-xl transition-transform duration-300 ${
+              showList ? 'translate-y-0' : 'translate-y-full'
+            }`}
+          >
+            <div className="flex justify-center pt-2.5">
+              <div className="h-1 w-10 rounded-full bg-white/20" />
+            </div>
+            {drawerHeader}
+            {queueList}
+          </div>
+        </>
+      ) : (
         <div
-          ref={scrollRef}
-          className="relative min-h-0 flex-1 overflow-hidden text-center lg:text-left [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_15%,#000_82%,transparent)] [mask-image:linear-gradient(to_bottom,transparent,#000_15%,#000_82%,transparent)]"
+          className={`absolute inset-y-0 right-0 z-30 flex w-80 max-w-[85vw] flex-col border-l border-white/10 bg-[#0c0c0c]/95 backdrop-blur-xl transition-transform duration-300 ${
+            showList ? 'translate-x-0' : 'translate-x-full'
+          }`}
         >
-          {lines.length === 0 ? (
-            <div className="flex h-full items-center justify-center">
-              <p className="font-mono text-sm tracking-wider text-white/40">纯音乐 · 暂无歌词</p>
-            </div>
-          ) : (
-            <div
-              ref={innerRef}
-              className="will-change-transform"
-              style={{ transform: `translateY(${offset}px)`, transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
-            >
-              {/* top padding so the first line can reach the focus point */}
-              <div style={{ height: '40vh' }} />
-              {lines.map((line, i) => {
-                const dist = Math.abs(i - activeIndex);
-                const active = i === activeIndex;
-                const sung = i < activeIndex;
-                const blur = active ? 0 : Math.min(3.2, dist * 0.8);
-                const opacity = active ? 1 : Math.max(0.22, 1 - dist * 0.16);
-                return (
-                  <div
-                    key={i}
-                    ref={(el) => { lineRefs.current[i] = el; }}
-                    onClick={() => player.seek(line.time)}
-                    className={`group cursor-pointer select-none px-1 py-2.5 transition-[color,filter,opacity] duration-500 lg:py-3 ${
-                      active ? 'text-white' : sung ? 'text-white/40 hover:text-white/70' : 'text-white/30 hover:text-white/60'
-                    }`}
-                    style={{ filter: `blur(${blur}px)`, opacity }}
-                  >
-                    <p
-                      className={`origin-left font-bold leading-tight transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                        active
-                          ? 'scale-100 text-[26px] drop-shadow-[0_2px_24px_rgba(255,255,255,0.18)] lg:text-[40px]'
-                          : 'scale-[0.94] text-[21px] lg:text-[30px]'
-                      }`}
-                    >
-                      {line.t}
-                    </p>
-                    {line.x && (
-                      <p className={`mt-1 font-medium leading-snug transition-all duration-500 ${active ? 'text-base text-white/65 lg:text-lg' : 'text-sm text-white/20'}`}>
-                        {line.x}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-              <div style={{ height: '40vh' }} />
-            </div>
-          )}
+          {drawerHeader}
+          {queueList}
         </div>
-      </div>
-
-      {/* Playlist drawer */}
-      <div
-        className={`absolute inset-y-0 right-0 z-30 flex w-80 max-w-[85vw] flex-col border-l border-white/10 bg-[#0c0c0c]/95 backdrop-blur-xl transition-transform duration-300 ${
-          showList ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-[11px] tracking-[0.25em] text-white/40">PLAYLIST</span>
-            <span className="text-xs text-white/65">{queueTitle}</span>
-          </div>
-          <button onClick={() => setShowList(false)} className="rounded-full p-1.5 text-white/60 hover:bg-white/10 hover:text-white" aria-label="关闭">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-2 py-2">
-          {queue.map((qid, i) => {
-            const t = getTrack(qid);
-            if (!t) return null;
-            const cur = qid === player.currentId;
-            return (
-              <button
-                key={qid}
-                onClick={() => player.play(qid, queue, queueTitle)}
-                className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-white/[0.06] ${cur ? 'bg-white/[0.05]' : ''}`}
-              >
-                <span className={`w-5 shrink-0 text-right font-mono text-[11px] ${cur ? 'text-[#ec4141]' : 'text-white/30'}`}>
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className={`truncate text-sm ${cur ? 'text-[#ec4141]' : ''}`}>{t.name}</p>
-                  <p className="truncate text-[11px] text-white/40">{t.artist}</p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      )}
     </motion.div>
   );
 };

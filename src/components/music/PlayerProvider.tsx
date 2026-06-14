@@ -132,6 +132,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audioRef.current.preload = 'metadata';
   }
 
+  // Attach the audio element to the document. Chrome only surfaces the browser
+  // / OS media controls (SMTC) for media elements connected to the DOM — a
+  // detached `new Audio()` plays sound but never registers a media session.
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a || typeof document === 'undefined') return;
+    a.setAttribute('aria-hidden', 'true');
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    return () => {
+      if (a.parentNode) a.parentNode.removeChild(a);
+    };
+  }, []);
+
   const play = useCallback(
     (id: string, q?: string[], title?: string) => {
       let nextQueue = q && q.length ? q : queue.length ? queue : defaultQueue();
