@@ -10,15 +10,9 @@ import {
   Captions, Maximize2, Music, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X,
 } from 'lucide-react';
 import { getTrack } from '../../data/musicLibrary';
+import { clockTime as fmt } from '../../utils/format';
 import { usePlayer } from './PlayerProvider';
 import { Cover } from './Cover';
-
-function fmt(sec: number): string {
-  if (!isFinite(sec) || sec < 0) sec = 0;
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 export function MusicWidget() {
   const [open, setOpen] = useState(false);

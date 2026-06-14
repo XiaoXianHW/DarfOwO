@@ -6,18 +6,14 @@ interface AvatarProps {
   hoveredSide: SideType;
   isProfileOpen: boolean;
   avatarAnim: AvatarAnimation;
-  is3D: boolean;
   onOpenProfile: () => void;
 }
 
-export const Avatar = ({ hoveredSide, isProfileOpen, avatarAnim, is3D, onOpenProfile }: AvatarProps) => {
+export const Avatar = ({ hoveredSide, isProfileOpen, avatarAnim, onOpenProfile }: AvatarProps) => {
   return (
     <motion.div
       className="fixed z-50 pointer-events-none flex items-center justify-center"
-      animate={{
-        ...avatarAnim,
-        z: is3D ? 50 : 0
-      }}
+      animate={{ ...avatarAnim }}
       transition={{ type: 'spring', bounce: 0.3, duration: 0.8 }}
     >
       <motion.div

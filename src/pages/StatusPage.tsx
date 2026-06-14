@@ -1,4 +1,3 @@
-import { motion } from 'motion/react';
 import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMetrics } from '../hooks/useMetrics';
@@ -69,11 +68,7 @@ export const StatusPage = () => {
         )}
 
         {!loading && !error && (
-          <motion.div
-            className="grid auto-rows-[minmax(190px,auto)] grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:h-full lg:auto-rows-fr lg:grid-cols-4 lg:grid-rows-4"
-            initial="hidden"
-            animate="show"
-          >
+          <div className="grid auto-rows-[minmax(190px,auto)] grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:h-full lg:auto-rows-fr lg:grid-cols-4 lg:grid-rows-4">
             {metrics.map((metric, i) => (
               <div key={metric.id} className={`min-h-0 ${SPAN[metric.id] ?? ''}`}>
                 <StatusCard
@@ -83,7 +78,7 @@ export const StatusPage = () => {
                 />
               </div>
             ))}
-          </motion.div>
+          </div>
         )}
       </div>
     </div>

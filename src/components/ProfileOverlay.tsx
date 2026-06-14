@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X, Monitor, Music, Activity, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +17,14 @@ interface ProfileOverlayProps {
 
 export const ProfileOverlay = ({ onClose }: ProfileOverlayProps) => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   return (
     <motion.div
