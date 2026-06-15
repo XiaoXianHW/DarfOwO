@@ -38,49 +38,61 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
         onMouseLeave={() => onHover(null)}
       >
         {/* Default state — only the enlarged top icon */}
-        <motion.div
-          className={`absolute inset-0 z-10 flex items-center justify-center pointer-events-none ${isSide1 ? 'pr-[50%]' : 'pl-[50%]'}`}
-          animate={{ opacity: isActive ? 0 : isOpposite ? 0.15 : 1, scale: isActive ? 0.6 : 1 }}
-          transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
-        >
-          <BigIcon
-            className={`${isSide1 ? 'text-[#5B89D2]' : 'text-orange-500'} w-32 h-32 sm:w-56 sm:h-56`}
-            strokeWidth={1}
-          />
-        </motion.div>
+        {!isActive && (
+          <motion.div
+            className={`absolute inset-0 z-10 flex items-center justify-center pointer-events-none ${isSide1 ? 'pr-[50%]' : 'pl-[50%]'}`}
+            initial={false}
+            animate={{ opacity: isOpposite ? 0.15 : 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.span
+              layoutId={`side-icon-${side}`}
+              className="block"
+              transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
+            >
+              <BigIcon
+                className={`${isSide1 ? 'text-[#5B89D2]' : 'text-orange-500'} w-32 h-32 sm:w-56 sm:h-56`}
+                strokeWidth={1}
+              />
+            </motion.span>
+          </motion.div>
+        )}
 
         {/* Hover state — full details */}
         <motion.div
           className={`absolute inset-0 flex flex-col z-10 ${isSide1 ? 'p-6 pt-12 pb-[15vh] sm:pb-16 sm:p-16 lg:pl-32' : 'p-6 pt-[15vh] pb-32 sm:pt-16 sm:p-16 lg:pr-32'} overflow-hidden`}
-          animate={{
-            opacity: isActive ? 1 : 0,
-            scale: isActive ? 1 : 0.97,
-          }}
-          transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
+          animate={{ opacity: isActive ? 1 : 0 }}
+          transition={{ duration: 0.5 }}
           style={{ pointerEvents: isActive ? 'auto' : 'none' }}
         >
           <div className={`relative z-10 w-full max-w-lg flex flex-col h-full justify-center ${isSide1 ? '' : 'items-end text-right ml-auto'}`}>
             <div className={`flex flex-col ${isSide1 ? 'items-start text-left' : 'items-end'} mb-8`}>
+              {isActive && (
+                <motion.span
+                  layoutId={`side-icon-${side}`}
+                  className="block mb-4 sm:mb-6"
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
+                >
+                  <BigIcon
+                    className={`w-10 h-10 sm:w-12 sm:h-12 ${isSide1 ? 'text-[#5B89D2]' : 'text-orange-500'}`}
+                    strokeWidth={1.5}
+                  />
+                </motion.span>
+              )}
               {isSide1 ? (
-                <>
-                  <Terminal className="w-10 h-10 sm:w-12 sm:h-12 text-[#5B89D2] mb-4 sm:mb-6" strokeWidth={1.5} />
-                  <div className="font-mono text-slate-300 text-xs sm:text-base leading-relaxed bg-black/60 p-4 sm:p-6 rounded-xl border border-[#5B89D2]/30 w-full shadow-inner text-left backdrop-blur-sm">
-                    <span className="text-pink-500">const</span> <span className="text-blue-400">developer</span> = {'{'}
-                    <br/>
-                    &nbsp;&nbsp;name: <span className="text-green-400">"{config.profile.name}"</span>,
-                    <br/>
-                    &nbsp;&nbsp;status: <span className="text-green-400">"Compiling..."</span>
-                    <br/>
-                    {'}'};
-                  </div>
-                </>
+                <div className="font-mono text-slate-300 text-xs sm:text-base leading-relaxed bg-black/60 p-4 sm:p-6 rounded-xl border border-[#5B89D2]/30 w-full shadow-inner text-left backdrop-blur-sm">
+                  <span className="text-pink-500">const</span> <span className="text-blue-400">developer</span> = {'{'}
+                  <br/>
+                  &nbsp;&nbsp;name: <span className="text-green-400">"{config.profile.name}"</span>,
+                  <br/>
+                  &nbsp;&nbsp;status: <span className="text-green-400">"Compiling..."</span>
+                  <br/>
+                  {'}'};
+                </div>
               ) : (
-                <>
-                  <Palette className="w-10 h-10 sm:w-12 sm:h-12 text-orange-500 mb-4 sm:mb-6" strokeWidth={1.5} />
-                  <h2 className="text-3xl sm:text-6xl font-serif italic tracking-tight text-slate-900 mb-4 sm:mb-6">
-                    {config.side2.heading.main} <br/><span className="font-sans font-bold text-orange-600 not-italic">{config.side2.heading.accent}</span>
-                  </h2>
-                </>
+                <h2 className="text-3xl sm:text-6xl font-serif italic tracking-tight text-slate-900 mb-4 sm:mb-6">
+                  {config.side2.heading.main} <br/><span className="font-sans font-bold text-orange-600 not-italic">{config.side2.heading.accent}</span>
+                </h2>
               )}
             </div>
 

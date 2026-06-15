@@ -2,7 +2,14 @@ import type { SideType, ClipPaths, AvatarAnimation } from '../types';
 
 export const getClips = (isMobile: boolean, hoveredSide: SideType): ClipPaths => {
   if (isMobile) {
-    if (hoveredSide === 'side1' || !hoveredSide) {
+    if (!hoveredSide) {
+      // Default: top half = side1 (理性), bottom half = side2 (感性)
+      return {
+        clip1: `polygon(0% 0%, 100% 0%, 100% 50%, 0% 50%)`,
+        clip2: `polygon(0% 50%, 100% 50%, 100% 100%, 0% 100%)`,
+        divider: `polygon(0% 50%, 100% 50%, 100% 50%, 0% 50%)`
+      };
+    } else if (hoveredSide === 'side1') {
       return {
         clip1: `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`,
         clip2: `polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)`,
