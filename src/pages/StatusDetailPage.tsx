@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useMetrics } from '../hooks/useMetrics';
 import { TrendChart } from '../components/status/TrendChart';
 import { StatusNav } from '../components/status/StatusNav';
+import { usePageTitle } from '../components/TitleProvider';
 
 export const StatusDetailPage = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export const StatusDetailPage = () => {
   const { metrics, loading, error, latestDataAt, reload } = useMetrics();
 
   const metric = metrics.find((m) => m.id === metricId);
+  usePageTitle(metric ? `${metric.label} · 状态` : '状态 Status');
 
   // If data finished loading but the id is unknown, fall back to the status page.
   useEffect(() => {

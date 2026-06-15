@@ -2,8 +2,8 @@ export const config = {
   profile: {
     name: 'XiaoXian',
     alias: 'Darf / 弧渊',
-    displayName: 'XIAOXIAN',
-    title: 'XiaoXian - Dual Persona Homepage',
+    title: 'XiaoXian · 理性与感性的交汇',
+    description: '试图在理性与情感之间找到平衡 —— XiaoXian (Darf / 弧渊) 的个人主页，连接工程实践与艺术创作。',
     birthday: '2006-12-10',
     roles: ['Developer', 'INFJ'],
     blog: { url: 'https://blog.xiaoxian.org', label: 'blog.xiaoxian.org' },
@@ -11,8 +11,7 @@ export const config = {
       main: 'Two Realms, One Soul.',
       sub: 'Choose Your Perspective'
     },
-    bio: '试图在理性与情感之间找到平衡。\n喜欢用代码、文字或画笔，将那些无法言说的思绪具象化，\n在创造的秩序与美感中，寻得片刻的宁静。\n人与世界，本应以理解相遇，而非以标签相隔',
-    tags: ['INFJ-A', 'Developer', 'Designer']
+    bio: '试图在理性与情感之间找到平衡。\n喜欢用代码、文字或画笔，将那些无法言说的思绪具象化，\n在创造的秩序与美感中，寻得片刻的宁静。\n人与世界，本应以理解相遇，而非以标签相隔'
   },
 
   avatars: {
@@ -32,8 +31,6 @@ export const config = {
       label: 'ARCYUAN.CN',
       desc: '艺术创作 · 作品展示'
     },
-    legacy: 'https://v2.xiaoxian.org',
-    legacyMobile: 'https://legacy.darf.dev'
   },
 
   social: [
@@ -49,7 +46,6 @@ export const config = {
 
   side1: {
     title: 'Rationality',
-    subtitle: 'The Logical Realm',
     heading: {
       main: 'Developer',
       accent: '/>'
@@ -64,7 +60,6 @@ export const config = {
 
   side2: {
     title: 'Sensibility',
-    subtitle: 'The Creative Realm',
     heading: {
       main: 'Crafting',
       accent: 'Experiences'

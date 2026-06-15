@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMetrics } from '../hooks/useMetrics';
 import { StatusCard } from '../components/status/StatusCard';
 import { StatusNav } from '../components/status/StatusNav';
+import { usePageTitle } from '../components/TitleProvider';
 
 // Bento spans so the 8 cards tile a 4×4 grid with no whitespace on large screens.
 const SPAN: Record<string, string> = {
@@ -15,6 +16,7 @@ const SPAN: Record<string, string> = {
 export const StatusPage = () => {
   const navigate = useNavigate();
   const { metrics, loading, error, latestDataAt, reload } = useMetrics();
+  usePageTitle('状态 Status');
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
