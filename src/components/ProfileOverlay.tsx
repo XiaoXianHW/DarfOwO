@@ -58,14 +58,16 @@ export const ProfileOverlay = ({ onClose }: ProfileOverlayProps) => {
           <X className="w-5 h-5" />
         </button>
         
-        <div className="w-full sm:w-2/5 p-6 sm:p-10 border-b sm:border-b-0 sm:border-r border-white/10 flex flex-col shrink-0 bg-black/20">
+        <div className="w-full sm:w-2/5 p-6 sm:p-10 border-b sm:border-b-0 sm:border-r border-white/10 flex flex-col justify-center shrink-0 bg-black/20">
           <img src={config.avatars.default} alt={config.profile.name} className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl border border-white/20 mb-4 sm:mb-6 shadow-lg object-cover" referrerPolicy="no-referrer" />
-          <h2 className="text-3xl sm:text-[2.6rem] font-bold text-white tracking-tight leading-none">
-            {config.profile.name}
-          </h2>
-          <p className="mt-2 text-sm sm:text-base font-light tracking-wide text-white/45">
-            {config.profile.alias}
-          </p>
+          <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+              {config.profile.name}
+            </h2>
+            <span className="text-sm sm:text-base font-light tracking-wide text-white/45">
+              {config.profile.alias}
+            </span>
+          </div>
           <p className="mt-3 mb-5 sm:mb-6 font-mono text-[11px] sm:text-xs uppercase tracking-[0.18em] text-white/50">
             Age {getAge(config.profile.birthday)} / {config.profile.roles.join(' / ')}
           </p>
