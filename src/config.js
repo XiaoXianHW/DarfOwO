@@ -20,11 +20,13 @@ export const config = {
   links: {
     side1: {
       url: 'https://darf.dev',
-      label: 'DARF.DEV'
+      label: 'DARF.DEV',
+      desc: '个人开发站 · 技术博客'
     },
     side2: {
       url: 'https://arcyuan.cn',
-      label: 'ARCYUAN.CN'
+      label: 'ARCYUAN.CN',
+      desc: '艺术创作 · 作品展示'
     },
     legacy: 'https://v2.xiaoxian.org',
     legacyMobile: 'https://legacy.darf.dev'
@@ -43,23 +45,31 @@ export const config = {
 
   side1: {
     title: 'Rationality',
+    subtitle: 'The Logical Realm',
+    heading: {
+      main: 'Developer',
+      accent: '/>'
+    },
+    description: '以逻辑构建世界 —— 工程实践、开源项目，以及藏在代码里的彩蛋。',
     items: [
-      { title: '个人技术栈', icon: 'Cpu' },
-      { title: '维护的项目', icon: 'GitBranch' },
-      { title: '或许有彩蛋', icon: 'Terminal' }
+      { title: '个人技术栈', desc: 'Languages · Frameworks · Tools', icon: 'Cpu' },
+      { title: '维护的项目', desc: 'Open-source & personal builds', icon: 'GitBranch' },
+      { title: '或许有彩蛋', desc: 'Hidden surprises, if you look', icon: 'Terminal' }
     ]
   },
 
   side2: {
     title: 'Sensibility',
+    subtitle: 'The Creative Realm',
     heading: {
       main: 'Crafting',
       accent: 'Experiences'
     },
+    description: '以感性表达自我 —— 原创角色、艺术作品，以及构成「我」的那些故事。',
     items: [
-      { title: '个人OC介绍', icon: 'Sparkles' },
-      { title: '艺术性作品', icon: 'Palette' },
-      { title: '性格及个人简介', icon: 'Heart' }
+      { title: '个人OC介绍', desc: 'Original characters & lore', icon: 'Sparkles' },
+      { title: '艺术性作品', desc: 'Illustrations & visual works', icon: 'Palette' },
+      { title: '性格及个人简介', desc: 'Personality & about me', icon: 'Heart' }
     ]
   },
 

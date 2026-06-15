@@ -18,12 +18,15 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
   const sideConfig = isSide1 ? config.side1 : config.side2;
   const items = sideConfig.items.map(item => ({
     icon: iconMap[item.icon as keyof typeof iconMap],
-    title: item.title
+    title: item.title,
+    desc: item.desc
   }));
 
   const isActive = hoveredSide === side;
   const isOpposite = hoveredSide === (isSide1 ? 'side2' : 'side1');
   const BigIcon = isSide1 ? Terminal : Palette;
+  const accent = isSide1 ? 'text-[#5B89D2]' : 'text-orange-500';
+  const link = isSide1 ? config.links.side1 : config.links.side2;
 
   return (
     <motion.div 
@@ -65,55 +68,59 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
           transition={{ duration: 0.5 }}
           style={{ pointerEvents: isActive ? 'auto' : 'none' }}
         >
-          <div className={`relative z-10 w-full max-w-lg flex flex-col h-full justify-center ${isSide1 ? '' : 'items-end text-right ml-auto'}`}>
-            <div className={`flex flex-col ${isSide1 ? 'items-start text-left' : 'items-end'} mb-8`}>
-              {isActive && (
-                <motion.span
-                  layoutId={`side-icon-${side}`}
-                  className="block mb-4 sm:mb-6"
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
-                >
-                  <BigIcon
-                    className={`w-10 h-10 sm:w-12 sm:h-12 ${isSide1 ? 'text-[#5B89D2]' : 'text-orange-500'}`}
-                    strokeWidth={1.5}
-                  />
-                </motion.span>
-              )}
-              {isSide1 ? (
-                <div className="font-mono text-slate-300 text-xs sm:text-base leading-relaxed bg-black/60 p-4 sm:p-6 rounded-xl border border-[#5B89D2]/30 w-full shadow-inner text-left backdrop-blur-sm">
-                  <span className="text-pink-500">const</span> <span className="text-blue-400">developer</span> = {'{'}
-                  <br/>
-                  &nbsp;&nbsp;name: <span className="text-green-400">"{config.profile.name}"</span>,
-                  <br/>
-                  &nbsp;&nbsp;status: <span className="text-green-400">"Compiling..."</span>
-                  <br/>
-                  {'}'};
-                </div>
-              ) : (
-                <h2 className="text-3xl sm:text-6xl font-serif italic tracking-tight text-slate-900 mb-4 sm:mb-6">
-                  {config.side2.heading.main} <br/><span className="font-sans font-bold text-orange-600 not-italic">{config.side2.heading.accent}</span>
-                </h2>
-              )}
-            </div>
+          <div className={`relative z-10 w-full max-w-md flex flex-col h-full justify-center ${isSide1 ? 'items-start text-left' : 'items-end text-right ml-auto'}`}>
+            {isActive && (
+              <motion.span
+                layoutId={`side-icon-${side}`}
+                className="block mb-5 sm:mb-6"
+                transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
+              >
+                <BigIcon className={`w-12 h-12 sm:w-14 sm:h-14 ${accent}`} strokeWidth={1.25} />
+              </motion.span>
+            )}
 
-            <div className={`flex flex-col ${isSide1 ? 'items-start' : 'items-end'} space-y-4 mb-8 w-full`}>
+            <p className={`font-mono text-[10px] sm:text-xs uppercase tracking-[0.35em] ${accent} opacity-80 mb-3`}>
+              {sideConfig.title} · {sideConfig.subtitle}
+            </p>
+
+            {isSide1 ? (
+              <h2 className="font-mono text-3xl sm:text-5xl font-bold text-white mb-4 sm:mb-5">
+                <span className="text-[#5B89D2]">&lt;</span>{sideConfig.heading.main}<span className="text-[#5B89D2]">{sideConfig.heading.accent}</span>
+              </h2>
+            ) : (
+              <h2 className="font-serif italic text-4xl sm:text-6xl tracking-tight text-slate-900 mb-4 sm:mb-5">
+                {sideConfig.heading.main} <span className="font-sans not-italic font-bold text-orange-600">{sideConfig.heading.accent}</span>
+              </h2>
+            )}
+
+            <p className={`text-sm sm:text-[15px] leading-relaxed mb-7 sm:mb-8 max-w-sm ${isSide1 ? 'text-slate-400' : 'text-slate-600'}`}>
+              {sideConfig.description}
+            </p>
+
+            <div className={`w-full max-w-sm mb-8 border-t ${isSide1 ? 'border-white/10' : 'border-black/10'}`}>
               {items.map((item, i) => (
-                <div key={i} className={`flex items-center gap-3 ${isSide1 ? 'text-slate-300 hover:text-[#5B89D2]' : 'text-slate-700 hover:text-orange-600 flex-row-reverse'} transition-colors cursor-pointer group`}>
-                  <item.icon className={`w-5 h-5 ${isSide1 ? 'text-[#5B89D2]' : 'text-orange-500'} group-hover:scale-110 transition-transform`} />
-                  <span className={`font-bold text-sm sm:text-base tracking-wide`}>{item.title}</span>
+                <div
+                  key={i}
+                  className={`flex items-center gap-4 py-3.5 border-b ${isSide1 ? 'border-white/10' : 'border-black/10'} ${isSide1 ? '' : 'flex-row-reverse'} group cursor-pointer`}
+                >
+                  <item.icon className={`w-5 h-5 shrink-0 ${accent} transition-transform group-hover:scale-110`} />
+                  <div className={`flex flex-col ${isSide1 ? 'items-start' : 'items-end'}`}>
+                    <span className={`font-bold text-sm sm:text-base tracking-wide transition-colors ${isSide1 ? 'text-slate-100 group-hover:text-[#5B89D2]' : 'text-slate-800 group-hover:text-orange-600'}`}>{item.title}</span>
+                    <span className="text-[11px] tracking-wide text-slate-500">{item.desc}</span>
+                  </div>
                 </div>
               ))}
             </div>
-            
-            <button 
-              className={`px-6 py-3 border ${isSide1 ? 'border-[#5B89D2]/50 text-[#5B89D2] hover:bg-[#5B89D2] hover:text-white' : 'border-orange-500/50 text-orange-600 hover:bg-orange-500 hover:text-white'} rounded-md font-mono text-xs sm:text-sm font-bold transition-colors pointer-events-auto w-fit`}
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                window.open(isSide1 ? config.links.side1.url : config.links.side2.url, '_blank'); 
-              }}
-            >
-              {isSide1 ? config.links.side1.label : config.links.side2.label}
-            </button>
+
+            <div className={`flex items-center gap-4 ${isSide1 ? '' : 'flex-row-reverse'}`}>
+              <button
+                className={`px-6 py-3 border ${isSide1 ? 'border-[#5B89D2]/50 text-[#5B89D2] hover:bg-[#5B89D2] hover:text-white' : 'border-orange-500/50 text-orange-600 hover:bg-orange-500 hover:text-white'} rounded-md font-mono text-xs sm:text-sm font-bold transition-colors pointer-events-auto w-fit`}
+                onClick={(e) => { e.stopPropagation(); window.open(link.url, '_blank'); }}
+              >
+                {link.label}
+              </button>
+              <span className="text-[11px] sm:text-xs text-slate-500">{link.desc}</span>
+            </div>
           </div>
         </motion.div>
 
