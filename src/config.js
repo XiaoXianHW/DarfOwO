@@ -1,13 +1,17 @@
 export const config = {
   profile: {
     name: 'XiaoXian',
+    alias: 'Darf / 弧渊',
     displayName: 'XIAOXIAN',
     title: 'XiaoXian - Dual Persona Homepage',
+    birthday: '2006-12-10',
+    roles: ['Developer', 'INFJ'],
+    blog: { url: 'https://blog.xiaoxian.org', label: 'blog.xiaoxian.org' },
     tagline: {
       main: 'Two Realms, One Soul.',
       sub: 'Choose Your Perspective'
     },
-    bio: 'I exist at the intersection of rigorous logic and boundless creativity. Navigating the world through multiple lenses, constantly seeking the underlying patterns that connect disparate ideas.',
+    bio: '试图在理性与情感之间找到平衡。\n喜欢用代码、文字或画笔，将那些无法言说的思绪具象化，\n在创造的秩序与美感中，寻得片刻的宁静。\n人与世界，本应以理解相遇，而非以标签相隔',
     tags: ['INFJ-A', 'Developer', 'Designer']
   },
 
