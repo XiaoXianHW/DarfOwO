@@ -70,7 +70,7 @@ export default function App() {
         />
       )}
 
-      <Footer />
+      <Footer isMobile={isMobile} hoveredSide={hoveredSide} />
       {!isMobile && <TopControls onOpenProfile={() => setIsProfileOpen(true)} />}
       <div className="fixed top-6 right-6 z-[80]">
         <MusicWidget />

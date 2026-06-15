@@ -23,7 +23,7 @@ export const StatusDetailPage = () => {
   }, [loading, error, metrics.length, metric, navigate]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
       <StatusNav
         title={metric ? `${metric.label} · 详情` : '健康详情'}
         onBack={() => navigate('/status')}

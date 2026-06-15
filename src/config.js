@@ -34,15 +34,55 @@ export const config = {
     },
   },
 
-  social: [
-    { name: 'QQ', url: '#', icon: 'MessageCircle' },
-    { name: 'Bilibili', url: '#', icon: 'Tv' },
-    { name: 'GitHub', url: '#', icon: 'Github' },
-    { name: 'Email', url: '#', icon: 'Mail' },
-    { name: 'Telegram', url: '#', icon: 'Send' },
-    { name: 'X (Twitter)', url: '#', icon: 'Twitter' },
-    { name: 'Discord', url: '#', icon: 'MessageSquare' },
-    { name: 'Netease Cloud Music', url: '#', icon: 'Music' }
+  contacts: [
+    {
+      name: 'QQ',
+      value: '1680839 / 2860488343',
+      link: 'tencent://message/?uin=1680839',
+      icon: 'FaQq'
+    },
+    {
+      name: 'Email',
+      value: 'xiaoxian@axtn.net',
+      link: 'mailto:xiaoxian@axtn.net',
+      icon: 'HiMail'
+    },
+    {
+      name: '网易云音乐',
+      value: '@XiaoXianHW',
+      link: 'https://music.163.com/#/user/home?id=485765737',
+      icon: 'RiNeteaseCloudMusicLine'
+    },
+    {
+      name: 'BiliBili',
+      value: '@XiaoXianHW',
+      link: 'https://space.bilibili.com/414947108',
+      icon: 'SiBilibili'
+    },
+    {
+      name: 'Discord',
+      value: '@xiaoxianhw',
+      link: 'https://discord.com/users/xiaoxianhw',
+      icon: 'FaDiscord'
+    },
+    {
+      name: 'Telegram',
+      value: '@ArcOwO',
+      link: 'https://t.me/ArcOwO',
+      icon: 'FaTelegram'
+    },
+    {
+      name: 'X (Twitter)',
+      value: '@ArcDarf',
+      link: 'https://x.com/ArcDarf',
+      icon: 'FaXTwitter'
+    },
+    {
+      name: 'GitHub',
+      value: '@XiaoXianHW',
+      link: 'https://github.com/XiaoXianHW',
+      icon: 'FaGithub'
+    }
   ],
 
   side1: {

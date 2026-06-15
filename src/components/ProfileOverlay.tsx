@@ -49,7 +49,7 @@ export const ProfileOverlay = ({ onClose }: ProfileOverlayProps) => {
         initial={{ scale: 0.95, y: 10, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.95, y: 10, opacity: 0 }}
-        className="relative w-full max-w-[900px] h-auto max-h-[85vh] rounded-3xl bg-white/10 dark:bg-black/40 backdrop-blur-3xl border border-white/20 shadow-2xl overflow-hidden flex flex-col sm:flex-row"
+        className="relative w-full max-w-[900px] h-auto max-h-[85vh] rounded-3xl bg-[#0e0f13]/95 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col sm:flex-row"
       >
         <button 
           onClick={onClose}
@@ -58,7 +58,7 @@ export const ProfileOverlay = ({ onClose }: ProfileOverlayProps) => {
           <X className="w-5 h-5" />
         </button>
         
-        <div className="w-full sm:w-2/5 p-6 sm:p-10 border-b sm:border-b-0 sm:border-r border-white/10 flex flex-col justify-center shrink-0 bg-black/20">
+        <div className="w-full sm:w-2/5 p-6 sm:p-10 sm:border-r border-white/10 flex flex-col justify-center shrink-0 bg-black/20">
           <img src={config.avatars.default} alt={config.profile.name} className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl border border-white/20 mb-4 sm:mb-6 shadow-lg object-cover" referrerPolicy="no-referrer" />
           <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
             <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
@@ -88,7 +88,7 @@ export const ProfileOverlay = ({ onClose }: ProfileOverlayProps) => {
           </a>
         </div>
 
-        <div className="w-full sm:w-3/5 p-6 sm:p-10 overflow-y-auto custom-scrollbar flex flex-col">
+        <div className="hidden sm:flex w-full sm:w-3/5 p-6 sm:p-10 overflow-y-auto custom-scrollbar flex-col">
           <h3 className="text-white/50 font-medium text-xs uppercase tracking-widest mb-4 sm:mb-6">Explore Dimensions</h3>
           
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
