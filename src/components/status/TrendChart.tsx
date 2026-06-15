@@ -77,7 +77,7 @@ export const TrendChart = ({
             tickFormatter={compact}
           />
           {tooltip}
-          <Bar dataKey="value" fill={color} radius={[6, 6, 0, 0]} maxBarSize={detailed ? 44 : 18} />
+          <Bar dataKey="value" fill={color} radius={[6, 6, 0, 0]} maxBarSize={detailed ? 44 : 18} isAnimationActive={false} />
         </BarChart>
       ) : (
         <AreaChart data={data} margin={{ top: 6, right: 4, bottom: 0, left: detailed ? 0 : -34 }}>
@@ -117,6 +117,7 @@ export const TrendChart = ({
             fill={`url(#${gradientId})`}
             connectNulls
             dot={detailed ? { r: 2, fill: color } : false}
+            isAnimationActive={false}
           />
         </AreaChart>
       )}

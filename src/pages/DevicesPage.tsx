@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DeviceTile } from '../components/devices/DeviceRegistry';
 import { DEVICES } from '../components/devices/inventory';
 import { MusicWidget } from '../components/music/MusicWidget';
+import { usePageTitle } from '../components/TitleProvider';
 
 // Faint pixel-dot grid (crisp SVG rects, no gradients) for the retro backdrop.
 const PIXEL_GRID =
@@ -10,6 +11,7 @@ const PIXEL_GRID =
 
 export const DevicesPage = () => {
   const navigate = useNavigate();
+  usePageTitle('设备 Devices');
   const [hero, ...rest] = DEVICES;
 
   return (

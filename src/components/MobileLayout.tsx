@@ -1,17 +1,26 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Music, MonitorSmartphone, Activity, ChevronRight, Terminal, Cpu, GitBranch, Users, Palette, Sparkles, Coffee, Heart } from 'lucide-react';
+import {
+  Menu, X, Music, MonitorSmartphone, Activity, ChevronRight, Users, RotateCcw,
+  Terminal, Palette, Cpu, GitBranch, Sparkles, Heart, ArrowUpRight,
+} from 'lucide-react';
 import type { SideType } from '../types';
 import { config } from '../config';
-
-const iconMap = { Terminal, Cpu, GitBranch, Users, Palette, Sparkles, Coffee, Heart };
 
 const menuItems = [
   { label: 'Music', zh: '音乐', icon: Music, path: '/music' },
   { label: 'Devices', zh: '设备', icon: MonitorSmartphone, path: '/devices' },
   { label: 'Status', zh: '状态', icon: Activity, path: '/status' },
+  { label: 'Friends', zh: '朋友', icon: Users, path: '/friends' },
 ];
+
+const iconMap = { Terminal, Palette, Cpu, GitBranch, Sparkles, Heart };
+
+const revealItem = {
+  hide: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
+};
 
 interface MobileLayoutProps {
   hoveredSide: SideType;
@@ -22,24 +31,49 @@ interface MobileLayoutProps {
 export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: MobileLayoutProps) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const side2Active = hoveredSide === 'side2';
-  const side1Active = hoveredSide === 'side1' || !hoveredSide;
+  const isSide1 = hoveredSide === 'side1';
+  const isSide2 = hoveredSide === 'side2';
+
+  // Menu / reset icon sits over a dark surface except when the light (side2) persona is open
+  const onLight = isSide2;
+  const sc = isSide1 ? config.side1 : config.side2;
+  const lk = isSide1 ? config.links.side1 : config.links.side2;
+  const PersonaIcon = isSide1 ? Terminal : Palette;
+  const accent = isSide1 ? 'text-[#5B89D2]' : 'text-orange-500';
+  const avatarSrc = !hoveredSide
+    ? config.avatars.default
+    : isSide1 ? config.avatars.side1 : config.avatars.side2;
 
   return (
-    <div className="absolute inset-0 z-10 flex flex-col pointer-events-auto overflow-y-auto overflow-x-hidden">
-      {/* Top bar — menu button (replaces Legacy) */}
-      <div className="w-full flex justify-between items-center p-6 z-50">
+    <div className="absolute inset-0 z-10 pointer-events-auto overflow-hidden">
+      {/* Top bar — menu + reset (icon only) */}
+      <div className="absolute top-0 left-0 right-0 flex items-center gap-1 p-6 z-50">
         <button
           onClick={() => setMenuOpen((v) => !v)}
           aria-label="菜单"
-          className={`flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
-            side2Active
-              ? 'border-slate-300 bg-white/40 text-slate-700'
-              : 'border-white/15 bg-white/5 text-white/80 backdrop-blur-sm'
+          className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+            onLight ? 'text-slate-700' : 'text-white/80'
           }`}
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
+
+        <AnimatePresence>
+          {hoveredSide && !menuOpen && (
+            <motion.button
+              initial={{ opacity: 0, rotate: -90 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: -90 }}
+              onClick={() => onSetHoveredSide(null)}
+              aria-label="复位"
+              className={`flex h-10 w-10 items-center justify-center transition-colors ${
+                onLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
+              }`}
+            >
+              <RotateCcw className="h-5 w-5" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Menu dropdown */}
@@ -60,6 +94,26 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
               transition={{ duration: 0.2 }}
               className="absolute left-6 top-[72px] z-[60] w-60 overflow-hidden rounded-2xl border border-white/15 bg-black/70 p-2 shadow-2xl backdrop-blur-2xl"
             >
+              <button
+                onClick={() => { setMenuOpen(false); onOpenProfile(); }}
+                className="group mb-1 flex w-full items-center gap-3 rounded-xl border-b border-white/10 px-3 pb-3 pt-2 text-left text-white/85 transition-colors hover:bg-white/10"
+              >
+                <img
+                  src={config.avatars.default}
+                  alt={config.profile.name}
+                  className="h-10 w-10 rounded-lg border border-white/15 object-cover"
+                  referrerPolicy="no-referrer"
+                />
+                <span className="flex-1">
+                  <span className="block text-sm font-medium">
+                    {config.profile.name}
+                    <span className="ml-1.5 text-[11px] font-light text-white/40">{config.profile.alias}</span>
+                  </span>
+                  <span className="block text-[11px] text-white/40">查看资料卡 · Profile</span>
+                </span>
+                <ChevronRight className="h-4 w-4 text-white/25 transition-colors group-hover:text-white/70" />
+              </button>
+
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -79,144 +133,116 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
                   </button>
                 );
               })}
-              <a
-                href={config.links.legacyMobile}
-                className="mt-1 block rounded-xl px-3 py-2.5 text-center font-mono text-[11px] uppercase tracking-widest text-white/40 transition-colors hover:bg-white/5 hover:text-white/70"
-              >
-                Legacy ↗
-              </a>
             </motion.nav>
           </>
         )}
       </AnimatePresence>
 
-      {/* Avatar + name */}
-      <div className="w-full flex flex-col items-center justify-center mt-2 z-40">
+      {/* Default — top: Rationality, bottom: Sensibility (tap regions) */}
+      {!hoveredSide && (
         <motion.div
-          className={`relative w-28 h-28 rounded-full border-2 shadow-2xl overflow-hidden cursor-pointer ${side2Active ? 'border-orange-500/30 shadow-orange-500/20' : 'border-white/20 shadow-[#5B89D2]/20'}`}
-          whileTap={{ scale: 0.95 }}
-          onClick={onOpenProfile}
+          key="split"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 z-20"
         >
-          <img src={config.avatars.default} alt={config.profile.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <button onClick={() => onSetHoveredSide('side1')} className="absolute top-0 left-0 right-0 h-1/2 w-full" aria-label="理性" />
+          <button onClick={() => onSetHoveredSide('side2')} className="absolute bottom-0 left-0 right-0 h-1/2 w-full" aria-label="感性" />
+
+          <div className="absolute top-[17%] left-0 right-0 flex flex-col items-center gap-3 pointer-events-none">
+            <Terminal className="w-12 h-12 text-[#5B89D2]" strokeWidth={1} />
+            <div className="text-center">
+              <p className="font-mono text-xl tracking-wide text-[#5B89D2]">{config.side1.title}</p>
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-white/40">理性 · 轻触展开</p>
+            </div>
+          </div>
+
+          <div className="absolute bottom-[17%] left-0 right-0 flex flex-col items-center gap-3 pointer-events-none">
+            <div className="text-center">
+              <p className="font-serif italic text-xl tracking-wide text-orange-500">{config.side2.title}</p>
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">感性 · 轻触展开</p>
+            </div>
+            <Palette className="w-12 h-12 text-orange-500" strokeWidth={1} />
+          </div>
         </motion.div>
-        <h1 className={`mt-4 text-3xl font-bold tracking-widest transition-colors ${side2Active ? 'text-slate-900' : 'text-white'}`}>{config.profile.displayName}</h1>
-        <p className={`mt-1 font-serif italic text-sm tracking-wider transition-colors ${side2Active ? 'text-slate-500' : 'text-white/50'}`}>
-          {config.profile.tagline.main}
-        </p>
-      </div>
+      )}
 
-      {/* Persona switch — text + "/" separator, no button frames */}
-      <div className="w-full flex flex-col items-center mt-6 px-6 z-40">
-        <div className="flex items-center gap-4 text-xl">
-          <button
-            onClick={() => onSetHoveredSide('side1')}
-            className={`relative font-mono tracking-wide transition-all duration-300 ${
-              side1Active ? 'text-[#5B89D2]' : (side2Active ? 'text-slate-400' : 'text-white/35')
-            }`}
-          >
-            {config.side1.title}
-            {side1Active && (
-              <motion.span layoutId="persona-underline" className="absolute -bottom-1.5 left-0 right-0 h-[2px] rounded-full bg-[#5B89D2]" />
-            )}
-          </button>
-          <span className={`text-lg ${side2Active ? 'text-slate-300' : 'text-white/20'}`}>/</span>
-          <button
-            onClick={() => onSetHoveredSide('side2')}
-            className={`relative font-serif italic transition-all duration-300 ${
-              side2Active ? 'text-orange-500' : 'text-white/35'
-            }`}
-          >
-            {config.side2.title}
-            {side2Active && (
-              <motion.span layoutId="persona-underline" className="absolute -bottom-1.5 left-0 right-0 h-[2px] rounded-full bg-orange-500" />
-            )}
-          </button>
-        </div>
-        <p className={`mt-3 font-mono text-[10px] uppercase tracking-[0.3em] transition-colors ${side2Active ? 'text-slate-400' : 'text-white/30'}`}>
-          轻触切换 · Tap to switch
-        </p>
-      </div>
-
-      {/* Side content */}
-      <div className="flex-1 w-full relative mt-8 z-30">
-        <AnimatePresence mode="wait">
-          {side1Active && (
-            <motion.div
-              key="side1"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="w-full px-8 pb-32 flex flex-col items-center"
-            >
-              <Terminal className="w-10 h-10 text-[#5B89D2] mb-6" strokeWidth={1.5} />
-              <div className="font-mono text-slate-300 text-xs leading-relaxed bg-black/60 p-4 rounded-xl border border-[#5B89D2]/30 w-full shadow-inner text-left backdrop-blur-sm mb-8">
-                <span className="text-pink-500">const</span> <span className="text-blue-400">developer</span> = {'{'}
-                <br/>
-                &nbsp;&nbsp;name: <span className="text-green-400">"{config.profile.name}"</span>,
-                <br/>
-                &nbsp;&nbsp;status: <span className="text-green-400">"Compiling..."</span>
-                <br/>
-                {'}'};
-              </div>
-
-              <div className="flex flex-col items-start space-y-4 mb-8 w-full">
-                {config.side1.items.map((item, i) => {
-                  const Icon = iconMap[item.icon as keyof typeof iconMap];
-                  return (
-                    <div key={i} className="flex items-center gap-3 text-slate-300">
-                      <Icon className="w-5 h-5 text-[#5B89D2]" />
-                      <span className="font-bold font-mono text-sm tracking-wide">{item.title}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <button
-                className="px-6 py-3 border border-[#5B89D2]/50 text-[#5B89D2] rounded-md font-mono text-sm font-bold bg-[#5B89D2]/10 w-full"
-                onClick={() => window.open(config.links.side1.url, '_blank')}
-              >
-                {config.links.side1.label}
-              </button>
+      {/* Expanded — detail content (icon sits under the avatar) */}
+      {hoveredSide && (
+        <motion.div
+          key={hoveredSide}
+          variants={{ show: { transition: { delayChildren: 0.4, staggerChildren: 0.08 } } }}
+          initial="hide"
+          animate="show"
+          className="absolute inset-0 z-20 flex flex-col items-center px-8 pt-[24vh] pb-24 overflow-y-auto"
+        >
+          <div className="w-full max-w-xs flex flex-col items-center text-center">
+            <motion.div variants={revealItem}>
+              <PersonaIcon className={`w-8 h-8 mb-4 ${accent}`} strokeWidth={1.5} />
             </motion.div>
-          )}
 
-          {side2Active && (
-            <motion.div
-              key="side2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3 }}
-              className="w-full px-8 pb-32 flex flex-col items-center"
-            >
-              <Palette className="w-10 h-10 text-orange-500 mb-6" strokeWidth={1.5} />
-              <h2 className="text-3xl font-serif italic tracking-tight text-slate-900 mb-8 text-center">
-                {config.side2.heading.main} <br/><span className="font-sans font-bold text-orange-600 not-italic">{config.side2.heading.accent}</span>
-              </h2>
+            {isSide1 ? (
+              <motion.h2 variants={revealItem} className="font-mono text-3xl font-bold text-white mb-4">
+                <span className="text-[#5B89D2]">&lt;</span>{config.side1.heading.main}<span className="text-[#5B89D2]">{config.side1.heading.accent}</span>
+              </motion.h2>
+            ) : (
+              <motion.h2 variants={revealItem} className="font-serif italic text-4xl tracking-tight text-slate-900 mb-4">
+                {config.side2.heading.main}{config.side2.heading.accent && <span className="font-sans not-italic font-bold text-orange-600"> {config.side2.heading.accent}</span>}
+              </motion.h2>
+            )}
 
-              <div className="flex flex-col items-start space-y-4 mb-8 w-full">
-                {config.side2.items.map((item, i) => {
-                  const Icon = iconMap[item.icon as keyof typeof iconMap];
-                  return (
-                    <div key={i} className="flex items-center gap-3 text-slate-700">
-                      <Icon className="w-5 h-5 text-orange-500" />
-                      <span className="font-bold font-sans text-sm tracking-wide">{item.title}</span>
+            <motion.p variants={revealItem} className={`text-sm leading-relaxed mb-7 ${isSide1 ? 'text-slate-400' : 'text-slate-600'}`}>
+              {sc.description}
+            </motion.p>
+
+            <div className={`w-full mb-7 border-t ${isSide1 ? 'border-white/10' : 'border-black/10'}`}>
+              {sc.items.map((item, i) => {
+                const ItemIcon = iconMap[item.icon as keyof typeof iconMap];
+                return (
+                  <motion.div
+                    key={i}
+                    variants={revealItem}
+                    className={`flex items-center gap-4 py-3 border-b text-left ${isSide1 ? 'border-white/10' : 'border-black/10'}`}
+                  >
+                    <ItemIcon className={`w-5 h-5 shrink-0 ${accent}`} />
+                    <div className="flex flex-col">
+                      <span className={`font-bold text-sm tracking-wide ${isSide1 ? 'text-slate-100' : 'text-slate-800'}`}>{item.title}</span>
+                      <span className="text-[11px] tracking-wide text-slate-500">{item.desc}</span>
                     </div>
-                  );
-                })}
-              </div>
+                  </motion.div>
+                );
+              })}
+            </div>
 
-              <button
-                className="px-6 py-3 border border-orange-500/50 text-orange-600 rounded-md font-mono text-sm font-bold hover:bg-orange-500 hover:text-white transition-colors w-full"
-                onClick={() => window.open(config.links.side2.url, '_blank')}
+            <motion.div variants={revealItem} className="flex flex-col items-center">
+              <a
+                href={lk.url}
+                target="_blank"
+                rel="noreferrer"
+                className={`group inline-flex items-center gap-1.5 font-mono text-lg font-bold tracking-wide transition-colors ${isSide1 ? 'text-[#5B89D2]' : 'text-orange-600'}`}
               >
-                {config.links.side2.label}
-              </button>
+                {lk.label.toLowerCase()}
+                <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </a>
+              <span className="mt-2 text-[11px] tracking-wide text-slate-500">{lk.desc}</span>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Avatar — default center, smoothly moves up into the selected persona */}
+      <motion.div
+        className={`absolute left-1/2 z-40 w-28 h-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow-2xl overflow-hidden ${
+          isSide2 ? 'border-orange-500/40 shadow-orange-500/20' : isSide1 ? 'border-[#5B89D2]/40 shadow-[#5B89D2]/20' : 'border-white/20 shadow-[#5B89D2]/20'
+        }`}
+        animate={{ top: hoveredSide ? '16%' : '50%', scale: hoveredSide ? 0.82 : 1 }}
+        transition={{ type: 'spring', bounce: 0.15, duration: 0.7 }}
+        style={{ pointerEvents: hoveredSide ? 'auto' : 'none' }}
+        whileTap={hoveredSide ? { scale: 0.78 } : undefined}
+        onClick={hoveredSide ? onOpenProfile : undefined}
+      >
+        <img src={avatarSrc} alt={config.profile.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+      </motion.div>
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { clockTime as fmt } from '../utils/format';
 import { useResponsive } from '../hooks/useResponsive';
 import { Cover } from '../components/music/Cover';
 import { usePlayer } from '../components/music/PlayerProvider';
+import { usePageTitle } from '../components/TitleProvider';
 
 export const SongDetailPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ export const SongDetailPage = () => {
   const track = id ? getTrack(id) : undefined;
   const song = id ? getSong(id) : undefined;
   const lines: LyricLine[] = song?.lines ?? [];
+
+  usePageTitle(track ? `${track.name} - ${track.artist}` : '音乐 Music');
 
   const launchState = location.state as { queue?: string[]; title?: string } | null;
 

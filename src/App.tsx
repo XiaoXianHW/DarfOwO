@@ -11,6 +11,7 @@ import { TopControls } from './components/TopControls';
 import { MusicWidget } from './components/music/MusicWidget';
 import { Tagline } from './components/Tagline';
 import { ProfileOverlay } from './components/ProfileOverlay';
+import { usePageTitle } from './components/TitleProvider';
 import type { SideType } from './types';
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const isMobile = useResponsive();
+  usePageTitle(null);
 
   const { clip1, clip2, divider } = getClips(isMobile, hoveredSide);
   const avatarAnim = getAvatarAnim(isMobile, hoveredSide);
@@ -68,12 +70,12 @@ export default function App() {
         />
       )}
 
-      <Footer />
-      {!isMobile && <TopControls />}
+      <Footer isMobile={isMobile} hoveredSide={hoveredSide} />
+      {!isMobile && <TopControls onOpenProfile={() => setIsProfileOpen(true)} />}
       <div className="fixed top-6 right-6 z-[80]">
         <MusicWidget />
       </div>
-      <Tagline hoveredSide={hoveredSide} />
+      {!isMobile && <Tagline hoveredSide={hoveredSide} />}
 
       <AnimatePresence>
         {isProfileOpen && (

@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FRIENDS, FRIEND_LINKS, FRIENDS_TAGLINE, type Friend } from '../data/friends';
 import { MusicWidget } from '../components/music/MusicWidget';
+import { usePageTitle } from '../components/TitleProvider';
 
 // Per-card accents so the wall feels lively without gradients everywhere.
 const ACCENTS = ['#fb7185', '#818cf8', '#34d399', '#fbbf24', '#22d3ee', '#f472b6', '#a3e635'];
@@ -52,6 +53,7 @@ function SectionHead({ title, label, count }: { title: string; label: string; co
 
 export const FriendsPage = () => {
   const navigate = useNavigate();
+  usePageTitle('朋友 Friends');
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#0a0a0a] font-sans text-white selection:bg-[#fb7185]/30">

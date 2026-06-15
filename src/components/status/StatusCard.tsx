@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'motion/react';
 import { TrendChart } from './TrendChart';
 import type { MetricDescriptor } from './types';
@@ -8,7 +9,7 @@ interface StatusCardProps {
   onOpen: (metric: MetricDescriptor) => void;
 }
 
-export const StatusCard = ({ metric, index, onOpen }: StatusCardProps) => {
+export const StatusCard = memo(({ metric, index, onOpen }: StatusCardProps) => {
   const hasData = metric.data.some((p) => p.value !== null);
 
   return (
@@ -79,4 +80,5 @@ export const StatusCard = ({ metric, index, onOpen }: StatusCardProps) => {
       </div>
     </motion.button>
   );
-};
+});
+StatusCard.displayName = 'StatusCard';

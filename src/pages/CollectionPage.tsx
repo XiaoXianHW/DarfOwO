@@ -6,6 +6,7 @@ import { getAlbum, getArtist, type Track } from '../data/musicLibrary';
 import { trackTime as fmt } from '../utils/format';
 import { Cover } from '../components/music/Cover';
 import { MusicWidget } from '../components/music/MusicWidget';
+import { usePageTitle } from '../components/TitleProvider';
 
 type Kind = 'artist' | 'album';
 
@@ -44,6 +45,8 @@ export const CollectionPage = ({ kind }: { kind: Kind }) => {
     }
     return null;
   }, [artist, album]);
+
+  usePageTitle(info ? `${info.name} · 音乐` : '音乐 Music');
 
   if (!info) {
     return (

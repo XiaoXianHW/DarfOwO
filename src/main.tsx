@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App.tsx';
 import { PlayerProvider } from './components/music/PlayerProvider.tsx';
 import { FloatingLyric } from './components/music/FloatingLyric.tsx';
+import { TitleProvider } from './components/TitleProvider.tsx';
+import { CustomCursor } from './components/CustomCursor.tsx';
 import { loadLibrary } from './data/musicLibrary.ts';
 import './index.css';
 
@@ -26,6 +28,7 @@ function mount() {
     <StrictMode>
       <BrowserRouter>
         <PlayerProvider>
+          <TitleProvider>
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/" element={<App />} />
@@ -40,6 +43,8 @@ function mount() {
             </Routes>
           </Suspense>
           <FloatingLyric />
+          <CustomCursor />
+          </TitleProvider>
         </PlayerProvider>
       </BrowserRouter>
     </StrictMode>,

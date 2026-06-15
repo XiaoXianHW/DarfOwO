@@ -24,6 +24,19 @@ function toTrend<T extends Dated>(rows: T[], value: (row: T) => number | null): 
     .map((row) => ({ label: `${weekday(row.at)} ${shortDate(row.at)}`, value: value(row) }));
 }
 
+// Most recent non-null reading, used as a fallback for the headline value when
+// today's daily summary hasn't been synced yet (otherwise the card shows '—').
+function latest<T extends Dated>(rows: T[], value: (row: T) => number | null): number | null {
+  let best: { at: number; v: number } | null = null;
+  for (const row of rows) {
+    const v = value(row);
+    if (v == null) continue;
+    const at = new Date(row.at).getTime();
+    if (!best || at > best.at) best = { at, v };
+  }
+  return best?.v ?? null;
+}
+
 export interface UseMetricsResult {
   metrics: MetricDescriptor[];
   loading: boolean;
@@ -46,6 +59,10 @@ export const useMetrics = (): UseMetricsResult => {
     const stepsGoal = overview.goal?.stepsGoal;
     const calGoal = overview.goal?.caloriesGoal;
 
+    const hrLatest = latest(histories.heartRate, (r) => r.avgHr ?? null);
+    const stepsLatest = latest(histories.steps, (r) => r.steps ?? null);
+    const sleepLatest = latest(histories.sleep, (r) => r.totalDuration ?? null);
+
     const list: MetricDescriptor[] = [];
 
     // Heart rate (hero)
@@ -55,7 +72,7 @@ export const useMetrics = (): UseMetricsResult => {
       sublabel: 'Heart Rate',
       icon: HeartPulse,
       color: '#ef4444',
-      value: hr?.latestHr?.bpm ? String(hr.latestHr.bpm) : hr?.avgHr ? String(hr.avgHr) : '—',
+      value: hr?.latestHr?.bpm ? String(hr.latestHr.bpm) : hr?.avgHr ? String(hr.avgHr) : hrLatest != null ? String(hrLatest) : '—',
       unit: 'bpm',
       hint: hr?.avgRhr ? `静息 ${hr.avgRhr} bpm · 30 日均值趋势` : '30 日均值趋势',
       chartType: 'area',
@@ -78,7 +95,7 @@ export const useMetrics = (): UseMetricsResult => {
       sublabel: 'Steps',
       icon: Footprints,
       color: '#f97316',
-      value: stepsToday ? formatNumber(stepsToday.steps) : '—',
+      value: stepsToday ? formatNumber(stepsToday.steps) : stepsLatest != null ? formatNumber(stepsLatest) : '—',
       unit: '步',
       hint: stepsGoal
         ? `目标 ${formatNumber(stepsGoal.targetValue)} · ${stepsToday ? ((stepsToday.distance ?? 0) / 1000).toFixed(2) : '0'} km`
@@ -117,7 +134,7 @@ export const useMetrics = (): UseMetricsResult => {
       sublabel: 'Sleep',
       icon: Moon,
       color: '#818cf8',
-      value: sleepToday ? formatDuration(sleepToday.totalDuration) : '—',
+      value: sleepToday ? formatDuration(sleepToday.totalDuration) : sleepLatest != null ? formatDuration(sleepLatest) : '—',
       hint: sleepToday?.sleepScore ? `睡眠评分 ${sleepToday.sleepScore}` : undefined,
       chartType: 'bar',
       data: toTrend(histories.sleep, (r) =>

@@ -1,14 +1,18 @@
 export const config = {
   profile: {
     name: 'XiaoXian',
-    displayName: 'XIAOXIAN',
-    title: 'XiaoXian - Dual Persona Homepage',
+    alias: 'Darf / 弧渊',
+    title: 'XiaoXian · 理性与感性的交汇',
+    description: '试图在理性与情感之间找到平衡 —— XiaoXian (Darf / 弧渊) 的个人主页，连接工程实践与艺术创作。',
+    birthday: '2006-12-10',
+    roles: ['Developer', 'INFJ'],
+    blog: { url: 'https://blog.xiaoxian.org', label: 'blog.xiaoxian.org' },
     tagline: {
       main: 'Two Realms, One Soul.',
       sub: 'Choose Your Perspective'
     },
-    bio: 'I exist at the intersection of rigorous logic and boundless creativity. Navigating the world through multiple lenses, constantly seeking the underlying patterns that connect disparate ideas.',
-    tags: ['INFJ-A', 'Developer', 'Designer']
+    bio: '试图在理性与情感之间找到平衡。\n喜欢用代码、文字或画笔，将那些无法言说的思绪具象化，在创造的秩序与美感中，寻得片刻的宁静。',
+    quote: '人与世界，本应以理解相遇，而非以标签相隔'
   },
 
   avatars: {
@@ -20,34 +24,78 @@ export const config = {
   links: {
     side1: {
       url: 'https://darf.dev',
-      label: 'DARF.DEV'
+      label: 'DARF.DEV',
+      desc: '个人开发站 · 技术博客'
     },
     side2: {
       url: 'https://arcyuan.cn',
-      label: 'ARCYUAN.CN'
+      label: 'ARCYUAN.CN',
+      desc: '艺术创作 · 作品展示'
     },
-    legacy: 'https://v2.xiaoxian.org',
-    legacyMobile: 'https://legacy.darf.dev'
   },
 
-  social: [
-    { name: 'QQ', url: '#', icon: 'MessageCircle' },
-    { name: 'Bilibili', url: '#', icon: 'Tv' },
-    { name: 'GitHub', url: '#', icon: 'Github' },
-    { name: 'Email', url: '#', icon: 'Mail' },
-    { name: 'Telegram', url: '#', icon: 'Send' },
-    { name: 'X (Twitter)', url: '#', icon: 'Twitter' },
-    { name: 'Discord', url: '#', icon: 'MessageSquare' },
-    { name: 'Netease Cloud Music', url: '#', icon: 'Music' }
+  contacts: [
+    {
+      name: 'QQ',
+      value: '1680839 / 2860488343',
+      link: 'tencent://message/?uin=1680839',
+      icon: 'FaQq'
+    },
+    {
+      name: 'Email',
+      value: 'xiaoxian@axtn.net',
+      link: 'mailto:xiaoxian@axtn.net',
+      icon: 'HiMail'
+    },
+    {
+      name: '网易云音乐',
+      value: '@XiaoXianHW',
+      link: 'https://music.163.com/#/user/home?id=485765737',
+      icon: 'RiNeteaseCloudMusicLine'
+    },
+    {
+      name: 'BiliBili',
+      value: '@XiaoXianHW',
+      link: 'https://space.bilibili.com/414947108',
+      icon: 'SiBilibili'
+    },
+    {
+      name: 'Discord',
+      value: '@xiaoxianhw',
+      link: 'https://discord.com/users/xiaoxianhw',
+      icon: 'FaDiscord'
+    },
+    {
+      name: 'Telegram',
+      value: '@ArcOwO',
+      link: 'https://t.me/ArcOwO',
+      icon: 'FaTelegram'
+    },
+    {
+      name: 'X (Twitter)',
+      value: '@ArcDarf',
+      link: 'https://x.com/ArcDarf',
+      icon: 'FaXTwitter'
+    },
+    {
+      name: 'GitHub',
+      value: '@XiaoXianHW',
+      link: 'https://github.com/XiaoXianHW',
+      icon: 'FaGithub'
+    }
   ],
 
   side1: {
     title: 'Rationality',
+    heading: {
+      main: 'Developer',
+      accent: '/>'
+    },
+    description: '以逻辑构建世界 —— 工程实践、开源项目，以及藏在代码里的彩蛋。',
     items: [
-      { title: '个人技术栈', icon: 'Cpu' },
-      { title: '维护的项目', icon: 'GitBranch' },
-      { title: '技术性博客', icon: 'Terminal' },
-      { title: '合作开发者', icon: 'Users' }
+      { title: '个人技术栈', desc: 'Languages · Frameworks · Tools', icon: 'Cpu' },
+      { title: '维护的项目', desc: 'Open-source & personal builds', icon: 'GitBranch' },
+      { title: '或许有彩蛋', desc: 'Hidden surprises, if you look', icon: 'Terminal' }
     ]
   },
 
@@ -55,13 +103,13 @@ export const config = {
     title: 'Sensibility',
     heading: {
       main: 'Crafting',
-      accent: 'Experiences'
+      accent: ''
     },
+    description: '以感性表达自我 —— 原创角色、艺术作品，以及构成「我」的那些故事。',
     items: [
-      { title: '个人OC介绍', icon: 'Sparkles' },
-      { title: '艺术性作品', icon: 'Palette' },
-      { title: '随笔&生活类博客', icon: 'Coffee' },
-      { title: '性格及个人简介', icon: 'Heart' }
+      { title: '个人OC介绍', desc: 'Original characters & lore', icon: 'Sparkles' },
+      { title: '艺术性作品', desc: 'Illustrations & visual works', icon: 'Palette' },
+      { title: '性格及个人简介', desc: 'Personality & about me', icon: 'Heart' }
     ]
   },
 

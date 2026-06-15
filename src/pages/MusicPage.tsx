@@ -6,6 +6,7 @@ import { allTracks, type Track } from '../data/musicLibrary';
 import { trackTime as fmt } from '../utils/format';
 import { Cover } from '../components/music/Cover';
 import { MusicWidget } from '../components/music/MusicWidget';
+import { usePageTitle } from '../components/TitleProvider';
 
 type SortMode = 'shuffle' | 'az' | 'artist' | 'album';
 
@@ -25,6 +26,7 @@ const byName = (a: Track, b: Track) => a.name.localeCompare(b.name, 'zh');
 
 export const MusicPage = () => {
   const navigate = useNavigate();
+  usePageTitle('音乐 Music');
   const [mode, setMode] = useState<SortMode>('shuffle');
 
   const tracks = useMemo(() => allTracks(), []);
