@@ -11,7 +11,8 @@ export const config = {
       main: 'Two Realms, One Soul.',
       sub: 'Choose Your Perspective'
     },
-    bio: '试图在理性与情感之间找到平衡。\n喜欢用代码、文字或画笔，将那些无法言说的思绪具象化，\n在创造的秩序与美感中，寻得片刻的宁静。\n人与世界，本应以理解相遇，而非以标签相隔'
+    bio: '试图在理性与情感之间找到平衡。\n喜欢用代码、文字或画笔，将那些无法言说的思绪具象化，在创造的秩序与美感中，寻得片刻的宁静。',
+    quote: '人与世界，本应以理解相遇，而非以标签相隔'
   },
 
   avatars: {
@@ -62,7 +63,7 @@ export const config = {
     title: 'Sensibility',
     heading: {
       main: 'Crafting',
-      accent: 'Experiences'
+      accent: ''
     },
     description: '以感性表达自我 —— 原创角色、艺术作品，以及构成「我」的那些故事。',
     items: [

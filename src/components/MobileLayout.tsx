@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import {
   Menu, X, Music, MonitorSmartphone, Activity, ChevronRight, Users, RotateCcw,
-  Terminal, Palette, Cpu, GitBranch, Sparkles, Heart,
+  Terminal, Palette, Cpu, GitBranch, Sparkles, Heart, ArrowUpRight,
 } from 'lucide-react';
 import type { SideType } from '../types';
 import { config } from '../config';
@@ -187,7 +187,7 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
               </motion.h2>
             ) : (
               <motion.h2 variants={revealItem} className="font-serif italic text-4xl tracking-tight text-slate-900 mb-4">
-                {config.side2.heading.main} <span className="font-sans not-italic font-bold text-orange-600">{config.side2.heading.accent}</span>
+                {config.side2.heading.main}{config.side2.heading.accent && <span className="font-sans not-italic font-bold text-orange-600"> {config.side2.heading.accent}</span>}
               </motion.h2>
             )}
 
@@ -214,18 +214,17 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
               })}
             </div>
 
-            <motion.div variants={revealItem} className="w-full flex flex-col items-center">
-              <button
-                className={`w-full px-6 py-3 border rounded-md font-mono text-sm font-bold transition-colors ${
-                  isSide1
-                    ? 'border-[#5B89D2]/50 text-[#5B89D2] bg-[#5B89D2]/10 hover:bg-[#5B89D2] hover:text-white'
-                    : 'border-orange-500/50 text-orange-600 hover:bg-orange-500 hover:text-white'
-                }`}
-                onClick={() => window.open(lk.url, '_blank')}
+            <motion.div variants={revealItem} className="flex flex-col items-center">
+              <a
+                href={lk.url}
+                target="_blank"
+                rel="noreferrer"
+                className={`group inline-flex items-center gap-1.5 font-mono text-lg font-bold tracking-wide transition-colors ${isSide1 ? 'text-[#5B89D2]' : 'text-orange-600'}`}
               >
-                {lk.label}
-              </button>
-              <span className="mt-3 text-[11px] tracking-wide text-slate-500">{lk.desc}</span>
+                {lk.label.toLowerCase()}
+                <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </a>
+              <span className="mt-2 text-[11px] tracking-wide text-slate-500">{lk.desc}</span>
             </motion.div>
           </div>
         </motion.div>

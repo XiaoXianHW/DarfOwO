@@ -19,13 +19,11 @@ export const CustomCursor = () => {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  // Cheap, allocation-free hover test: a single ancestor walk (no
+  // getComputedStyle, which would force a synchronous style recalc on every
+  // pointer move and stutter badly over heavy DOM like the charts page).
   const isInteractive = useCallback((el: Element | null): boolean => {
-    if (!el) return false;
-    const tag = el.tagName;
-    if (tag === 'A' || tag === 'BUTTON' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
-    if (el.getAttribute('role') === 'button' || el.getAttribute('data-clickable') === 'true') return true;
-    if (window.getComputedStyle(el).cursor === 'pointer') return true;
-    return el.closest('a, button, [role="button"], [data-clickable]') !== null;
+    return !!el && el.closest('a, button, input, textarea, select, [role="button"], [data-clickable]') !== null;
   }, []);
 
   useEffect(() => {

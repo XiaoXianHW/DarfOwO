@@ -60,16 +60,21 @@ export const ProfileOverlay = ({ onClose }: ProfileOverlayProps) => {
         
         <div className="w-full sm:w-2/5 p-6 sm:p-10 border-b sm:border-b-0 sm:border-r border-white/10 flex flex-col shrink-0 bg-black/20">
           <img src={config.avatars.default} alt={config.profile.name} className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl border border-white/20 mb-4 sm:mb-6 shadow-lg object-cover" referrerPolicy="no-referrer" />
-          <h2 className="text-2xl sm:text-4xl font-semibold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-[2.6rem] font-bold text-white tracking-tight leading-none">
             {config.profile.name}
-            <span className="ml-2 align-middle text-base sm:text-lg font-light text-white/45">{config.profile.alias}</span>
           </h2>
-          <p className="mt-2 mb-5 sm:mb-6 font-mono text-[11px] sm:text-xs uppercase tracking-[0.18em] text-white/50">
+          <p className="mt-2 text-sm sm:text-base font-light tracking-wide text-white/45">
+            {config.profile.alias}
+          </p>
+          <p className="mt-3 mb-5 sm:mb-6 font-mono text-[11px] sm:text-xs uppercase tracking-[0.18em] text-white/50">
             Age {getAge(config.profile.birthday)} / {config.profile.roles.join(' / ')}
           </p>
-          <p className="text-white/70 text-[13px] sm:text-sm leading-relaxed mb-5 sm:mb-6 font-light whitespace-pre-line">
+          <p className="text-white/70 text-[13px] sm:text-sm leading-relaxed mb-4 sm:mb-5 font-light whitespace-pre-line">
             {config.profile.bio}
           </p>
+          <blockquote className="mb-5 sm:mb-6 border-l-2 border-white/15 pl-3.5 text-[12px] sm:text-[13px] italic leading-relaxed text-white/55">
+            {config.profile.quote}
+          </blockquote>
           <a
             href={config.profile.blog.url}
             target="_blank"

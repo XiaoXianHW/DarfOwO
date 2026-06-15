@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Terminal, Cpu, GitBranch, Users, Sparkles, Palette, Coffee, Heart } from 'lucide-react';
+import { Terminal, Cpu, GitBranch, Users, Sparkles, Palette, Coffee, Heart, ArrowUpRight } from 'lucide-react';
 import type { SideType } from '../types';
 import { config } from '../config';
 
@@ -95,7 +95,7 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
               </motion.h2>
             ) : (
               <motion.h2 variants={revealItem} className="font-serif italic text-4xl sm:text-6xl tracking-tight text-slate-900 mb-4 sm:mb-5">
-                {sideConfig.heading.main} <span className="font-sans not-italic font-bold text-orange-600">{sideConfig.heading.accent}</span>
+                {sideConfig.heading.main}{sideConfig.heading.accent && <span className="font-sans not-italic font-bold text-orange-600"> {sideConfig.heading.accent}</span>}
               </motion.h2>
             )}
 
@@ -119,14 +119,18 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
               ))}
             </div>
 
-            <motion.div variants={revealItem} className={`flex items-center gap-4 ${isSide1 ? '' : 'flex-row-reverse'}`}>
-              <button
-                className={`px-6 py-3 border ${isSide1 ? 'border-[#5B89D2]/50 text-[#5B89D2] hover:bg-[#5B89D2] hover:text-white' : 'border-orange-500/50 text-orange-600 hover:bg-orange-500 hover:text-white'} rounded-md font-mono text-xs sm:text-sm font-bold transition-colors pointer-events-auto w-fit`}
-                onClick={(e) => { e.stopPropagation(); window.open(link.url, '_blank'); }}
+            <motion.div variants={revealItem} className={`flex flex-col ${isSide1 ? 'items-start' : 'items-end'}`}>
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className={`group inline-flex items-center gap-1.5 font-mono text-lg sm:text-xl font-bold tracking-wide pointer-events-auto transition-colors ${isSide1 ? 'text-[#5B89D2] hover:text-white' : 'text-orange-600 hover:text-orange-500'}`}
               >
-                {link.label}
-              </button>
-              <span className="text-[11px] sm:text-xs text-slate-500">{link.desc}</span>
+                {link.label.toLowerCase()}
+                <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </a>
+              <span className="mt-1.5 text-[11px] sm:text-xs text-slate-500">{link.desc}</span>
             </motion.div>
           </motion.div>
         </motion.div>

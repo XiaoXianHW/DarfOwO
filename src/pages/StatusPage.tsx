@@ -1,7 +1,9 @@
+import { useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMetrics } from '../hooks/useMetrics';
 import { StatusCard } from '../components/status/StatusCard';
+import type { MetricDescriptor } from '../components/status/types';
 import { StatusNav } from '../components/status/StatusNav';
 import { usePageTitle } from '../components/TitleProvider';
 
@@ -17,6 +19,7 @@ export const StatusPage = () => {
   const navigate = useNavigate();
   const { metrics, loading, error, latestDataAt, reload } = useMetrics();
   usePageTitle('状态 Status');
+  const openMetric = useCallback((m: MetricDescriptor) => navigate(`/status/${m.id}`), [navigate]);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#0a0a0a] font-sans text-white selection:bg-green-500/30">
@@ -55,7 +58,7 @@ export const StatusPage = () => {
                 <StatusCard
                   metric={metric}
                   index={i}
-                  onOpen={(m) => navigate(`/status/${m.id}`)}
+                  onOpen={openMetric}
                 />
               </div>
             ))}
