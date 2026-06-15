@@ -13,6 +13,11 @@ interface SideCardProps {
 
 const iconMap = { Terminal, Cpu, GitBranch, Users, Sparkles, Palette, Coffee, Heart };
 
+const revealItem = {
+  hide: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
+};
+
 export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: SideCardProps) => {
   const isSide1 = side === 'side1';
   const sideConfig = isSide1 ? config.side1 : config.side2;
@@ -68,7 +73,12 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
           transition={{ duration: 0.5 }}
           style={{ pointerEvents: isActive ? 'auto' : 'none' }}
         >
-          <div className={`relative z-10 w-full max-w-md flex flex-col h-full justify-center ${isSide1 ? 'items-start text-left' : 'items-end text-right ml-auto'}`}>
+          <motion.div
+            className={`relative z-10 w-full max-w-md flex flex-col h-full justify-center ${isSide1 ? 'items-start text-left' : 'items-end text-right ml-auto'}`}
+            variants={{ show: { transition: { delayChildren: 0.45, staggerChildren: 0.08 } } }}
+            initial="hide"
+            animate={isActive ? 'show' : 'hide'}
+          >
             {isActive && (
               <motion.span
                 layoutId={`side-icon-${side}`}
@@ -79,28 +89,25 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
               </motion.span>
             )}
 
-            <p className={`font-mono text-[10px] sm:text-xs uppercase tracking-[0.35em] ${accent} opacity-80 mb-3`}>
-              {sideConfig.title} · {sideConfig.subtitle}
-            </p>
-
             {isSide1 ? (
-              <h2 className="font-mono text-3xl sm:text-5xl font-bold text-white mb-4 sm:mb-5">
+              <motion.h2 variants={revealItem} className="font-mono text-3xl sm:text-5xl font-bold text-white mb-4 sm:mb-5">
                 <span className="text-[#5B89D2]">&lt;</span>{sideConfig.heading.main}<span className="text-[#5B89D2]">{sideConfig.heading.accent}</span>
-              </h2>
+              </motion.h2>
             ) : (
-              <h2 className="font-serif italic text-4xl sm:text-6xl tracking-tight text-slate-900 mb-4 sm:mb-5">
+              <motion.h2 variants={revealItem} className="font-serif italic text-4xl sm:text-6xl tracking-tight text-slate-900 mb-4 sm:mb-5">
                 {sideConfig.heading.main} <span className="font-sans not-italic font-bold text-orange-600">{sideConfig.heading.accent}</span>
-              </h2>
+              </motion.h2>
             )}
 
-            <p className={`text-sm sm:text-[15px] leading-relaxed mb-7 sm:mb-8 max-w-sm ${isSide1 ? 'text-slate-400' : 'text-slate-600'}`}>
+            <motion.p variants={revealItem} className={`text-sm sm:text-[15px] leading-relaxed mb-7 sm:mb-8 max-w-sm ${isSide1 ? 'text-slate-400' : 'text-slate-600'}`}>
               {sideConfig.description}
-            </p>
+            </motion.p>
 
             <div className={`w-full max-w-sm mb-8 border-t ${isSide1 ? 'border-white/10' : 'border-black/10'}`}>
               {items.map((item, i) => (
-                <div
+                <motion.div
                   key={i}
+                  variants={revealItem}
                   className={`flex items-center gap-4 py-3.5 border-b ${isSide1 ? 'border-white/10' : 'border-black/10'} ${isSide1 ? '' : 'flex-row-reverse'} group cursor-pointer`}
                 >
                   <item.icon className={`w-5 h-5 shrink-0 ${accent} transition-transform group-hover:scale-110`} />
@@ -108,11 +115,11 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
                     <span className={`font-bold text-sm sm:text-base tracking-wide transition-colors ${isSide1 ? 'text-slate-100 group-hover:text-[#5B89D2]' : 'text-slate-800 group-hover:text-orange-600'}`}>{item.title}</span>
                     <span className="text-[11px] tracking-wide text-slate-500">{item.desc}</span>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
-            <div className={`flex items-center gap-4 ${isSide1 ? '' : 'flex-row-reverse'}`}>
+            <motion.div variants={revealItem} className={`flex items-center gap-4 ${isSide1 ? '' : 'flex-row-reverse'}`}>
               <button
                 className={`px-6 py-3 border ${isSide1 ? 'border-[#5B89D2]/50 text-[#5B89D2] hover:bg-[#5B89D2] hover:text-white' : 'border-orange-500/50 text-orange-600 hover:bg-orange-500 hover:text-white'} rounded-md font-mono text-xs sm:text-sm font-bold transition-colors pointer-events-auto w-fit`}
                 onClick={(e) => { e.stopPropagation(); window.open(link.url, '_blank'); }}
@@ -120,8 +127,8 @@ export const SideCard = ({ side, clipPath, hoveredSide, isMobile, onHover }: Sid
                 {link.label}
               </button>
               <span className="text-[11px] sm:text-xs text-slate-500">{link.desc}</span>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </motion.div>
 
         <motion.div

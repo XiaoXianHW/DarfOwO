@@ -17,6 +17,11 @@ const menuItems = [
 
 const iconMap = { Terminal, Palette, Cpu, GitBranch, Sparkles, Heart };
 
+const revealItem = {
+  hide: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
+};
+
 interface MobileLayoutProps {
   hoveredSide: SideType;
   onSetHoveredSide: (side: SideType) => void;
@@ -148,42 +153,41 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
         </motion.div>
       )}
 
-      {/* Expanded — persona icon (top center) + detail content */}
+      {/* Expanded — detail content (icon sits under the avatar) */}
       {hoveredSide && (
         <motion.div
           key={hoveredSide}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.35 }}
-          className="absolute inset-0 z-20 flex flex-col items-center px-8 pt-[34vh] pb-24 overflow-y-auto"
+          variants={{ show: { transition: { delayChildren: 0.4, staggerChildren: 0.08 } } }}
+          initial="hide"
+          animate="show"
+          className="absolute inset-0 z-20 flex flex-col items-center px-8 pt-[24vh] pb-24 overflow-y-auto"
         >
-          <PersonaIcon className={`absolute top-[7%] left-1/2 -translate-x-1/2 w-8 h-8 ${accent}`} strokeWidth={1.5} />
-
           <div className="w-full max-w-xs flex flex-col items-center text-center">
-            <p className={`font-mono text-[10px] uppercase tracking-[0.3em] ${accent} opacity-80 mb-2`}>
-              {sc.title} · {sc.subtitle}
-            </p>
+            <motion.div variants={revealItem}>
+              <PersonaIcon className={`w-8 h-8 mb-4 ${accent}`} strokeWidth={1.5} />
+            </motion.div>
 
             {isSide1 ? (
-              <h2 className="font-mono text-3xl font-bold text-white mb-4">
+              <motion.h2 variants={revealItem} className="font-mono text-3xl font-bold text-white mb-4">
                 <span className="text-[#5B89D2]">&lt;</span>{config.side1.heading.main}<span className="text-[#5B89D2]">{config.side1.heading.accent}</span>
-              </h2>
+              </motion.h2>
             ) : (
-              <h2 className="font-serif italic text-4xl tracking-tight text-slate-900 mb-4">
+              <motion.h2 variants={revealItem} className="font-serif italic text-4xl tracking-tight text-slate-900 mb-4">
                 {config.side2.heading.main} <span className="font-sans not-italic font-bold text-orange-600">{config.side2.heading.accent}</span>
-              </h2>
+              </motion.h2>
             )}
 
-            <p className={`text-sm leading-relaxed mb-7 ${isSide1 ? 'text-slate-400' : 'text-slate-600'}`}>
+            <motion.p variants={revealItem} className={`text-sm leading-relaxed mb-7 ${isSide1 ? 'text-slate-400' : 'text-slate-600'}`}>
               {sc.description}
-            </p>
+            </motion.p>
 
             <div className={`w-full mb-7 border-t ${isSide1 ? 'border-white/10' : 'border-black/10'}`}>
               {sc.items.map((item, i) => {
                 const ItemIcon = iconMap[item.icon as keyof typeof iconMap];
                 return (
-                  <div
+                  <motion.div
                     key={i}
+                    variants={revealItem}
                     className={`flex items-center gap-4 py-3 border-b text-left ${isSide1 ? 'border-white/10' : 'border-black/10'}`}
                   >
                     <ItemIcon className={`w-5 h-5 shrink-0 ${accent}`} />
@@ -191,22 +195,24 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
                       <span className={`font-bold text-sm tracking-wide ${isSide1 ? 'text-slate-100' : 'text-slate-800'}`}>{item.title}</span>
                       <span className="text-[11px] tracking-wide text-slate-500">{item.desc}</span>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
 
-            <button
-              className={`w-full px-6 py-3 border rounded-md font-mono text-sm font-bold transition-colors ${
-                isSide1
-                  ? 'border-[#5B89D2]/50 text-[#5B89D2] bg-[#5B89D2]/10 hover:bg-[#5B89D2] hover:text-white'
-                  : 'border-orange-500/50 text-orange-600 hover:bg-orange-500 hover:text-white'
-              }`}
-              onClick={() => window.open(lk.url, '_blank')}
-            >
-              {lk.label}
-            </button>
-            <span className="mt-3 text-[11px] tracking-wide text-slate-500">{lk.desc}</span>
+            <motion.div variants={revealItem} className="w-full flex flex-col items-center">
+              <button
+                className={`w-full px-6 py-3 border rounded-md font-mono text-sm font-bold transition-colors ${
+                  isSide1
+                    ? 'border-[#5B89D2]/50 text-[#5B89D2] bg-[#5B89D2]/10 hover:bg-[#5B89D2] hover:text-white'
+                    : 'border-orange-500/50 text-orange-600 hover:bg-orange-500 hover:text-white'
+                }`}
+                onClick={() => window.open(lk.url, '_blank')}
+              >
+                {lk.label}
+              </button>
+              <span className="mt-3 text-[11px] tracking-wide text-slate-500">{lk.desc}</span>
+            </motion.div>
           </div>
         </motion.div>
       )}
@@ -216,7 +222,7 @@ export const MobileLayout = ({ hoveredSide, onSetHoveredSide, onOpenProfile }: M
         className={`absolute left-1/2 z-40 w-28 h-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow-2xl overflow-hidden ${
           isSide2 ? 'border-orange-500/40 shadow-orange-500/20' : isSide1 ? 'border-[#5B89D2]/40 shadow-[#5B89D2]/20' : 'border-white/20 shadow-[#5B89D2]/20'
         }`}
-        animate={{ top: hoveredSide ? '20%' : '50%', scale: hoveredSide ? 0.82 : 1 }}
+        animate={{ top: hoveredSide ? '16%' : '50%', scale: hoveredSide ? 0.82 : 1 }}
         transition={{ type: 'spring', bounce: 0.15, duration: 0.7 }}
         style={{ pointerEvents: hoveredSide ? 'auto' : 'none' }}
         whileTap={hoveredSide ? { scale: 0.78 } : undefined}
