@@ -1,6 +1,6 @@
-# XiaoXian.org · 双重人格个人主页
+# DarfOwO · 个人主页
 
-晓贤（XiaoXian）的个人主页：一个左右分屏、双重人格风格的单页应用，并附带设备、音乐、健康状态等子页面。健康状态页接入真实的 Mi Fitness（小米运动健康）数据。
+我的个人主页：一个左右分屏、双重人格风格的单页应用，并附带设备、音乐、健康状态等子页面。健康状态页接入真实的 Mi Fitness（小米运动健康）数据。
 
 ## 技术栈
 
@@ -13,17 +13,6 @@
 | 动画 | Motion（`motion/react`） |
 | 图表 | Recharts |
 | 图标 | lucide-react |
-
-## 页面 / 路由
-
-| 路由 | 组件 | 说明 |
-| --- | --- | --- |
-| `/` | `App.tsx` | 首页，左右分屏的双重人格交互（含 3D 视差、移动端布局、资料浮层） |
-| `/devices` | `pages/DevicesPage.tsx` | 设备生态，Bento 网格卡片展示硬件 |
-| `/music` | `pages/MusicPage.tsx` | 音乐页，正在播放 / 歌单 / 最近播放 |
-| `/status` | `pages/StatusPage.tsx` | 健康状态，接入真实健康数据，点击卡片查看近 30 天（体重近半年）历史 |
-
-三个子页面统一采用一致的卡片风格：深色卡片底色 `#1a1a1a`、`rounded-3xl` 圆角、`border-white/5` 描边。
 
 ## 目录结构
 
@@ -68,8 +57,8 @@ npm run dev                  # http://localhost:3000
 ```
 MIFITNESS_API_KEY=你的密钥        # 由 Vite 代理在服务端注入
 MIFITNESS_API_BASE=https://api.xiaoxian.org
-MIFITNESS_UID=2706034380         # 展示数据的家庭成员 uid（服务端注入）
-MIFITNESS_SESSION_ID=5fd053625cc1d165b3d8f3fd  # 可选，小米登录会话 ID（服务端注入）
+MIFITNESS_UID=xxx         # 展示数据的家庭成员 uid（服务端注入）
+MIFITNESS_SESSION_ID=xxx  # 可选，小米登录会话 ID（服务端注入）
 ```
 
 ## 常用脚本
